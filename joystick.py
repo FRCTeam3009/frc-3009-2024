@@ -22,7 +22,7 @@ class Joystick(object):
         return drotate
     
     def deadzone(value):
-        ignore = 0.1
+        ignore = 0.0 # our new controllers are awesome
         OG = value
         if value < 0:
             value *= -1
