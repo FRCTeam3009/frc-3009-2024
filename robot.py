@@ -19,9 +19,8 @@ class MyRobot(wpilib.TimedRobot):
         self.right_forward = swervemotor.Motor(20, 21, 30)
         self.right_rear = swervemotor.Motor(26, 27, 31)
 
-        self.stick = joystick.Joystick(0)
+        self.joystick = joystick.Joystick(0)
         self.timer = wpilib.Timer()
-
 
 
     def autonomousInit(self):
@@ -36,6 +35,11 @@ class MyRobot(wpilib.TimedRobot):
         self.right_forward.setzero()
         self.right_rear.setzero()
 
+    def teleopInit(self):
+        """This function is run once each time the robot enters teleop mode."""
+        self.timer.reset()
+        self.timer.start()
+
     def teleopPeriodic(self):
         """This function is called periodically during operator control."""
         self.left_forward.drive(self.joystick.forward())
@@ -43,12 +47,16 @@ class MyRobot(wpilib.TimedRobot):
         self.right_forward.drive(self.joystick.forward())
         self.right_rear.drive(self.joystick.forward())
 
-        self.left_forward.steer(self.joystick.horizontal())
-        self.left_rear.steer(self.joystick.horizontal())
-        self.right_forward.steer(self.joystick.horizontal())
-        self.right_rear.steer(self.joystick.horizontal())
+        self.left_forward.steer(self.joystick.rotate())
+        self.left_rear.steer(self.joystick.rotate())
+        self.right_forward.steer(self.joystick.rotate())
+        self.right_rear.steer(self.joystick.rotate())
 
-        print("left rear encoder" + str(self.left_rear_encoder_motor.getPosition()))
+        if self.timer.get() > 0.5:
+            print("left rear encoder " + str(self.left_rear.encoder.get_absolute_position()))
+            print("left rear encoder " + str(self.left_rear.encoder.get_position()))
+            self.timer.reset()
+
 
 if __name__ == "__main__":
     wpilib.run(MyRobot)
