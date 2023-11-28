@@ -20,7 +20,7 @@ class Motor(object):
         self.drivemotor.set(value)
 
     def steer(self, value):
-        self.steermotor.set(value)
+        self.steermotor.set(value*0.15)
 
     def setzero(self):
         self.drivemotor.set(0)
