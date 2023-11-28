@@ -53,8 +53,8 @@ class MyRobot(wpilib.TimedRobot):
         self.right_rear.steer(self.joystick.rotate())
 
         if self.timer.get() > 0.5:
-            print("left rear encoder " + str(self.left_rear.encoder.get_absolute_position()))
-            print("left rear encoder " + str(self.left_rear.encoder.get_position()))
+            print("left rear encoder abs" + str(self.left_rear.encoder.get_absolute_position()))
+            print("left rear encoder pos" + str(self.left_rear.encoder.get_position()))
             self.timer.reset()
 
 

@@ -1,5 +1,4 @@
 import wpilib
-import math
 
 class Joystick(object):
     
