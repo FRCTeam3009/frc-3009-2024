@@ -30,3 +30,6 @@ class Joystick(object):
         else:
             return OG
         
+    def align_zero(self):
+        value = self.joystick.getXButton()
+        return value

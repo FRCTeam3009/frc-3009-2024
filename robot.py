@@ -19,6 +19,11 @@ class MyRobot(wpilib.TimedRobot):
         self.right_forward = swervemotor.Motor(20, 21, 31)
         self.right_rear = swervemotor.Motor(26, 27, 30)
 
+        self.left_forward.align_zero()
+        self.left_rear.align_zero()
+        self.right_forward.align_zero()
+        self.right_rear.align_zero()
+
         self.joystick = joystick.Joystick(0)
         self.timer = wpilib.Timer()
 
@@ -47,15 +52,17 @@ class MyRobot(wpilib.TimedRobot):
         self.right_forward.drive(self.joystick.forward())
         self.right_rear.drive(self.joystick.forward())
 
-        #self.left_forward.steer(self.joystick.rotate())
-        #self.left_rear.steer(self.joystick.rotate())
-        #self.right_forward.steer(self.joystick.rotate())
-        #self.right_rear.steer(self.joystick.rotate())
-
-        self.left_forward.align_zero()
-        self.left_rear.align_zero()
-        self.right_forward.align_zero()
-        self.right_rear.align_zero()
+        if self.joystick.align_zero():
+            self.left_forward.align_zero()
+            self.left_rear.align_zero()
+            self.right_forward.align_zero()
+            self.right_rear.align_zero()
+        else:
+            self.left_forward.steer(self.joystick.rotate())
+            self.left_rear.steer(self.joystick.rotate())
+            self.right_forward.steer(self.joystick.rotate())
+            self.right_rear.steer(self.joystick.rotate())
+        
 
         if self.timer.get() > 0.5:
             #print("left forward encoder pos" + str(self.left_forward.encoder.getAbsolutePosition()))

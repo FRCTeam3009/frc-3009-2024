@@ -17,7 +17,7 @@ class Motor(object):
 
 
     def drive(self, value):
-        self.drivemotor.set(value)
+        self.drivemotor.set(value*0.5)
 
     def steer(self, value):
         self.steermotor.set(value*0.2)
@@ -31,7 +31,7 @@ class Motor(object):
         self.align(position, 0)
 
     def align(self, position, target):
-        offset = 1
+        offset = 3
         speed = 0
 
         #position = position - 180 # Convert from 0 to 360 over to -180 to 180
@@ -43,15 +43,16 @@ class Motor(object):
         difference = target - position
 
         if self.timer.get() > 0.5:
-            print("difference: " + str(difference))
-            print("position: " + str(position))
-            print(" ")
             self.timer.reset()
 
         if abs(difference) > offset:
-            speed = -0.1
+            speed = 0.3
+            bufferzone = 10
+            if abs(difference) <= bufferzone:
+                speed = speed*(difference/bufferzone)
 
-            if difference < 0:
+            
+            if difference >= 0:
                 speed=speed*-1
 
         self.steer(speed)
