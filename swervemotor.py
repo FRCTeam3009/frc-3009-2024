@@ -5,11 +5,14 @@ import wpilib
 
 class Motor(object):
 
-    def __init__(self, driveID, steeringID, encoderID):
+    def __init__(self, driveID, steeringID, encoderID, encoderOffset, inverted=False):
         self.drivemotor = rev.CANSparkMax(driveID, rev.CANSparkMaxLowLevel.MotorType.kBrushless)
+        self.drivemotor.setInverted(inverted)
         self.steermotor = rev.CANSparkMax(steeringID, rev.CANSparkMaxLowLevel.MotorType.kBrushless)
         self.encoder = ctre.sensors.CANCoder(encoderID)
         self.encoder_config = ctre.sensors.CANCoderConfiguration()
+        self.encoder_config.initializationStrategy.BootToAbsolutePosition
+        self.encoder_config.magnetOffsetDegrees = encoderOffset
         self.encoder_config.sensorTimeBase = ctre.sensors.SensorTimeBase.PerSecond
         self.encoder.configAllSettings(self.encoder_config)
         self.timer = wpilib.Timer()
@@ -43,6 +46,7 @@ class Motor(object):
             position = -180 + (position % 180)
 
 
+
         difference = target - position
 
         if abs(difference) > offset:
@@ -51,9 +55,13 @@ class Motor(object):
             if abs(difference) <= bufferzone:
                 speed = speed*(abs(difference)/bufferzone)
 
-            
             if difference >= 0:
                 speed=speed*-1
+        else:
+            speed = 0.1
+            if difference >= 0:
+                speed=speed * -1
+        
 
         return speed
     

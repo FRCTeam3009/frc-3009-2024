@@ -14,10 +14,10 @@ class MyRobot(wpilib.TimedRobot):
         This function is called upon program startup and
         should be used for any initialization code.
         """
-        self.left_forward = swervemotor.Motor(22, 23, 32)
-        self.left_rear = swervemotor.Motor(24, 25, 33)
-        self.right_forward = swervemotor.Motor(20, 21, 31)
-        self.right_rear = swervemotor.Motor(26, 27, 30)
+        self.left_forward = swervemotor.Motor(22, 23, 32, -13.008, True)
+        self.left_rear = swervemotor.Motor(24, 25, 33, -322.646, True)
+        self.right_forward = swervemotor.Motor(20, 21, 31, -64.951)
+        self.right_rear = swervemotor.Motor(26, 27, 30, -305.420)
 
         self.left_forward.align_zero()
         self.left_rear.align_zero()
