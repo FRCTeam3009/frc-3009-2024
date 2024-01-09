@@ -11,7 +11,7 @@ class Motor(object):
         self.encoder = phoenix6.hardware.CANcoder(encoderID)
         configs = phoenix6.configs.MagnetSensorConfigs()
         configs.magnet_offset(encoderOffset)
-        configs.with_absolute_sensor_range(phoenix6.)
+        configs.with_absolute_sensor_range(phoenix6)
         self.encoder.configurator.apply(configs)
         self.encoder_config.initializationStrategy.BootToAbsolutePosition
         self.encoder.configAllSettings(self.encoder_config)
