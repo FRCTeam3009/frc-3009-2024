@@ -1,19 +1,19 @@
 import rev
-import ctre
-import ctre.sensors
+import phoenix6
 import wpilib
 
 class Motor(object):
 
     def __init__(self, driveID, steeringID, encoderID, encoderOffset, inverted=False):
-        self.drivemotor = rev.CANSparkMax(driveID, rev.CANSparkMaxLowLevel.MotorType.kBrushless)
+        self.drivemotor = rev.CANSparkMax(driveID, rev._rev.CANSparkLowLevel.MotorType.kBrushless)
         self.drivemotor.setInverted(inverted)
-        self.steermotor = rev.CANSparkMax(steeringID, rev.CANSparkMaxLowLevel.MotorType.kBrushless)
-        self.encoder = ctre.sensors.CANCoder(encoderID)
-        self.encoder_config = ctre.sensors.CANCoderConfiguration()
+        self.steermotor = rev.CANSparkMax(steeringID, rev._rev.CANSparkLowLevel.MotorType.kBrushless)
+        self.encoder = phoenix6.hardware.CANcoder(encoderID)
+        configs = phoenix6.configs.MagnetSensorConfigs()
+        configs.magnet_offset(encoderOffset)
+        configs.with_absolute_sensor_range(phoenix6.)
+        self.encoder.configurator.apply(configs)
         self.encoder_config.initializationStrategy.BootToAbsolutePosition
-        self.encoder_config.magnetOffsetDegrees = encoderOffset
-        self.encoder_config.sensorTimeBase = ctre.sensors.SensorTimeBase.PerSecond
         self.encoder.configAllSettings(self.encoder_config)
         self.timer = wpilib.Timer()
         self.timer.start()
@@ -64,4 +64,3 @@ class Motor(object):
         
 
         return speed
-    

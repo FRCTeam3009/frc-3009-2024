@@ -13,5 +13,8 @@
       "/FMSInfo": "FMSInfo",
       "/LiveWindow/Ungrouped/MecanumDrive[1]": "MecanumDrive"
     }
+  },
+  "NetworkTables Info": {
+    "visible": true
   }
 }
