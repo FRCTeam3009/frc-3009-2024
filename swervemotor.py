@@ -9,9 +9,9 @@ class Motor(object):
         self.drivemotor.setInverted(inverted)
         self.steermotor = rev.CANSparkMax(steeringID, rev._rev.CANSparkLowLevel.MotorType.kBrushless)
         self.encoder = phoenix6.hardware.CANcoder(encoderID)
-        configs = phoenix6.configs.MagnetSensorConfigs()
-        configs.magnet_offset=encoderOffset
-        self.encoder.configurator.apply(configs)
+        config = phoenix6.configs.CANcoderConfiguration()
+        config.magnet_sensor.magnet_offset = encoderOffset
+        self.encoder.configurator.apply(config)
         self.timer = wpilib.Timer()
         self.timer.start()
 
@@ -32,6 +32,9 @@ class Motor(object):
         position = self.encoder.get_absolute_position().value_as_double
         speed = Motor.align(position, 0)
         self.steer(speed)
+        if self.timer.hasElapsed(1):
+            print("ENCODER POSITION: " + str(position))
+            self.timer.reset()
 
     def align(position, target):
         offset = 0.1

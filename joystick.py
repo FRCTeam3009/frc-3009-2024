@@ -16,6 +16,17 @@ class Joystick(object):
     def rotate(self):
         rotate = self.joystick.getRightX()
         return rotate
+
     def align_zero(self):
         value = self.joystick.getXButton()
         return value
+    
+    def launcher(self):
+        right = self.joystick.getRightTriggerAxis()
+        left = self.joystick.getLeftTriggerAxis()
+
+        if left > 0:
+            return left
+        else:
+            return right * -1
+        

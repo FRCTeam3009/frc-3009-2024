@@ -7,6 +7,7 @@ import wpilib
 import wpilib.drive
 import joystick
 import swervemotor
+import rev
 class MyRobot(wpilib.TimedRobot):
 
     def robotInit(self):
@@ -18,6 +19,9 @@ class MyRobot(wpilib.TimedRobot):
         self.left_rear = swervemotor.Motor(24, 25, 33, -322.646, True)
         self.right_forward = swervemotor.Motor(20, 21, 31, -64.951)
         self.right_rear = swervemotor.Motor(26, 27, 30, -305.420)
+
+        self.launcher_test = rev.CANSparkMax(7, rev._rev.CANSparkLowLevel.MotorType.kBrushless)
+
 
         self.left_forward.align_zero()
         self.left_rear.align_zero()
@@ -51,6 +55,8 @@ class MyRobot(wpilib.TimedRobot):
         self.left_rear.drive(self.joystick.forward())
         self.right_forward.drive(self.joystick.forward())
         self.right_rear.drive(self.joystick.forward())
+
+        self.launcher_test.set(self.joystick.launcher())
 
         if self.joystick.align_zero():
             self.left_forward.align_zero()
