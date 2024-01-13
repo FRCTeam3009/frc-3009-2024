@@ -7,7 +7,8 @@ class Controls(object):
 
     def forward(self):
         y = self.xbox0.getLeftY()
-        return y
+        # Negate the value, for some reason it's reversed.
+        return y * -1
 
     def horizontal(self):
         x = self.xbox0.getLeftX()
@@ -15,7 +16,8 @@ class Controls(object):
     
     def rotate(self):
         rotate = self.xbox0.getRightX()
-        return rotate
+        # Counter-Clockwise positive, so negate the value.
+        return rotate * -1
 
     def align_zero(self):
         value = self.xbox0.getXButton()

@@ -11,17 +11,17 @@ from wpimath.controller import SimpleMotorFeedforwardMeters
 class SwerveModule(object):
     def __init__(self, sdp_):
         self._sdp = sdp_
-        self._drive_motor = rev.CANSparkMax(sdp_._drive_motor['id'], rev.CANSparkMaxLowLevel.MotorType.kBrushless)
+        self._drive_motor = rev.CANSparkMax(sdp_._drive_motor['id'], rev.CANSparkLowLevel.MotorType.kBrushless)
         self._drive_motor.setInverted(False)
-        self._angle_motor = rev.CANSparkMax(sdp_._angle_motor['id'], rev.CANSparkMaxLowLevel.MotorType.kBrushless)
+        self._angle_motor = rev.CANSparkMax(sdp_._angle_motor['id'], rev.CANSparkLowLevel.MotorType.kBrushless)
 
         self._drive_motor_encoder = self._drive_motor.getEncoder()
         self._drive_motor_encoder.setPositionConversionFactor((1/self._sdp._k_drive_gear_ratio) * math.pi * (self._sdp._k_wheel_diameter/39.37))
-        self._drive_motor_encoder.setVelocityConversionFactor(self._drive_motor_encoder.getPositionConversionFactor / 60)
+        self._drive_motor_encoder.setVelocityConversionFactor(self._drive_motor_encoder.getPositionConversionFactor() / 60)
 
         self._angle_motor_encoder = self._angle_motor.getEncoder()
         self._angle_motor_encoder.setPositionConversionFactor((1/self._sdp._k_angle_gear_ratio) * math.pi * 2)
-        self._angle_motor_encoder.setVelocityConversionFactor(self._angle_motor_encoder.getVelocityConversionFactor / 60)
+        self._angle_motor_encoder.setVelocityConversionFactor(self._angle_motor_encoder.getVelocityConversionFactor() / 60)
 
         self._encoder = phoenix5.sensors.CANCoder(sdp_._angle_encoder['id'])
         self._encoder_config = phoenix5.sensors.CANCoderConfiguration()
@@ -33,7 +33,7 @@ class SwerveModule(object):
         self._encoder_config.absoluteSensorRange = phoenix5.sensors.AbsoluteSensorRange.Signed_PlusMinus180
         self._encoder.configAllSettings(self._encoder_config)
 
-        self._last_angle = self.encoder.getAbsolutePosition()
+        self._last_angle = self._encoder.getAbsolutePosition()
         self._feed_forward_controller = SimpleMotorFeedforwardMeters(sdp_._k_s, sdp_._k_v, sdp_._k_a)
 
         self._angle_pid_controller = self._angle_motor.getPIDController()

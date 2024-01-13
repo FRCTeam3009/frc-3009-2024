@@ -1,5 +1,6 @@
 from wpimath.kinematics import SwerveDrive4Kinematics
 from wpimath.geometry import Translation2d
+import wpilib
 
 class SwerveDriveParams(object):
     def __init__(self, name_):
@@ -73,3 +74,5 @@ class robot_description(object):
             Translation2d(-self._chassis._wheel_base_width / 2.0, self._chassis._wheel_base_length / 2.0),
             Translation2d(- self._chassis._wheel_base_width/ 2.0, -self._chassis._wheel_base_length / 2.0),
         )
+        # TODO update to Pidgeon
+        #self._gyro = wpilib.ADXRS450_Gyro()
