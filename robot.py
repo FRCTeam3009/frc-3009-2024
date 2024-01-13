@@ -9,6 +9,7 @@ import wpimath.filter
 import controls
 import swerve_drive_params
 import swerve_module
+import rev
 
 class MyRobot(wpilib.TimedRobot):
 
@@ -43,7 +44,7 @@ class MyRobot(wpilib.TimedRobot):
         self.robot_params._swerve_drives._rr.setup_angle_encoder(30, -305.420)
         self.rr = swerve_module.SwerveModule(self.robot_params._swerve_drives._rr)
 
-        #self.launcher = rev.CANSparkMax(7, rev._rev.CANSparkLowLevel.MotorType.kBrushless)
+        self.launcher = rev.CANSparkMax(7, rev._rev.CANSparkLowLevel.MotorType.kBrushless)
 
         self.controls = controls.Controls(0)
         self.timer = wpilib.Timer()
@@ -64,7 +65,7 @@ class MyRobot(wpilib.TimedRobot):
 
     def teleopPeriodic(self):
         """This function is called periodically during operator control."""
-        #self.launcher.set(self.controls.launcher())
+        self.launcher.set(self.controls.launcher())
 
         x = self.controls.forward()
         y = self.controls.horizontal()
@@ -85,7 +86,6 @@ class MyRobot(wpilib.TimedRobot):
         self.rr.set_swerve_state(rr)
 
         if self.timer.get() > 0.5:
-            print("chassisSpeeds: " + str(chassisSpeeds))
             #print("left forward encoder pos" + str(self.left_forward.encoder.getAbsolutePosition()))
             #print("left rear encoder pos" + str(self.left_rear.encoder.getAbsolutePosition()))
             #print("right forward encoder pos" + str(self.right_forward.encoder.getAbsolutePosition()))
