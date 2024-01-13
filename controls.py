@@ -12,7 +12,8 @@ class Controls(object):
 
     def horizontal(self):
         x = self.xbox0.getLeftX()
-        return x
+        # Negate because CC positive?
+        return x * -1
     
     def rotate(self):
         rotate = self.xbox0.getRightX()
