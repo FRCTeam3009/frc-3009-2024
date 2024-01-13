@@ -76,7 +76,7 @@ class SwerveModule(object):
             return
         swerve_module_state_ = SwerveModuleState.optimize(swerve_module_state_, self.get_swerve_state().angle)
         self._drive_motor.set(self._feed_forward_controller.calculate(swerve_module_state_.speed))
-        self._angle_pid_controller.setReference(swerve_module_state_.angle, rev.CANSparkMax.ControlType.kPosition)
+        self._angle_pid_controller.setReference(swerve_module_state_.angle.radians(), rev.CANSparkMax.ControlType.kPosition)
 
     def stop(self):
         self._drive_motor.set(0)
