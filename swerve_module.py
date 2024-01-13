@@ -4,13 +4,14 @@ import phoenix5.sensors
 import math
 from swerve_drive_params import SwerveDriveParams as sdp
 from wpimath.geometry import Rotation2d
-from wpimath.kinematics import SwerveModulePosition, SwerveModuleState
+from wpimath.kinematics import SwerveModuleState
 from wpimath.controller import SimpleMotorFeedforwardMeters
 import wpilib
+import wpimath.units
 
 
 class SwerveModule(object):
-    def __init__(self, sdp_):
+    def __init__(self, sdp_: sdp):
         self._sdp = sdp_
         self._drive_motor = rev.CANSparkMax(sdp_._drive_motor['id'], rev.CANSparkLowLevel.MotorType.kBrushless)
         self._drive_motor.setInverted(False)
@@ -34,19 +35,21 @@ class SwerveModule(object):
         self._encoder_config.absoluteSensorRange = phoenix5.sensors.AbsoluteSensorRange.Signed_PlusMinus180
         self._encoder.configAllSettings(self._encoder_config)
 
-        self._last_angle = self._encoder.getAbsolutePosition()
         self._feed_forward_controller = SimpleMotorFeedforwardMeters(sdp_._k_s, sdp_._k_v, sdp_._k_a)
+        #TODO
+        self._angle_feed_forward_controller = SimpleMotorFeedforwardMeters(sdp_._k_s, sdp_._k_v, sdp_._k_a)
 
         self._angle_pid_controller = self._angle_motor.getPIDController()
-        self._angle_pid_controller.setP(self._sdp._drive_motor['pid_p'])
-        self._angle_pid_controller.setI(self._sdp._drive_motor['pid_i'])
-        self._angle_pid_controller.setD(self._sdp._drive_motor['pid_d'])
+        self._angle_pid_controller.setP(self._sdp._angle_motor['pid_p'])
+        self._angle_pid_controller.setI(self._sdp._angle_motor['pid_i'])
+        self._angle_pid_controller.setD(self._sdp._angle_motor['pid_d'])
         self._angle_pid_controller.setIZone(0)
         self._angle_pid_controller.setFF(0)
         # TODO: Do we need wrapping?
         self._angle_pid_controller.setPositionPIDWrappingEnabled(True)
+        self._angle_pid_controller.setOutputRange(-0.1, 0.1)
 
-        if sdp_._name in ['rf', 'rr']:
+        if sdp_._name in ['lf', 'lr']:
             self._drive_motor.setInverted(True)
 
         self.timer = wpilib.Timer()
@@ -72,9 +75,10 @@ class SwerveModule(object):
         self._angle_motor_encoder.setPosition(self.get_angle_absolute())
     
     def get_swerve_state(self):
-        return SwerveModuleState(self.get_drive_velocity(), Rotation2d(self.get_angle_position()))
+        rotation = Rotation2d(self.get_angle_position())
+        return SwerveModuleState(self.get_drive_velocity(), rotation)
 
-    def set_swerve_state(self, swerve_module_state_):
+    def set_swerve_state(self, swerve_module_state_: SwerveModuleState):
         if abs(swerve_module_state_.speed) < 0.001:
             self.stop()
             return
@@ -83,6 +87,7 @@ class SwerveModule(object):
         if self.timer.get() > 0.5:
             print("Angle: " + str(swerve_module_state_.angle.radians()))
             self.timer.reset()
+
         self._angle_pid_controller.setReference(swerve_module_state_.angle.radians(), rev.CANSparkMax.ControlType.kPosition)
 
     def stop(self):

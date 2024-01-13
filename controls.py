@@ -16,8 +16,11 @@ class Controls(object):
     
     def rotate(self):
         rotate = self.xbox0.getRightX()
-        # Counter-Clockwise positive, so negate the value.
-        return rotate * -1
+        # Counter-Clockwise is positive
+        rotate *= -1
+        # Limit the output
+        rotate *= 0.1
+        return rotate
 
     def align_zero(self):
         value = self.xbox0.getXButton()

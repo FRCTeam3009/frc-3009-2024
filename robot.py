@@ -76,11 +76,12 @@ class MyRobot(wpilib.TimedRobot):
         rotate = self.controls.rotate()
 
         fieldRelative = False
-        relativeRotation = wpimath.geometry.Rotation2d()
+        #relativeRotation = wpimath.geometry.Rotation2d()
         #if fieldRelative:
         #    relativeRotation = self.robot._gyro.getRotation2d()
 
-        chassisSpeeds = wpimath.kinematics.ChassisSpeeds.fromFieldRelativeSpeeds(x, y , rotate, relativeRotation)
+        #chassisSpeeds = wpimath.kinematics.ChassisSpeeds.fromFieldRelativeSpeeds(x, y , rotate, relativeRotation)
+        chassisSpeeds = wpimath.kinematics.ChassisSpeeds(x, y, rotate)
         discretized = wpimath.kinematics.ChassisSpeeds.discretize(chassisSpeeds, self.getPeriod())
         fl, fr, rl, rr = self.robot_params._drive_kinematics.toSwerveModuleStates(discretized)
 
