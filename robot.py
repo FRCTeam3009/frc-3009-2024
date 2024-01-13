@@ -50,6 +50,8 @@ class MyRobot(wpilib.TimedRobot):
         self.rr._drive_motor.setInverted(True)
         self.rr.reset_encoders()
 
+        self.gyro = wpilib.ADIS16470_IMU()
+
         self.launcher = rev.CANSparkMax(7, rev._rev.CANSparkLowLevel.MotorType.kBrushless)
 
         self.controls = controls.Controls(0)
@@ -77,13 +79,14 @@ class MyRobot(wpilib.TimedRobot):
         y = self.controls.horizontal()
         rotate = self.controls.rotate()
 
-        fieldRelative = False
-        #relativeRotation = wpimath.geometry.Rotation2d()
-        #if fieldRelative:
-        #    relativeRotation = self.robot._gyro.getRotation2d()
+        fieldRelative = True
+        if fieldRelative:
+            gyroYaw = self.gyro.getAngle()
+            relativeRotation = wpimath.geometry.Rotation2d.fromDegrees(gyroYaw)
+            chassisSpeeds = wpimath.kinematics.ChassisSpeeds.fromFieldRelativeSpeeds(x, y , rotate, relativeRotation)
+        else:
+            chassisSpeeds = wpimath.kinematics.ChassisSpeeds(x, y, rotate)
 
-        #chassisSpeeds = wpimath.kinematics.ChassisSpeeds.fromFieldRelativeSpeeds(x, y , rotate, relativeRotation)
-        chassisSpeeds = wpimath.kinematics.ChassisSpeeds(x, y, rotate)
         discretized = wpimath.kinematics.ChassisSpeeds.discretize(chassisSpeeds, self.getPeriod())
         fl, fr, rl, rr = self.robot_params._drive_kinematics.toSwerveModuleStates(discretized)
 
