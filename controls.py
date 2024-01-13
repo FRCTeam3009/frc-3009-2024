@@ -1,29 +1,29 @@
 import wpilib
 
-class Joystick(object):
+class Controls(object):
     
     def __init__(self, port):
-        self.joystick = wpilib.XboxController(port)
+        self.xbox0 = wpilib.XboxController(port)
 
     def forward(self):
-        y = self.joystick.getLeftY()
+        y = self.xbox0.getLeftY()
         return y
 
     def horizontal(self):
-        x = self.joystick.getLeftX()
+        x = self.xbox0.getLeftX()
         return x
     
     def rotate(self):
-        rotate = self.joystick.getRightX()
+        rotate = self.xbox0.getRightX()
         return rotate
 
     def align_zero(self):
-        value = self.joystick.getXButton()
+        value = self.xbox0.getXButton()
         return value
     
     def launcher(self):
-        right = self.joystick.getRightTriggerAxis()
-        left = self.joystick.getLeftTriggerAxis()
+        right = self.xbox0.getRightTriggerAxis()
+        left = self.xbox0.getLeftTriggerAxis()
 
         if left > 0:
             return left
