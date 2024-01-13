@@ -25,24 +25,28 @@ class MyRobot(wpilib.TimedRobot):
         self.robot_params._swerve_drives._fl.setup_angle_motor(23, pid_p_=0.5)
         self.robot_params._swerve_drives._fl.setup_angle_encoder(32, 0)
         self.fl = swerve_module.SwerveModule(self.robot_params._swerve_drives._fl)
+        self.fl.reset_encoders()
 
         # Rear Left
         self.robot_params._swerve_drives._rl.setup_drive_motor(24)
         self.robot_params._swerve_drives._rl.setup_angle_motor(25, pid_p_=0.5)
         self.robot_params._swerve_drives._rl.setup_angle_encoder(33, 0)
         self.rl = swerve_module.SwerveModule(self.robot_params._swerve_drives._rl)
+        self.rl.reset_encoders()
 
         # Front Right
         self.robot_params._swerve_drives._fr.setup_drive_motor(20)
         self.robot_params._swerve_drives._fr.setup_angle_motor(21, pid_p_=0.5)
         self.robot_params._swerve_drives._fr.setup_angle_encoder(31, 0)
         self.fr = swerve_module.SwerveModule(self.robot_params._swerve_drives._fr)
+        self.fr.reset_encoders()
 
         # Rear Right
         self.robot_params._swerve_drives._rr.setup_drive_motor(26)
         self.robot_params._swerve_drives._rr.setup_angle_motor(27, pid_p_=0.5)
         self.robot_params._swerve_drives._rr.setup_angle_encoder(30, 0)
         self.rr = swerve_module.SwerveModule(self.robot_params._swerve_drives._rr)
+        self.rr.reset_encoders()
 
         self.launcher = rev.CANSparkMax(7, rev._rev.CANSparkLowLevel.MotorType.kBrushless)
 
