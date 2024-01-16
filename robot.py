@@ -10,6 +10,8 @@ import controls
 import swerve_drive_params
 import swerve_module
 import rev
+import sys
+import test_imu
 
 class MyRobot(wpilib.TimedRobot):
 
@@ -50,7 +52,9 @@ class MyRobot(wpilib.TimedRobot):
         self.rr._drive_motor.setInverted(True)
         self.rr.reset_encoders()
 
-        self.gyro = wpilib.ADIS16470_IMU()
+        self.gyro = test_imu.TestIMU()
+        if "pytest" not in sys.modules:
+            self.gyro = wpilib.ADIS16470_IMU()
 
         self.launcher = rev.CANSparkMax(7, rev._rev.CANSparkLowLevel.MotorType.kBrushless)
 
@@ -68,6 +72,12 @@ class MyRobot(wpilib.TimedRobot):
 
     def teleopInit(self):
         """This function is run once each time the robot enters teleop mode."""
+
+        # Set the gyro to be 90 degrees off because of the orientation of the roborio.
+        # TODO move this into a function.
+        angle = self.gyro.getAngle()
+        self.gyro.setGyroAngle(angle + 90.0)
+
         self.timer.reset()
         self.timer.start()
 
@@ -79,7 +89,7 @@ class MyRobot(wpilib.TimedRobot):
         y = self.controls.horizontal()
         rotate = self.controls.rotate()
 
-        fieldRelative = True
+        fieldRelative = False
         if fieldRelative:
             gyroYaw = self.gyro.getAngle()
             relativeRotation = wpimath.geometry.Rotation2d.fromDegrees(gyroYaw)
