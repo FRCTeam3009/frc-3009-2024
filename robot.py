@@ -25,7 +25,7 @@ class MyRobot(wpilib.TimedRobot):
         # Front Left
         self.robot_params._swerve_drives._fl.setup_drive_motor(22)
         self.robot_params._swerve_drives._fl.setup_angle_motor(23, pid_p_=0.5)
-        self.robot_params._swerve_drives._fl.setup_angle_encoder(32, -0.034180)
+        self.robot_params._swerve_drives._fl.setup_angle_encoder(32, -0.105713)
         self.fl = swerve_module.SwerveModule(self.robot_params._swerve_drives._fl)
         self.fl.reset_encoders()
 
@@ -39,7 +39,7 @@ class MyRobot(wpilib.TimedRobot):
         # Front Right
         self.robot_params._swerve_drives._fr.setup_drive_motor(20)
         self.robot_params._swerve_drives._fr.setup_angle_motor(21, pid_p_=0.5)
-        self.robot_params._swerve_drives._fr.setup_angle_encoder(31, 0.241699)
+        self.robot_params._swerve_drives._fr.setup_angle_encoder(31, 0.217529)
         self.fr = swerve_module.SwerveModule(self.robot_params._swerve_drives._fr)
         self.fr._drive_motor.setInverted(True)
         self.fr.reset_encoders()
@@ -72,12 +72,6 @@ class MyRobot(wpilib.TimedRobot):
 
     def teleopInit(self):
         """This function is run once each time the robot enters teleop mode."""
-
-        # Set the gyro to be 90 degrees off because of the orientation of the roborio.
-        # TODO move this into a function.
-        angle = self.gyro.getAngle()
-        self.gyro.setGyroAngle(angle + 90.0)
-
         self.timer.reset()
         self.timer.start()
 
@@ -89,9 +83,9 @@ class MyRobot(wpilib.TimedRobot):
         y = self.controls.horizontal()
         rotate = self.controls.rotate()
 
-        fieldRelative = False
+        fieldRelative = True
         if fieldRelative:
-            gyroYaw = self.gyro.getAngle()
+            gyroYaw = self.gyro.getAngle(wpilib.ADIS16470_IMU.IMUAxis.kYaw)
             relativeRotation = wpimath.geometry.Rotation2d.fromDegrees(gyroYaw)
             chassisSpeeds = wpimath.kinematics.ChassisSpeeds.fromFieldRelativeSpeeds(x, y , rotate, relativeRotation)
         else:

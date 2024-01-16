@@ -10,7 +10,6 @@ from wpimath.controller import SimpleMotorFeedforwardMeters
 import wpilib
 import wpimath.units
 
-
 class SwerveModule(object):
     def __init__(self, sdp_: sdp):
         self._sdp = sdp_
@@ -85,11 +84,6 @@ class SwerveModule(object):
             return
         swerve_module_state_ = SwerveModuleState.optimize(swerve_module_state_, self.get_swerve_state().angle)
         self._drive_motor.set(self._feed_forward_controller.calculate(swerve_module_state_.speed))
-        if self.timer.get() > 0.5:
-            print("Swerve State Angle: " + str(swerve_module_state_.angle.radians()))
-            print("Absolute Angle: " + str(self.get_angle_absolute()))
-            self.timer.reset()
-
 
         self._angle_pid_controller.setReference(swerve_module_state_.angle.radians(), rev.CANSparkMax.ControlType.kPosition)
 
