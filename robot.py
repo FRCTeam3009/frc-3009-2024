@@ -12,6 +12,8 @@ import swerve_module
 import rev
 import sys
 import test_imu
+import motorParams
+import encoderParams
 
 class MyRobot(wpilib.TimedRobot):
 
@@ -20,35 +22,45 @@ class MyRobot(wpilib.TimedRobot):
         This function is called upon program startup and
         should be used for any initialization code.
         """
-        self.robot_params = swerve_drive_params.robot_description()
         
         # Front Left
-        self.robot_params._swerve_drives._fl.setup_drive_motor(22)
-        self.robot_params._swerve_drives._fl.setup_angle_motor(23, pid_p_=0.5)
-        self.robot_params._swerve_drives._fl.setup_angle_encoder(32, -0.105713)
-        self.fl = swerve_module.SwerveModule(self.robot_params._swerve_drives._fl)
-        self.fl.reset_encoders()
+        fldriveMotorParams = motorParams.Motorparams(22)
+        flangleMotorParams = motorParams.Motorparams(23, 0.5)
+        flEncoderParams = encoderParams.EncoderParams(32, -0.105713)
+        flParams = swerve_drive_params.SwerveDriveParams(fldriveMotorParams, flangleMotorParams, flEncoderParams)
+        
+        
 
         # Rear Left
-        self.robot_params._swerve_drives._rl.setup_drive_motor(24)
-        self.robot_params._swerve_drives._rl.setup_angle_motor(25, pid_p_=0.5)
-        self.robot_params._swerve_drives._rl.setup_angle_encoder(33, -0.098877)
-        self.rl = swerve_module.SwerveModule(self.robot_params._swerve_drives._rl)
-        self.rl.reset_encoders()
+        rldriveMotorParams = motorParams.Motorparams(24)
+        rlangleMotorParams = motorParams.Motorparams(25, 0.5)
+        rlEncoderParams = encoderParams.EncoderParams(33, -0.098877)
+        rlParams = swerve_drive_params.SwerveDriveParams(rldriveMotorParams, rlangleMotorParams, rlEncoderParams)
+        
 
         # Front Right
-        self.robot_params._swerve_drives._fr.setup_drive_motor(20)
-        self.robot_params._swerve_drives._fr.setup_angle_motor(21, pid_p_=0.5)
-        self.robot_params._swerve_drives._fr.setup_angle_encoder(31, 0.217529)
-        self.fr = swerve_module.SwerveModule(self.robot_params._swerve_drives._fr)
-        self.fr._drive_motor.setInverted(True)
-        self.fr.reset_encoders()
+        frdriveMotorParams = motorParams.Motorparams(20)
+        frangleMotorParams = motorParams.Motorparams(21, 0.5)
+        frEncoderParams = encoderParams.EncoderParams(31, 0.217529)
+        frParams = swerve_drive_params.SwerveDriveParams(frdriveMotorParams, frangleMotorParams, frEncoderParams)
+        
 
         # Rear Right
-        self.robot_params._swerve_drives._rr.setup_drive_motor(26)
-        self.robot_params._swerve_drives._rr.setup_angle_motor(27, pid_p_=0.5)
-        self.robot_params._swerve_drives._rr.setup_angle_encoder(30, -0.388184)
-        self.rr = swerve_module.SwerveModule(self.robot_params._swerve_drives._rr)
+        rrdriveMotorParams = motorParams.Motorparams(26)
+        rrangleMotorParams = motorParams.Motorparams(27, 0.5)
+        rrEncoderParams = encoderParams.EncoderParams(30, -0.388184)
+        rrParams = swerve_drive_params.SwerveDriveParams(rrdriveMotorParams, rrangleMotorParams, rrEncoderParams)
+
+        self.robot_params = swerve_drive_params.robot_description(flParams, frParams, rlParams, rrParams)
+
+        self.fl = swerve_module.SwerveModule(self.robot_params.fl)
+        self.fl.reset_encoders()
+        self.rl = swerve_module.SwerveModule(self.robot_params.rl)
+        self.rl.reset_encoders()
+        self.fr = swerve_module.SwerveModule(self.robot_params.fr)
+        self.fr._drive_motor.setInverted(True)
+        self.fr.reset_encoders()
+        self.rr = swerve_module.SwerveModule(self.robot_params.rr)
         self.rr._drive_motor.setInverted(True)
         self.rr.reset_encoders()
 
@@ -77,7 +89,8 @@ class MyRobot(wpilib.TimedRobot):
 
     def teleopPeriodic(self):
         """This function is called periodically during operator control."""
-        self.launcher.set(self.controls.launcher())
+        launcherspeed = self.controls.launcher()
+        self.launcher.set(launcherspeed)
 
         x = self.controls.forward()
         y = self.controls.horizontal()
