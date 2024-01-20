@@ -36,3 +36,6 @@ class Controls(object):
         else:
             return right * -1
         
+    def rotate_to_target(self):
+        value=self.xbox0.getStartButton()
+        return value

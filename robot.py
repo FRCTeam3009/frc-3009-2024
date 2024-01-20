@@ -14,6 +14,7 @@ import sys
 import test_imu
 import motorParams
 import encoderParams
+from photonlibpy import photonPipelineResult,photonCamera,photonTrackedTarget
 
 class MyRobot(wpilib.TimedRobot):
 
@@ -28,15 +29,12 @@ class MyRobot(wpilib.TimedRobot):
         flangleMotorParams = motorParams.Motorparams(23, 0.5)
         flEncoderParams = encoderParams.EncoderParams(32, -0.105713)
         flParams = swerve_drive_params.SwerveDriveParams(fldriveMotorParams, flangleMotorParams, flEncoderParams)
-        
-        
 
         # Rear Left
         rldriveMotorParams = motorParams.Motorparams(24)
         rlangleMotorParams = motorParams.Motorparams(25, 0.5)
         rlEncoderParams = encoderParams.EncoderParams(33, -0.098877)
         rlParams = swerve_drive_params.SwerveDriveParams(rldriveMotorParams, rlangleMotorParams, rlEncoderParams)
-        
 
         # Front Right
         frdriveMotorParams = motorParams.Motorparams(20)
@@ -44,7 +42,6 @@ class MyRobot(wpilib.TimedRobot):
         frEncoderParams = encoderParams.EncoderParams(31, 0.217529)
         frParams = swerve_drive_params.SwerveDriveParams(frdriveMotorParams, frangleMotorParams, frEncoderParams)
         
-
         # Rear Right
         rrdriveMotorParams = motorParams.Motorparams(26)
         rrangleMotorParams = motorParams.Motorparams(27, 0.5)
@@ -70,6 +67,8 @@ class MyRobot(wpilib.TimedRobot):
 
         self.launcher = rev.CANSparkMax(7, rev._rev.CANSparkLowLevel.MotorType.kBrushless)
 
+        self.limelight1 = photonCamera.PhotonCamera("limelight1")
+
         self.controls = controls.Controls(0)
         self.timer = wpilib.Timer()
 
@@ -89,12 +88,23 @@ class MyRobot(wpilib.TimedRobot):
 
     def teleopPeriodic(self):
         """This function is called periodically during operator control."""
+
+        cameraResult1 = self.limelight1.getLatestResult()
+        foundTarget3: photonTrackedTarget.PhotonTrackedTarget = None
+        for target in cameraResult1.getTargets():
+                id = target.getFiducialId()
+                if id == 3:
+                    foundTarget3 = target
+
         launcherspeed = self.controls.launcher()
         self.launcher.set(launcherspeed)
 
         x = self.controls.forward()
         y = self.controls.horizontal()
         rotate = self.controls.rotate()
+
+        if self.controls.rotate_to_target():
+            rotate = foundTarget3.getYaw()
 
         fieldRelative = True
         if fieldRelative:
