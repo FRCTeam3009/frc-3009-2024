@@ -14,7 +14,8 @@ import sys
 import test_imu
 import motorParams
 import encoderParams
-from photonlibpy import photonPipelineResult,photonCamera,photonTrackedTarget
+from photonlibpy import photonCamera,photonTrackedTarget
+import ntcore
 
 class MyRobot(wpilib.TimedRobot):
 
@@ -23,7 +24,10 @@ class MyRobot(wpilib.TimedRobot):
         This function is called upon program startup and
         should be used for any initialization code.
         """
-        
+        nt = ntcore.NetworkTableInstance.getDefault()
+        nt.startServer()
+        sd = nt.getTable("SmartDashboard")
+
         # Front Left
         fldriveMotorParams = motorParams.Motorparams(22)
         flangleMotorParams = motorParams.Motorparams(23, 0.5)
@@ -66,6 +70,8 @@ class MyRobot(wpilib.TimedRobot):
             self.gyro = wpilib.ADIS16470_IMU()
 
         self.launcher = rev.CANSparkMax(7, rev._rev.CANSparkLowLevel.MotorType.kBrushless)
+        self.launcher2 = rev.CANSparkMax(8, rev._rev.CANSparkLowLevel.MotorType.kBrushless)
+        self.launcher2.follow(self.launcher, True)
 
         self.limelight1 = photonCamera.PhotonCamera("limelight1")
 
@@ -90,11 +96,14 @@ class MyRobot(wpilib.TimedRobot):
         """This function is called periodically during operator control."""
 
         cameraResult1 = self.limelight1.getLatestResult()
-        foundTarget3: photonTrackedTarget.PhotonTrackedTarget = None
+
+        targetFound = False
+        targetRotate = 0.0
         for target in cameraResult1.getTargets():
                 id = target.getFiducialId()
                 if id == 3:
-                    foundTarget3 = target
+                    targetFound = True
+                    targetRotate = target.getYaw()
 
         launcherspeed = self.controls.launcher()
         self.launcher.set(launcherspeed)
@@ -103,8 +112,8 @@ class MyRobot(wpilib.TimedRobot):
         y = self.controls.horizontal()
         rotate = self.controls.rotate()
 
-        if self.controls.rotate_to_target():
-            rotate = foundTarget3.getYaw()
+        if self.controls.rotate_to_target() and targetFound:
+            rotate = targetRotate
 
         fieldRelative = True
         if fieldRelative:
@@ -122,13 +131,15 @@ class MyRobot(wpilib.TimedRobot):
         self.rl.set_swerve_state(rl)
         self.rr.set_swerve_state(rr)
 
-        if self.timer.get() > 0.5:
+        if self.timer.hasElapsed(0.5):
             #print("left forward encoder pos" + str(self.left_forward.encoder.getAbsolutePosition()))
             #print("left rear encoder pos" + str(self.left_rear.encoder.getAbsolutePosition()))
             #print("right forward encoder pos" + str(self.right_forward.encoder.getAbsolutePosition()))
             #print("right rear encoder pos" + str(self.right_rear.encoder.getAbsolutePosition()))
+            print("Results: " + str(self.limelight1.getLatestResult()))
 
             self.timer.reset()
+
 
 
 if __name__ == "__main__":

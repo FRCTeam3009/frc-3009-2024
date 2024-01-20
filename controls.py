@@ -32,9 +32,9 @@ class Controls(object):
         left = self.xbox0.getLeftTriggerAxis()
 
         if left > 0:
-            return left
+            return left * -1
         else:
-            return right * -1
+            return right
         
     def rotate_to_target(self):
         value=self.xbox0.getStartButton()
