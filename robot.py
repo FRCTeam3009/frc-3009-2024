@@ -106,7 +106,7 @@ class MyRobot(wpilib.TimedRobot):
                     targetRotate = target.getYaw()
 
         launcherspeed = self.controls.launcher()
-        self.launcher.set(launcherspeed)
+        self.launcher.set(launcherspeed * .62)
 
         x = self.controls.forward()
         y = self.controls.horizontal()
@@ -136,7 +136,7 @@ class MyRobot(wpilib.TimedRobot):
             #print("left rear encoder pos" + str(self.left_rear.encoder.getAbsolutePosition()))
             #print("right forward encoder pos" + str(self.right_forward.encoder.getAbsolutePosition()))
             #print("right rear encoder pos" + str(self.right_rear.encoder.getAbsolutePosition()))
-            print("Results: " + str(self.limelight1.getLatestResult()))
+            #print("Results: " + str(self.limelight1.getLatestResult()))
 
             self.timer.reset()
 
