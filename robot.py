@@ -105,25 +105,31 @@ class MyRobot(wpilib.TimedRobot):
                     targetFound = True
                     targetRotate = target.getYaw() * -1
                     targetRotateRadians = wpimath.units.degreesToRadians(targetRotate)
-                    targetRotateRadians *= 0.2
+                    targetPose = target.getBestCameraToTarget()
+
+
 
         launcherspeed = self.controls.launcher()
         self.launcher.set(launcherspeed * .62)
 
-        x = self.controls.forward()
-        y = self.controls.horizontal()
+        forward = self.controls.forward()
+        horizontal = self.controls.horizontal()
         rotate = self.controls.rotate()
 
         if self.controls.rotate_to_target() and targetFound:
+            targetRotateRadians *= 0.2
             rotate = targetRotateRadians
+            forward = targetPose.X() * -1 * 0.1
+            horizontal = targetPose.Y() * -1 * 0.1
+
 
         fieldRelative = True
         if fieldRelative:
             gyroYaw = self.gyro.getAngle(wpilib.ADIS16470_IMU.IMUAxis.kYaw)
             relativeRotation = wpimath.geometry.Rotation2d.fromDegrees(gyroYaw)
-            chassisSpeeds = wpimath.kinematics.ChassisSpeeds.fromFieldRelativeSpeeds(x, y , rotate, relativeRotation)
+            chassisSpeeds = wpimath.kinematics.ChassisSpeeds.fromFieldRelativeSpeeds(forward, horizontal , rotate, relativeRotation)
         else:
-            chassisSpeeds = wpimath.kinematics.ChassisSpeeds(x, y, rotate)
+            chassisSpeeds = wpimath.kinematics.ChassisSpeeds(forward, horizontal, rotate)
 
         discretized = wpimath.kinematics.ChassisSpeeds.discretize(chassisSpeeds, self.getPeriod())
         fl, fr, rl, rr = self.robot_params._drive_kinematics.toSwerveModuleStates(discretized)
