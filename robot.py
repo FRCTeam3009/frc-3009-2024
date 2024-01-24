@@ -103,7 +103,9 @@ class MyRobot(wpilib.TimedRobot):
                 id = target.getFiducialId()
                 if id == 3:
                     targetFound = True
-                    targetRotate = target.getYaw()
+                    targetRotate = target.getYaw() * -1
+                    targetRotateRadians = wpimath.units.degreesToRadians(targetRotate)
+                    targetRotateRadians *= 0.2
 
         launcherspeed = self.controls.launcher()
         self.launcher.set(launcherspeed * .62)
@@ -113,7 +115,7 @@ class MyRobot(wpilib.TimedRobot):
         rotate = self.controls.rotate()
 
         if self.controls.rotate_to_target() and targetFound:
-            rotate = targetRotate
+            rotate = targetRotateRadians
 
         fieldRelative = True
         if fieldRelative:
