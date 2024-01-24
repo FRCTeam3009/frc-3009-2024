@@ -5,29 +5,37 @@
   "MainWindow": {
     "GLOBAL": {
       "fps": "120",
-      "height": "900",
-      "maximized": "0",
+      "height": "991",
+      "maximized": "1",
       "style": "0",
       "userScale": "2",
-      "width": "1600",
-      "xpos": "2",
-      "ypos": "102"
+      "width": "1920",
+      "xpos": "0",
+      "ypos": "29"
+    }
+  },
+  "Table": {
+    "0xE56EC1C2,4": {
+      "Column 0  Weight": "1.0000",
+      "Column 1  Weight": "1.0000",
+      "Column 2  Weight": "1.0000",
+      "Column 3  Weight": "1.0000"
     }
   },
   "Window": {
     "###FMS": {
       "Collapsed": "0",
-      "Pos": "6,675",
-      "Size": "336,164"
+      "Pos": "2,713",
+      "Size": "202,214"
     },
     "###Joysticks": {
       "Collapsed": "0",
-      "Pos": "312,581",
+      "Pos": "384,622",
       "Size": "976,278"
     },
     "###NetworkTables": {
       "Collapsed": "0",
-      "Pos": "312,346",
+      "Pos": "349,314",
       "Size": "937,231"
     },
     "###NetworkTables Info": {
@@ -37,7 +45,7 @@
     },
     "###Other Devices": {
       "Collapsed": "0",
-      "Pos": "1281,25",
+      "Pos": "1417,36",
       "Size": "312,868"
     },
     "###RoboRIO": {
@@ -63,7 +71,7 @@
     "Robot State": {
       "Collapsed": "0",
       "Pos": "5,20",
-      "Size": "109,114"
+      "Size": "109,134"
     }
   }
 }
