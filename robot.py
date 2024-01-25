@@ -16,6 +16,7 @@ import motorParams
 import encoderParams
 from photonlibpy import photonCamera
 import ntcore
+import movement
 
 class MyRobot(wpilib.TimedRobot):
 
@@ -74,6 +75,8 @@ class MyRobot(wpilib.TimedRobot):
 
     def autonomousPeriodic(self):
         """This function is called periodically during autonomous."""
+        m = self.GetCameraMovement()
+        self.Drive(m.forward, m.horizontal, m.rotate)
 
     def teleopInit(self):
         """This function is run once each time the robot enters teleop mode."""
@@ -82,18 +85,6 @@ class MyRobot(wpilib.TimedRobot):
 
     def teleopPeriodic(self):
         """This function is called periodically during operator control."""
-        cameraResult1 = self.limelight1.getLatestResult()
-
-        targetFound = False
-        targetRotate = 0.0
-        for target in cameraResult1.getTargets():
-                id = target.getFiducialId()
-                if id == 3:
-                    targetFound = True
-                    targetRotate = target.getYaw() * -1
-                    targetRotateRadians = wpimath.units.degreesToRadians(targetRotate)
-                    targetPose = target.getBestCameraToTarget()
-
         launcherspeed = self.controls.launcher()
         self.launcher.set(launcherspeed * .62)
 
@@ -101,12 +92,20 @@ class MyRobot(wpilib.TimedRobot):
         horizontal = self.controls.horizontal()
         rotate = self.controls.rotate()
 
-        if self.controls.rotate_to_target() and targetFound:
-            targetRotateRadians *= 0.2
-            rotate = targetRotateRadians
-            forward = targetPose.X() * -1 * 0.1
-            horizontal = targetPose.Y() * -1 * 0.1
+        # Overwrite movement from camera if we say so
+        if self.controls.rotate_to_target():
+            m = self.GetCameraMovement()
+            rotate = m.rotate
+            forward = m.forward
+            horizontal = m.horizontal
 
+        self.Drive(forward, horizontal, rotate)
+
+        if self.timer.hasElapsed(0.5):
+            #print("Results: " + str(self.limelight1.getLatestResult()))
+            self.timer.reset()
+
+    def Drive(self, forward, horizontal, rotate):
         fieldRelative = True
         if fieldRelative:
             gyroYaw = self.gyro.getAngle(wpilib.ADIS16470_IMU.IMUAxis.kYaw)
@@ -117,9 +116,26 @@ class MyRobot(wpilib.TimedRobot):
 
         self.driveTrain.Drive(chassisSpeeds, self.getPeriod())
 
-        if self.timer.hasElapsed(0.5):
-            #print("Results: " + str(self.limelight1.getLatestResult()))
-            self.timer.reset()
+    def GetCameraMovement(self):
+        cameraResult1 = self.limelight1.getLatestResult()
 
+        targetRotate = 0.0
+        targetRotateRadians = 0
+        targetPose = wpimath.geometry.Transform2d()
+        for target in cameraResult1.getTargets():
+                id = target.getFiducialId()
+                if id == 3:
+                    targetRotate = target.getYaw() * -1
+                    targetRotateRadians = wpimath.units.degreesToRadians(targetRotate)
+                    targetPose = target.getBestCameraToTarget()
+
+        targetRotateRadians *= 0.2
+        rotate = targetRotateRadians
+        forward = targetPose.X() * -1 * 0.1
+        horizontal = targetPose.Y() * -1 * 0.1
+
+        output=movement.Movement(forward, horizontal, rotate)
+        return output
+    
 if __name__ == "__main__":
     wpilib.run(MyRobot)
