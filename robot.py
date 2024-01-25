@@ -16,6 +16,7 @@ import motorParams
 import encoderParams
 from photonlibpy import photonCamera
 import ntcore
+import math
 import movement
 
 class MyRobot(wpilib.TimedRobot):
@@ -64,6 +65,8 @@ class MyRobot(wpilib.TimedRobot):
         self.launcher2.follow(self.launcher, True)
 
         self.limelight1 = photonCamera.PhotonCamera("limelight1")
+        self.k_maxmisses = 5
+        self.target = {3:{"target":None, "misses":self.k_maxmisses}}
 
         self.controls = controls.Controls(0)
         self.timer = wpilib.Timer()
@@ -75,8 +78,8 @@ class MyRobot(wpilib.TimedRobot):
 
     def autonomousPeriodic(self):
         """This function is called periodically during autonomous."""
-        m = self.GetCameraMovement()
-        self.Drive(m.forward, m.horizontal, m.rotate)
+        #m = self.GetCameraMovement()
+        #self.Drive(m.forward, m.horizontal, m.rotate, False)
 
     def teleopInit(self):
         """This function is run once each time the robot enters teleop mode."""
@@ -91,6 +94,7 @@ class MyRobot(wpilib.TimedRobot):
         forward = self.controls.forward()
         horizontal = self.controls.horizontal()
         rotate = self.controls.rotate()
+        fieldRelative = True
 
         # Overwrite movement from camera if we say so
         if self.controls.rotate_to_target():
@@ -98,15 +102,15 @@ class MyRobot(wpilib.TimedRobot):
             rotate = m.rotate
             forward = m.forward
             horizontal = m.horizontal
+            fieldRelative = False
 
-        self.Drive(forward, horizontal, rotate)
+        self.Drive(forward, horizontal, rotate, fieldRelative)
 
         if self.timer.hasElapsed(0.5):
             #print("Results: " + str(self.limelight1.getLatestResult()))
             self.timer.reset()
 
-    def Drive(self, forward, horizontal, rotate):
-        fieldRelative = True
+    def Drive(self, forward, horizontal, rotate, fieldRelative):
         if fieldRelative:
             gyroYaw = self.gyro.getAngle(wpilib.ADIS16470_IMU.IMUAxis.kYaw)
             relativeRotation = wpimath.geometry.Rotation2d.fromDegrees(gyroYaw)
@@ -118,24 +122,57 @@ class MyRobot(wpilib.TimedRobot):
 
     def GetCameraMovement(self):
         cameraResult1 = self.limelight1.getLatestResult()
-
+        id = -1
         targetRotate = 0.0
         targetRotateRadians = 0
         targetPose = wpimath.geometry.Transform2d()
         for target in cameraResult1.getTargets():
                 id = target.getFiducialId()
-                if id == 3:
-                    targetRotate = target.getYaw() * -1
-                    targetRotateRadians = wpimath.units.degreesToRadians(targetRotate)
-                    targetPose = target.getBestCameraToTarget()
+                self.target[id]["target"] = target 
+                self.target[id]["misses"] = 0
 
-        targetRotateRadians *= 0.2
-        rotate = targetRotateRadians
-        forward = targetPose.X() * -1 * 0.1
-        horizontal = targetPose.Y() * -1 * 0.1
+        for i, value in self.target.items():
+            if self.target[i]["misses"] < self.k_maxmisses:
+                self.target[i]["misses"] += 1 
+                id = i 
+            else: 
+                self.target[i]["target"] = None
+
+        if id == 3:
+            targetRotate = self.target[id]["target"].getYaw() * -1
+            targetRotateRadians = wpimath.units.degreesToRadians(targetRotate)
+            targetPose = self.target[id]["target"].getBestCameraToTarget()
+            
+
+        rotate = targetRotateRadians * 0.2
+        forward = targetPose.X() * -1
+        horizontal = targetPose.Y() * -1
+
+        # Stop about 2 meters away
+        if abs(forward) < 1.25:
+            forward = 0
+
+        if abs(horizontal) < 0.5:
+            horizontal = 0
+
+        if abs(rotate) < 0.01:
+            rotate = 0
+
+        # Cap the speed
+        forward = capValue(forward, 1)
+        horizontal = capValue(horizontal, 1)
+        rotate = capValue(rotate, math.pi)
 
         output=movement.Movement(forward, horizontal, rotate)
         return output
     
 if __name__ == "__main__":
     wpilib.run(MyRobot)
+
+def capValue(value, cap):
+    if value > cap:
+        return cap
+    elif value < -1 * cap:
+        return -1 * cap
+    else:
+        return value
