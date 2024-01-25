@@ -8,13 +8,13 @@ import wpimath.units
 import wpimath.filter
 import controls
 import swerve_drive_params
-import swerve_module
+import drive_train
 import rev
 import sys
 import test_imu
 import motorParams
 import encoderParams
-from photonlibpy import photonCamera,photonTrackedTarget
+from photonlibpy import photonCamera
 import ntcore
 
 class MyRobot(wpilib.TimedRobot):
@@ -52,18 +52,7 @@ class MyRobot(wpilib.TimedRobot):
         rrEncoderParams = encoderParams.EncoderParams(30, -0.388184)
         rrParams = swerve_drive_params.SwerveDriveParams(rrdriveMotorParams, rrangleMotorParams, rrEncoderParams)
 
-        self.robot_params = swerve_drive_params.robot_description(flParams, frParams, rlParams, rrParams)
-
-        self.fl = swerve_module.SwerveModule(self.robot_params.fl)
-        self.fl.reset_encoders()
-        self.rl = swerve_module.SwerveModule(self.robot_params.rl)
-        self.rl.reset_encoders()
-        self.fr = swerve_module.SwerveModule(self.robot_params.fr)
-        self.fr._drive_motor.setInverted(True)
-        self.fr.reset_encoders()
-        self.rr = swerve_module.SwerveModule(self.robot_params.rr)
-        self.rr._drive_motor.setInverted(True)
-        self.rr.reset_encoders()
+        self.driveTrain = drive_train.DriveTrain(flParams, frParams, rlParams, rrParams)
 
         self.gyro = test_imu.TestIMU()
         if "pytest" not in sys.modules:
@@ -77,7 +66,6 @@ class MyRobot(wpilib.TimedRobot):
 
         self.controls = controls.Controls(0)
         self.timer = wpilib.Timer()
-
 
     def autonomousInit(self):
         """This function is run once each time the robot enters autonomous mode."""
@@ -94,7 +82,6 @@ class MyRobot(wpilib.TimedRobot):
 
     def teleopPeriodic(self):
         """This function is called periodically during operator control."""
-
         cameraResult1 = self.limelight1.getLatestResult()
 
         targetFound = False
@@ -106,8 +93,6 @@ class MyRobot(wpilib.TimedRobot):
                     targetRotate = target.getYaw() * -1
                     targetRotateRadians = wpimath.units.degreesToRadians(targetRotate)
                     targetPose = target.getBestCameraToTarget()
-
-
 
         launcherspeed = self.controls.launcher()
         self.launcher.set(launcherspeed * .62)
@@ -122,7 +107,6 @@ class MyRobot(wpilib.TimedRobot):
             forward = targetPose.X() * -1 * 0.1
             horizontal = targetPose.Y() * -1 * 0.1
 
-
         fieldRelative = True
         if fieldRelative:
             gyroYaw = self.gyro.getAngle(wpilib.ADIS16470_IMU.IMUAxis.kYaw)
@@ -131,24 +115,11 @@ class MyRobot(wpilib.TimedRobot):
         else:
             chassisSpeeds = wpimath.kinematics.ChassisSpeeds(forward, horizontal, rotate)
 
-        discretized = wpimath.kinematics.ChassisSpeeds.discretize(chassisSpeeds, self.getPeriod())
-        fl, fr, rl, rr = self.robot_params._drive_kinematics.toSwerveModuleStates(discretized)
-
-        self.fl.set_swerve_state(fl)
-        self.fr.set_swerve_state(fr)
-        self.rl.set_swerve_state(rl)
-        self.rr.set_swerve_state(rr)
+        self.driveTrain.Drive(chassisSpeeds, self.getPeriod())
 
         if self.timer.hasElapsed(0.5):
-            #print("left forward encoder pos" + str(self.left_forward.encoder.getAbsolutePosition()))
-            #print("left rear encoder pos" + str(self.left_rear.encoder.getAbsolutePosition()))
-            #print("right forward encoder pos" + str(self.right_forward.encoder.getAbsolutePosition()))
-            #print("right rear encoder pos" + str(self.right_rear.encoder.getAbsolutePosition()))
             #print("Results: " + str(self.limelight1.getLatestResult()))
-
             self.timer.reset()
-
-
 
 if __name__ == "__main__":
     wpilib.run(MyRobot)
