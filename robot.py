@@ -26,10 +26,17 @@ class MyRobot(wpilib.TimedRobot):
         This function is called upon program startup and
         should be used for any initialization code.
         """
-        nt = ntcore.NetworkTableInstance.getDefault()
-        nt.startServer()
-        sd = nt.getTable("SmartDashboard")
+        self.kDefaultLauncherScale = 0.62
+        self.kDefaultScoopScale = 1.0
+        self.kDefaultMiddleRampScale = 1.0
 
+        self.nt = ntcore.NetworkTableInstance.getDefault()
+        self.nt.startServer()
+        self.smartdashboard = self.nt.getTable("SmartDashboard")
+        self.smartdashboard.putNumber("launcher_speed", self.kDefaultLauncherScale)
+        self.smartdashboard.putNumber("scoop_speed", self.kDefaultScoopScale)
+        self.smartdashboard.putNumber("middle_ramp_speed", self.kDefaultMiddleRampScale)
+        
         # Front Left
         fldriveMotorParams = motorParams.Motorparams(22)
         flangleMotorParams = motorParams.Motorparams(23, 0.5)
@@ -60,15 +67,18 @@ class MyRobot(wpilib.TimedRobot):
         if "pytest" not in sys.modules:
             self.gyro = wpilib.ADIS16470_IMU()
 
-        self.launcher = rev.CANSparkMax(7, rev._rev.CANSparkLowLevel.MotorType.kBrushless)
+        self.launcher = rev.CANSparkMax(6, rev._rev.CANSparkLowLevel.MotorType.kBrushless)
         self.launcher2 = rev.CANSparkMax(8, rev._rev.CANSparkLowLevel.MotorType.kBrushless)
         self.launcher2.follow(self.launcher, True)
+
+        self.intakeScoop = rev.CANSparkMax(9, rev._rev.CANSparkLowLevel.MotorType.kBrushless)
+        self.middleRamp = rev.CANSparkMax(7, rev._rev.CANSparkLowLevel.MotorType.kBrushless)
 
         self.limelight1 = photonCamera.PhotonCamera("limelight1")
         self.k_maxmisses = 5
         self.target = {3:{"target":None, "misses":self.k_maxmisses}}
 
-        self.controls = controls.Controls(0)
+        self.controls = controls.Controls(0, 1)
         self.timer = wpilib.Timer()
 
     def autonomousInit(self):
@@ -91,8 +101,17 @@ class MyRobot(wpilib.TimedRobot):
         if self.controls.reset_gyro():
             self.gyro.reset()
 
+        launcherscale = self.smartdashboard.getNumber("launcher_speed", self.kDefaultLauncherScale)
         launcherspeed = self.controls.launcher()
-        self.launcher.set(launcherspeed * .62)
+        self.launcher.set(launcherspeed * launcherscale)
+
+        scoopscale = self.smartdashboard.getNumber("scoop_speed", self.kDefaultScoopScale)
+        scoopspeed = self.controls.scoop_speed()
+        self.intakeScoop.set(scoopspeed * scoopscale)
+
+        middlescale = self.smartdashboard.getNumber("middle_ramp_speed", self.kDefaultMiddleRampScale)
+        middlespeed = self.controls.middle_speed()
+        self.middleRamp.set(middlespeed * middlescale)
 
         forward = self.controls.forward()
         horizontal = self.controls.horizontal()

@@ -2,8 +2,9 @@ import wpilib
 
 class Controls(object):
     
-    def __init__(self, port):
-        self.xbox0 = wpilib.XboxController(port)
+    def __init__(self, port0, port1):
+        self.xbox0 = wpilib.XboxController(port0)
+        self.xbox1 = wpilib.XboxController(port1)
 
     def forward(self):
         y = self.xbox0.getLeftY()
@@ -24,8 +25,8 @@ class Controls(object):
         return rotate
     
     def launcher(self):
-        right = self.xbox0.getRightTriggerAxis()
-        left = self.xbox0.getLeftTriggerAxis()
+        right = self.xbox1.getRightTriggerAxis()
+        left = self.xbox1.getLeftTriggerAxis()
 
         if left > 0:
             return left * -1
@@ -39,3 +40,11 @@ class Controls(object):
     def reset_gyro(self):
         value=self.xbox0.getXButton()
         return value
+    
+    def scoop_speed(self):
+        value = self.xbox1.getLeftY()
+        return value * -1
+    
+    def middle_speed(self):
+        value = self.xbox1.getRightY()
+        return value * -1

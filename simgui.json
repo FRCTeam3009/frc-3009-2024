@@ -5,6 +5,13 @@
       "/LiveWindow/Ungrouped/MecanumDrive[1]": "MecanumDrive"
     }
   },
+  "NetworkTables": {
+    "transitory": {
+      "SmartDashboard": {
+        "open": true
+      }
+    }
+  },
   "NetworkTables Info": {
     "visible": true
   }
