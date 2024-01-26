@@ -22,10 +22,6 @@ class Controls(object):
         # Limit the output
         rotate *= 0.1
         return rotate
-
-    def align_zero(self):
-        value = self.xbox0.getXButton()
-        return value
     
     def launcher(self):
         right = self.xbox0.getRightTriggerAxis()
@@ -38,4 +34,8 @@ class Controls(object):
         
     def rotate_to_target(self):
         value=self.xbox0.getStartButton()
+        return value
+    
+    def reset_gyro(self):
+        value=self.xbox0.getXButton()
         return value

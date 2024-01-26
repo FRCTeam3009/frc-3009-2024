@@ -88,6 +88,9 @@ class MyRobot(wpilib.TimedRobot):
 
     def teleopPeriodic(self):
         """This function is called periodically during operator control."""
+        if self.controls.reset_gyro():
+            self.gyro.reset()
+
         launcherspeed = self.controls.launcher()
         self.launcher.set(launcherspeed * .62)
 

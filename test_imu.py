@@ -9,3 +9,6 @@ class TestIMU:
     
     def setGyroAngle(self, axis: wpilib.ADIS16470_IMU.IMUAxis, angle: float):
         return
+    
+    def reset(self):
+        return
