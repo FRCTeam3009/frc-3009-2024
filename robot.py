@@ -76,7 +76,7 @@ class MyRobot(wpilib.TimedRobot):
         self.middleRamp = rev.CANSparkMax(7, rev._rev.CANSparkLowLevel.MotorType.kBrushless)
 
         robotToCameraRotation = wpimath.geometry.Rotation3d(0, 0, 0)
-        self.robotToCamera = wpimath.geometry.Pose3d(
+        self.robotToCamera = wpimath.geometry.Transform3d(
             wpimath.units.meters(0.0),
             wpimath.units.meters(0.0),
             wpimath.units.meters(0.0),
