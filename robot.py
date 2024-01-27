@@ -27,9 +27,17 @@ class MyRobot(wpilib.TimedRobot):
         This function is called upon program startup and
         should be used for any initialization code.
         """
+        self.kSubwoofertags = [3, 4, 7, 8]
+        self.kAmptags = [5, 6, 2]# to do remove 2 
+        self.kStagetags = [11, 12, 13, 14, 15, 16]
+        self.kSourcetags = [1, 2, 9, 10]
         self.kDefaultLauncherScale = 0.62
         self.kDefaultScoopScale = 1.0
         self.kDefaultMiddleRampScale = 1.0
+
+        self.goalPosition = 0.0
+        self.currentPosition = 0.0
+        self.closeApproach = False
 
         self.nt = ntcore.NetworkTableInstance.getDefault()
         self.nt.startServer()
@@ -37,6 +45,7 @@ class MyRobot(wpilib.TimedRobot):
         self.smartdashboard.putNumber("launcher_speed", self.kDefaultLauncherScale)
         self.smartdashboard.putNumber("scoop_speed", self.kDefaultScoopScale)
         self.smartdashboard.putNumber("middle_ramp_speed", self.kDefaultMiddleRampScale)
+        self.smartdashboard.putNumber("amp_distance", 0.5)
         
         # Front Left
         fldriveMotorParams = motorParams.Motorparams(22)
@@ -84,7 +93,9 @@ class MyRobot(wpilib.TimedRobot):
 
         self.limelight1 = photonCamera.PhotonCamera("limelight1")
         self.k_maxmisses = 5
-        self.target = {3:{"target":None, "misses":self.k_maxmisses}}
+        self.target = {}
+        for i in range(1,16):
+            self.target[i] = {"target":None, "misses":self.k_maxmisses}
 
         aprilTagFieldLayout = robotpy_apriltag.loadAprilTagLayoutField(robotpy_apriltag.AprilTagField.k2024Crescendo)
         self.poseEstimator = photonPoseEstimator.PhotonPoseEstimator(
@@ -136,6 +147,9 @@ class MyRobot(wpilib.TimedRobot):
         rotate = self.controls.rotate()
         fieldRelative = True
 
+        self.currentPosition = self.driveTrain.rl.get_drive_position()
+
+
         # Overwrite movement from camera if we say so
         if self.controls.rotate_to_target():
             m = self.GetCameraMovement()
@@ -148,7 +162,10 @@ class MyRobot(wpilib.TimedRobot):
 
         if self.timer.hasElapsed(0.5):
             #print("Results: " + str(self.limelight1.getLatestResult()))
-            print("Pose - " + str(self.lastPose))
+            #print("Pose - " + str(self.lastPose))
+            print("Position - " + str(self.currentPosition))
+            print("Goal - " + str(self.goalPosition))
+            print("Close - " + str(self.closeApproach))
             self.timer.reset()
 
     def Drive(self, forward, horizontal, rotate, fieldRelative):
@@ -180,25 +197,52 @@ class MyRobot(wpilib.TimedRobot):
             else: 
                 self.target[i]["target"] = None
 
-        if id == 3:
+        seenTag = False
+        if id in range(1,16):
             targetRotate = self.target[id]["target"].getYaw() * -1
             targetRotateRadians = wpimath.units.degreesToRadians(targetRotate)
             targetPose = self.target[id]["target"].getBestCameraToTarget()
-            
+            seenTag = True
+
+        drivingForward = abs(self.driveTrain.rl.get_angle_absolute()) < math.pi / 2
+
+        if seenTag and targetPose.X() < 0.5:
+            self.closeApproach = True
+            targetWithBuffer = targetPose.X() - 0.01
+            if drivingForward:
+                self.goalPosition = self.currentPosition + targetWithBuffer
+            else:
+                self.goalPosition = self.currentPosition - targetWithBuffer  
 
         rotate = targetRotateRadians * 0.2
         forward = targetPose.X() * -1
         horizontal = targetPose.Y() * -1
 
         # Stop about 2 meters away
-        if abs(forward) < 1.25:
-            forward = 0
+        distance = 0.0
+        if self.closeApproach:
+            distance = self.goalPosition - self.currentPosition
+        else:
+            if id in self.kSubwoofertags:
+                distance = 1.25
+            elif id in self.kAmptags:
+                distance = self.smartdashboard.getNumber("amp_distance", 0.5) 
+        
+            if abs(forward) < distance:
+                forward = 0
 
-        if abs(horizontal) < 0.5:
-            horizontal = 0
+            if abs(horizontal) < 0.5:
+                horizontal = 0
 
-        if abs(rotate) < 0.01:
-            rotate = 0
+            if abs(rotate) < 0.01:
+                rotate = 0
+
+        if drivingForward and self.currentPosition >= self.goalPosition:
+            self.closeApproach = False
+        elif not drivingForward and self.currentPosition <= self.goalPosition:
+            self.closeApproach = False
+
+        
 
         # Cap the speed
         forward = capValue(forward, 1)
