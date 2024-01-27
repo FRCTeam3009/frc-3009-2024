@@ -32,7 +32,7 @@ class MyRobot(wpilib.TimedRobot):
         self.kStagetags = [11, 12, 13, 14, 15, 16]
         self.kSourcetags = [1, 2, 9, 10]
         self.kDefaultLauncherScale = 0.62
-        self.kDefaultScoopScale = 1.0
+        self.kDefaultScoopScale = 0.5
         self.kDefaultMiddleRampScale = 1.0
 
         self.goalPosition = 0.0
@@ -40,6 +40,10 @@ class MyRobot(wpilib.TimedRobot):
         self.closeApproach = False
 
         self.lastTarget = wpimath.geometry.Pose3d()
+        self.lastOdometryPose = wpimath.geometry.Pose2d()
+        self.lastCameraPose = wpimath.geometry.Pose2d()
+        self.lastDistance = 0.0
+
         self.nt = ntcore.NetworkTableInstance.getDefault()
         self.nt.startServer()
         self.smartdashboard = self.nt.getTable("SmartDashboard")
@@ -47,8 +51,10 @@ class MyRobot(wpilib.TimedRobot):
         self.smartdashboard.putNumber("scoop_speed", self.kDefaultScoopScale)
         self.smartdashboard.putNumber("middle_ramp_speed", self.kDefaultMiddleRampScale)
         self.smartdashboard.putNumber("amp_distance", 0.5)
-        self.lastDistance = 0.0
 
+        self.smartdashboard.putNumber("goalX", 0.0)
+        self.smartdashboard.putNumber("goalY", 0.0)
+        self.smartdashboard.putNumber("goalR", 0.0)
         
         # Front Left
         fldriveMotorParams = motorParams.Motorparams(22)
@@ -100,9 +106,9 @@ class MyRobot(wpilib.TimedRobot):
         for i in range(1,16):
             self.target[i] = {"target":None, "misses":self.k_maxmisses}
 
-        aprilTagFieldLayout = robotpy_apriltag.loadAprilTagLayoutField(robotpy_apriltag.AprilTagField.k2024Crescendo)
+        self.aprilTagFieldLayout = robotpy_apriltag.loadAprilTagLayoutField(robotpy_apriltag.AprilTagField.k2024Crescendo)
         self.poseEstimator = photonPoseEstimator.PhotonPoseEstimator(
-            aprilTagFieldLayout,
+            self.aprilTagFieldLayout,
             photonPoseEstimator.PoseStrategy(1),
             self.limelight1,
             self.robotToCamera,
@@ -111,13 +117,20 @@ class MyRobot(wpilib.TimedRobot):
         self.controls = controls.Controls(0, 1)
         self.timer = wpilib.Timer()
     def robotPeriodic(self):
-        self.smartdashboard.putNumber("front_left_velocity", self.driveTrain.fl.get_drive_velocity())
-        self.smartdashboard.putNumber("Position", self.currentPosition)
-        self.smartdashboard.putNumber("Goal", self.goalPosition)
-        self.smartdashboard.putBoolean("Close", self.closeApproach)
-        self.smartdashboard.putNumber("target_distance", self.lastTarget.X())
-        self.smartdashboard.putNumber("last_distance", self.lastDistance)
-        self.currentPosition = self.driveTrain.rl.get_drive_position()
+        swerveModulePositions = self.driveTrain.getSwerveModulePositions()
+        rotation = wpimath.geometry.Rotation2d.fromDegrees(self.GetRotation())
+
+        self.lastCameraPose = self.poseEstimator.update()
+        if self.lastCameraPose is not None:
+            cameraPose = self.lastCameraPose.estimatedPose.toPose2d()
+            self.driveTrain.odometry.resetPosition(rotation, swerveModulePositions, cameraPose)
+
+        self.lastOdometryPose = self.driveTrain.odometry.update(rotation, swerveModulePositions)
+        
+        self.smartdashboard.putNumber("odometryX", self.lastOdometryPose.X())
+        self.smartdashboard.putNumber("odometryY", self.lastOdometryPose.Y())
+        self.smartdashboard.putNumber("rotation", self.lastOdometryPose.rotation().radians())
+
         
     def autonomousInit(self):
         """This function is run once each time the robot enters autonomous mode."""
@@ -139,7 +152,6 @@ class MyRobot(wpilib.TimedRobot):
         if self.controls.reset_gyro():
             self.gyro.reset()
 
-        self.lastPose = self.poseEstimator.update()
 
         launcherscale = self.smartdashboard.getNumber("launcher_speed", self.kDefaultLauncherScale)
         launcherspeed = self.controls.launcher()
@@ -158,11 +170,16 @@ class MyRobot(wpilib.TimedRobot):
         rotate = self.controls.rotate()
         fieldRelative = True
 
-
-
         # Overwrite movement from camera if we say so
         if self.controls.rotate_to_target():
-            m = self.GetCameraMovement()
+            goalX = 0.0
+            goalX = self.smartdashboard.getNumber("goalX", 0.0)
+            goalY = 0.0
+            goalY = self.smartdashboard.getNumber("goalY", 0.0)
+            goalRotation = self.smartdashboard.getNumber("goalR", 0.0)
+            rotation = wpimath.geometry.Rotation3d.fromDegrees(0, 0, goalRotation)
+            goal = wpimath.geometry.Pose3d(goalX, goalY, 0.0, rotation)
+            m = self.MoveToPose2d(goal.toPose2d())
             rotate = m.rotate
             forward = m.forward
             horizontal = m.horizontal
@@ -177,7 +194,7 @@ class MyRobot(wpilib.TimedRobot):
 
     def Drive(self, forward, horizontal, rotate, fieldRelative):
         if fieldRelative:
-            gyroYaw = self.gyro.getAngle(wpilib.ADIS16470_IMU.IMUAxis.kYaw)
+            gyroYaw = self.GetRotation()
             relativeRotation = wpimath.geometry.Rotation2d.fromDegrees(gyroYaw)
             chassisSpeeds = wpimath.kinematics.ChassisSpeeds.fromFieldRelativeSpeeds(forward, horizontal , rotate, relativeRotation)
         else:
@@ -185,77 +202,19 @@ class MyRobot(wpilib.TimedRobot):
 
         self.driveTrain.Drive(chassisSpeeds, self.getPeriod())
 
-    def GetCameraMovement(self):
-        cameraResult1 = self.limelight1.getLatestResult()
+    def MoveToPose2d(self, pose):      
+        trajectory = self.lastOdometryPose.relativeTo(pose)
+        self.smartdashboard.putNumber("trajectoryX", trajectory.X())
+        self.smartdashboard.putNumber("trajectoryY", trajectory.Y())
 
-        id = -1
-        targetRotate = 0.0
-        targetRotateRadians = 0
-        targetPose = wpimath.geometry.Transform2d()
-        for target in cameraResult1.getTargets():
-                id = target.getFiducialId()
-                self.target[id]["target"] = target 
-                self.target[id]["misses"] = 0
+        rotate = trajectory.rotation().radians() * 0.2
+        forward = trajectory.X() * -1
+        horizontal = trajectory.Y() * -1
 
-        for i, value in self.target.items():
-            if self.target[i]["misses"] < self.k_maxmisses:
-                self.target[i]["misses"] += 1 
-                id = i 
-            else: 
-                self.target[i]["target"] = None
-
-        seenTag = False
-        targetDistance = 0.0
-        targetHorizontal = 0.0
-        if id in range(1,16):
-            targetRotate = self.target[id]["target"].getYaw() * -1
-            targetRotateRadians = wpimath.units.degreesToRadians(targetRotate)
-            targetPose = self.target[id]["target"].getBestCameraToTarget()
-            targetDistance = targetPose.X() * -1
-            targetHorizontal = targetPose.Y() * -1
-            self.lastTarget = targetPose
-            seenTag = True
-            self.closeApproach = False
-
-        drivingForward = abs(self.driveTrain.rl.get_angle_absolute()) < math.pi / 2
-        self.smartdashboard.putBoolean("driving_forward", drivingForward)
-
-        if seenTag and abs(targetDistance) < 0.6:
-            self.closeApproach = True
-            targetWithBuffer = targetDistance + 0.05
-            if drivingForward:
-                self.goalPosition = self.currentPosition + targetWithBuffer
-            else:
-                self.goalPosition = self.currentPosition - targetWithBuffer  
-
-        rotate = targetRotateRadians * 0.2
-        forward = targetDistance
-        horizontal = targetHorizontal
-
-        distance = 0.0
-        if self.closeApproach:
-            distance = self.goalPosition - self.currentPosition
-            self.lastDistance = distance
-        else:
-            if id in self.kSubwoofertags:
-                # Stop about 2 meters away
-                distance = 1.25
-            elif id in self.kAmptags:
-                distance = self.smartdashboard.getNumber("amp_distance", 0.5) 
-        
-            if abs(forward) < distance:
-                forward = 0
-
-            if abs(horizontal) < 0.5:
-                horizontal = 0
-
-            if abs(rotate) < 0.01:
-                rotate = 0
-
-        if (not drivingForward) and (self.currentPosition >= self.goalPosition):
-            self.closeApproach = False
-        elif (drivingForward) and (self.currentPosition <= self.goalPosition):
-            self.closeApproach = False
+        if abs(forward) < 0.01:
+            forward = 0.0
+        if abs(horizontal) < 0.01:
+            horizontal = 0.0
 
         # Cap the speed
         forward = capValue(forward, 1)
@@ -264,6 +223,9 @@ class MyRobot(wpilib.TimedRobot):
 
         output=movement.Movement(forward, horizontal, rotate)
         return output
+    
+    def GetRotation(self):
+        return self.gyro.getAngle(wpilib.ADIS16470_IMU.IMUAxis.kYaw)
     
 if __name__ == "__main__":
     wpilib.run(MyRobot)

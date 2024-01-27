@@ -1,7 +1,8 @@
-from wpimath.kinematics import SwerveDrive4Kinematics
+from wpimath.kinematics import SwerveDrive4Kinematics, SwerveDrive4Odometry
 from wpimath.geometry import Translation2d
 import swerve_module
 import wpimath
+import wpimath.geometry
 
 class Chassis(object):
     def __init__(self):
@@ -31,6 +32,9 @@ class DriveTrain(object):
             Translation2d(- self._chassis._wheel_base_width/ 2.0, -self._chassis._wheel_base_length / 2.0),
         )
 
+        zeroRotate = wpimath.geometry.Rotation2d()
+        self.odometry = SwerveDrive4Odometry(self._drive_kinematics, zeroRotate, self.getSwerveModulePositions())
+
     def Drive(self, chassisSpeeds, period):
         discretized = wpimath.kinematics.ChassisSpeeds.discretize(chassisSpeeds, period)
         fl, fr, rl, rr = self._drive_kinematics.toSwerveModuleStates(discretized)
@@ -39,3 +43,6 @@ class DriveTrain(object):
         self.fr.set_swerve_state(fr)
         self.rl.set_swerve_state(rl)
         self.rr.set_swerve_state(rr)
+
+    def getSwerveModulePositions(self):
+        return (self.fl.getSwerveModulePosition(), self.fr.getSwerveModulePosition(), self.rl.getSwerveModulePosition(), self.rr.getSwerveModulePosition())

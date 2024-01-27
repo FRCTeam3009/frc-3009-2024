@@ -5,7 +5,7 @@ import phoenix6
 import math
 from swerve_drive_params import SwerveDriveParams as sdp
 from wpimath.geometry import Rotation2d
-from wpimath.kinematics import SwerveModuleState
+from wpimath.kinematics import SwerveModuleState, SwerveModulePosition
 from wpimath.controller import SimpleMotorFeedforwardMeters
 import wpilib
 import wpimath.units
@@ -92,3 +92,8 @@ class SwerveModule(object):
     def stop(self):
         self._drive_motor.set(0)
         self._angle_motor.set(0)
+
+    def getSwerveModulePosition(self):
+        distance = self.get_drive_position()
+        rotation = Rotation2d(self.get_angle_position())
+        return SwerveModulePosition(distance, rotation)
