@@ -39,6 +39,7 @@ class MyRobot(wpilib.TimedRobot):
         self.currentPosition = 0.0
         self.closeApproach = False
 
+        self.lastTarget = wpimath.geometry.Pose3d()
         self.nt = ntcore.NetworkTableInstance.getDefault()
         self.nt.startServer()
         self.smartdashboard = self.nt.getTable("SmartDashboard")
@@ -46,6 +47,8 @@ class MyRobot(wpilib.TimedRobot):
         self.smartdashboard.putNumber("scoop_speed", self.kDefaultScoopScale)
         self.smartdashboard.putNumber("middle_ramp_speed", self.kDefaultMiddleRampScale)
         self.smartdashboard.putNumber("amp_distance", 0.5)
+        self.lastDistance = 0.0
+
         
         # Front Left
         fldriveMotorParams = motorParams.Motorparams(22)
@@ -107,7 +110,15 @@ class MyRobot(wpilib.TimedRobot):
 
         self.controls = controls.Controls(0, 1)
         self.timer = wpilib.Timer()
-
+    def robotPeriodic(self):
+        self.smartdashboard.putNumber("front_left_velocity", self.driveTrain.fl.get_drive_velocity())
+        self.smartdashboard.putNumber("Position", self.currentPosition)
+        self.smartdashboard.putNumber("Goal", self.goalPosition)
+        self.smartdashboard.putBoolean("Close", self.closeApproach)
+        self.smartdashboard.putNumber("target_distance", self.lastTarget.X())
+        self.smartdashboard.putNumber("last_distance", self.lastDistance)
+        self.currentPosition = self.driveTrain.rl.get_drive_position()
+        
     def autonomousInit(self):
         """This function is run once each time the robot enters autonomous mode."""
         self.timer.reset()
@@ -147,7 +158,6 @@ class MyRobot(wpilib.TimedRobot):
         rotate = self.controls.rotate()
         fieldRelative = True
 
-        self.currentPosition = self.driveTrain.rl.get_drive_position()
 
 
         # Overwrite movement from camera if we say so
@@ -163,9 +173,6 @@ class MyRobot(wpilib.TimedRobot):
         if self.timer.hasElapsed(0.5):
             #print("Results: " + str(self.limelight1.getLatestResult()))
             #print("Pose - " + str(self.lastPose))
-            print("Position - " + str(self.currentPosition))
-            print("Goal - " + str(self.goalPosition))
-            print("Close - " + str(self.closeApproach))
             self.timer.reset()
 
     def Drive(self, forward, horizontal, rotate, fieldRelative):
@@ -198,32 +205,40 @@ class MyRobot(wpilib.TimedRobot):
                 self.target[i]["target"] = None
 
         seenTag = False
+        targetDistance = 0.0
+        targetHorizontal = 0.0
         if id in range(1,16):
             targetRotate = self.target[id]["target"].getYaw() * -1
             targetRotateRadians = wpimath.units.degreesToRadians(targetRotate)
             targetPose = self.target[id]["target"].getBestCameraToTarget()
+            targetDistance = targetPose.X() * -1
+            targetHorizontal = targetPose.Y() * -1
+            self.lastTarget = targetPose
             seenTag = True
+            self.closeApproach = False
 
         drivingForward = abs(self.driveTrain.rl.get_angle_absolute()) < math.pi / 2
+        self.smartdashboard.putBoolean("driving_forward", drivingForward)
 
-        if seenTag and targetPose.X() < 0.5:
+        if seenTag and abs(targetDistance) < 0.6:
             self.closeApproach = True
-            targetWithBuffer = targetPose.X() - 0.01
+            targetWithBuffer = targetDistance + 0.05
             if drivingForward:
                 self.goalPosition = self.currentPosition + targetWithBuffer
             else:
                 self.goalPosition = self.currentPosition - targetWithBuffer  
 
         rotate = targetRotateRadians * 0.2
-        forward = targetPose.X() * -1
-        horizontal = targetPose.Y() * -1
+        forward = targetDistance
+        horizontal = targetHorizontal
 
-        # Stop about 2 meters away
         distance = 0.0
         if self.closeApproach:
             distance = self.goalPosition - self.currentPosition
+            self.lastDistance = distance
         else:
             if id in self.kSubwoofertags:
+                # Stop about 2 meters away
                 distance = 1.25
             elif id in self.kAmptags:
                 distance = self.smartdashboard.getNumber("amp_distance", 0.5) 
@@ -237,12 +252,10 @@ class MyRobot(wpilib.TimedRobot):
             if abs(rotate) < 0.01:
                 rotate = 0
 
-        if drivingForward and self.currentPosition >= self.goalPosition:
+        if (not drivingForward) and (self.currentPosition >= self.goalPosition):
             self.closeApproach = False
-        elif not drivingForward and self.currentPosition <= self.goalPosition:
+        elif (drivingForward) and (self.currentPosition <= self.goalPosition):
             self.closeApproach = False
-
-        
 
         # Cap the speed
         forward = capValue(forward, 1)
