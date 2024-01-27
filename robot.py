@@ -14,7 +14,8 @@ import sys
 import test_imu
 import motorParams
 import encoderParams
-from photonlibpy import photonCamera
+import robotpy_apriltag
+from photonlibpy import photonCamera, photonPoseEstimator
 import ntcore
 import math
 import movement
@@ -74,9 +75,24 @@ class MyRobot(wpilib.TimedRobot):
         self.intakeScoop = rev.CANSparkMax(9, rev._rev.CANSparkLowLevel.MotorType.kBrushless)
         self.middleRamp = rev.CANSparkMax(7, rev._rev.CANSparkLowLevel.MotorType.kBrushless)
 
+        robotToCameraRotation = wpimath.geometry.Rotation3d(0, 0, 0)
+        self.robotToCamera = wpimath.geometry.Pose3d(
+            wpimath.units.meters(0.0),
+            wpimath.units.meters(0.0),
+            wpimath.units.meters(0.0),
+            robotToCameraRotation)
+
         self.limelight1 = photonCamera.PhotonCamera("limelight1")
         self.k_maxmisses = 5
         self.target = {3:{"target":None, "misses":self.k_maxmisses}}
+
+        aprilTagFieldLayout = robotpy_apriltag.loadAprilTagLayoutField(robotpy_apriltag.AprilTagField.k2024Crescendo)
+        self.poseEstimator = photonPoseEstimator.PhotonPoseEstimator(
+            aprilTagFieldLayout,
+            photonPoseEstimator.PoseStrategy(1),
+            self.limelight1,
+            self.robotToCamera,
+        )
 
         self.controls = controls.Controls(0, 1)
         self.timer = wpilib.Timer()
@@ -100,6 +116,8 @@ class MyRobot(wpilib.TimedRobot):
         """This function is called periodically during operator control."""
         if self.controls.reset_gyro():
             self.gyro.reset()
+
+        self.lastPose = self.poseEstimator.update()
 
         launcherscale = self.smartdashboard.getNumber("launcher_speed", self.kDefaultLauncherScale)
         launcherspeed = self.controls.launcher()
@@ -130,6 +148,7 @@ class MyRobot(wpilib.TimedRobot):
 
         if self.timer.hasElapsed(0.5):
             #print("Results: " + str(self.limelight1.getLatestResult()))
+            print("Pose - " + str(self.lastPose))
             self.timer.reset()
 
     def Drive(self, forward, horizontal, rotate, fieldRelative):
@@ -144,6 +163,7 @@ class MyRobot(wpilib.TimedRobot):
 
     def GetCameraMovement(self):
         cameraResult1 = self.limelight1.getLatestResult()
+
         id = -1
         targetRotate = 0.0
         targetRotateRadians = 0
