@@ -152,7 +152,6 @@ class MyRobot(wpilib.TimedRobot):
         if self.controls.reset_gyro():
             self.gyro.reset()
 
-
         launcherscale = self.smartdashboard.getNumber("launcher_speed", self.kDefaultLauncherScale)
         launcherspeed = self.controls.launcher()
         self.launcher.set(launcherspeed * launcherscale)
@@ -168,60 +167,61 @@ class MyRobot(wpilib.TimedRobot):
         forward = self.controls.forward()
         horizontal = self.controls.horizontal()
         rotate = self.controls.rotate()
+        pose = wpimath.geometry.Pose2d(forward, horizontal, rotate)
         fieldRelative = True
 
         # Overwrite movement from camera if we say so
         if self.controls.rotate_to_target():
-            goalX = 0.0
             goalX = self.smartdashboard.getNumber("goalX", 0.0)
-            goalY = 0.0
             goalY = self.smartdashboard.getNumber("goalY", 0.0)
             goalRotation = self.smartdashboard.getNumber("goalR", 0.0)
-            rotation = wpimath.geometry.Rotation3d.fromDegrees(0, 0, goalRotation)
-            goal = wpimath.geometry.Pose3d(goalX, goalY, 0.0, rotation)
-            m = self.MoveToPose2d(goal.toPose2d())
-            rotate = m.rotate
-            forward = m.forward
-            horizontal = m.horizontal
+            rotation = wpimath.geometry.Rotation2d(goalRotation)
+            goal = wpimath.geometry.Pose2d(goalX, goalY, rotation)
+            pose = self.MoveToPose2d(goal)
             fieldRelative = False
 
-        self.Drive(forward, horizontal, rotate, fieldRelative)
+        self.Drive(pose, fieldRelative)
 
         if self.timer.hasElapsed(0.5):
             #print("Results: " + str(self.limelight1.getLatestResult()))
             #print("Pose - " + str(self.lastPose))
             self.timer.reset()
 
-    def Drive(self, forward, horizontal, rotate, fieldRelative):
+    def Drive(self, pose: wpimath.geometry.Pose2d, fieldRelative):
         if fieldRelative:
             gyroYaw = self.GetRotation()
             relativeRotation = wpimath.geometry.Rotation2d.fromDegrees(gyroYaw)
-            chassisSpeeds = wpimath.kinematics.ChassisSpeeds.fromFieldRelativeSpeeds(forward, horizontal , rotate, relativeRotation)
+            chassisSpeeds = wpimath.kinematics.ChassisSpeeds.fromFieldRelativeSpeeds(pose.X(), pose.Y() , pose.rotation().radians(), relativeRotation)
         else:
-            chassisSpeeds = wpimath.kinematics.ChassisSpeeds(forward, horizontal, rotate)
+            chassisSpeeds = wpimath.kinematics.ChassisSpeeds(pose.X(), pose.Y(), pose.rotation().radians())
 
         self.driveTrain.Drive(chassisSpeeds, self.getPeriod())
 
-    def MoveToPose2d(self, pose):      
-        trajectory = self.lastOdometryPose.relativeTo(pose)
+    def MoveToPose2d(self, pose: wpimath.geometry.Pose2d):
+        #trajectory = self.lastOdometryPose.relativeTo(pose)
+        trajectory = pose.relativeTo(self.lastOdometryPose)
+
         self.smartdashboard.putNumber("trajectoryX", trajectory.X())
         self.smartdashboard.putNumber("trajectoryY", trajectory.Y())
+        self.smartdashboard.putNumber("trajectoryR", trajectory.rotation().radians())
 
-        rotate = trajectory.rotation().radians() * 0.2
-        forward = trajectory.X() * -1
-        horizontal = trajectory.Y() * -1
+        rotate = trajectory.rotation().radians() * 0.3 # TODO pid controller
+        forward = trajectory.X()
+        horizontal = trajectory.Y()
 
         if abs(forward) < 0.01:
             forward = 0.0
         if abs(horizontal) < 0.01:
             horizontal = 0.0
+        if abs(rotate) < 0.01:
+            rotate = 0.0
 
         # Cap the speed
         forward = capValue(forward, 1)
         horizontal = capValue(horizontal, 1)
         rotate = capValue(rotate, math.pi)
 
-        output=movement.Movement(forward, horizontal, rotate)
+        output = wpimath.geometry.Pose2d(forward, horizontal, rotate)
         return output
     
     def GetRotation(self):

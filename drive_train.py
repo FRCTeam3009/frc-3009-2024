@@ -29,7 +29,7 @@ class DriveTrain(object):
             Translation2d(self._chassis._wheel_base_width / 2.0, self._chassis._wheel_base_length / 2.0),
             Translation2d( self._chassis._wheel_base_width/ 2.0, - self._chassis._wheel_base_length/ 2.0),
             Translation2d(-self._chassis._wheel_base_width / 2.0, self._chassis._wheel_base_length / 2.0),
-            Translation2d(- self._chassis._wheel_base_width/ 2.0, -self._chassis._wheel_base_length / 2.0),
+            Translation2d(-self._chassis._wheel_base_width/ 2.0, -self._chassis._wheel_base_length / 2.0),
         )
 
         zeroRotate = wpimath.geometry.Rotation2d()
