@@ -48,3 +48,6 @@ class Controls(object):
     def middle_speed(self):
         value = self.xbox1.getRightY()
         return value * -1
+    
+    def reset_goal(self):
+        return self.xbox0.getBackButton()

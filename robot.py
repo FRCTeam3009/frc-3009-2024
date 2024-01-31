@@ -55,29 +55,33 @@ class MyRobot(wpilib.TimedRobot):
         self.smartdashboard.putNumber("goalX", 0.0)
         self.smartdashboard.putNumber("goalY", 0.0)
         self.smartdashboard.putNumber("goalR", 0.0)
+
+        p_value = 6e-5
+        i_value = 1e-6
+        d_value = 0
         
         # Front Left
-        fldriveMotorParams = motorParams.Motorparams(22)
+        fldriveMotorParams = motorParams.Motorparams(22, p_value, i_value, d_value)
         flangleMotorParams = motorParams.Motorparams(23, 0.5)
-        flEncoderParams = encoderParams.EncoderParams(32, -0.105713)
+        flEncoderParams = encoderParams.EncoderParams(32, -0.076904)
         flParams = swerve_drive_params.SwerveDriveParams(fldriveMotorParams, flangleMotorParams, flEncoderParams)
 
         # Rear Left
-        rldriveMotorParams = motorParams.Motorparams(24)
+        rldriveMotorParams = motorParams.Motorparams(24, p_value, i_value, d_value)
         rlangleMotorParams = motorParams.Motorparams(25, 0.5)
-        rlEncoderParams = encoderParams.EncoderParams(33, -0.098877)
+        rlEncoderParams = encoderParams.EncoderParams(33, -0.097900)
         rlParams = swerve_drive_params.SwerveDriveParams(rldriveMotorParams, rlangleMotorParams, rlEncoderParams)
 
         # Front Right
-        frdriveMotorParams = motorParams.Motorparams(20)
+        frdriveMotorParams = motorParams.Motorparams(20, p_value, i_value, d_value)
         frangleMotorParams = motorParams.Motorparams(21, 0.5)
-        frEncoderParams = encoderParams.EncoderParams(31, 0.217529)
+        frEncoderParams = encoderParams.EncoderParams(31, 0.186035)
         frParams = swerve_drive_params.SwerveDriveParams(frdriveMotorParams, frangleMotorParams, frEncoderParams)
         
         # Rear Right
-        rrdriveMotorParams = motorParams.Motorparams(26)
+        rrdriveMotorParams = motorParams.Motorparams(26, p_value, i_value, d_value)
         rrangleMotorParams = motorParams.Motorparams(27, 0.5)
-        rrEncoderParams = encoderParams.EncoderParams(30, -0.388184)
+        rrEncoderParams = encoderParams.EncoderParams(30, -0.322266)
         rrParams = swerve_drive_params.SwerveDriveParams(rrdriveMotorParams, rrangleMotorParams, rrEncoderParams)
 
         self.driveTrain = drive_train.DriveTrain(flParams, frParams, rlParams, rrParams)
@@ -116,20 +120,29 @@ class MyRobot(wpilib.TimedRobot):
 
         self.controls = controls.Controls(0, 1)
         self.timer = wpilib.Timer()
+        self.cameraTimer = wpilib.Timer()
+        self.cameraTimer.start()
     def robotPeriodic(self):
         swerveModulePositions = self.driveTrain.getSwerveModulePositions()
         rotation = wpimath.geometry.Rotation2d.fromDegrees(self.GetRotation())
 
         self.lastCameraPose = self.poseEstimator.update()
+        ambiguity = 0
         if self.lastCameraPose is not None:
             cameraPose = self.lastCameraPose.estimatedPose.toPose2d()
-            self.driveTrain.odometry.resetPosition(rotation, swerveModulePositions, cameraPose)
+            if len(self.lastCameraPose.targetsUsed) > 0:
+                ambiguity = self.lastCameraPose.targetsUsed[0].getPoseAmbiguity()
+                if ambiguity == 0 and self.cameraTimer.hasElapsed(5):
+                    self.driveTrain.odometry.resetPosition(rotation, swerveModulePositions, cameraPose)
+                    self.cameraTimer.reset()
+
 
         self.lastOdometryPose = self.driveTrain.odometry.update(rotation, swerveModulePositions)
         
         self.smartdashboard.putNumber("odometryX", self.lastOdometryPose.X())
         self.smartdashboard.putNumber("odometryY", self.lastOdometryPose.Y())
         self.smartdashboard.putNumber("rotation", self.lastOdometryPose.rotation().radians())
+        self.smartdashboard.putNumber("ambiguity", ambiguity)
 
         
     def autonomousInit(self):
@@ -170,6 +183,11 @@ class MyRobot(wpilib.TimedRobot):
         pose = wpimath.geometry.Pose2d(forward, horizontal, rotate)
         fieldRelative = True
 
+        if self.controls.reset_goal():
+            self.smartdashboard.putNumber("goalX", self.driveTrain.odometry.getPose().X())
+            self.smartdashboard.putNumber("goalY", self.driveTrain.odometry.getPose().Y())
+            self.smartdashboard.putNumber("goalR", self.driveTrain.odometry.getPose().rotation().radians())
+
         # Overwrite movement from camera if we say so
         if self.controls.rotate_to_target():
             goalX = self.smartdashboard.getNumber("goalX", 0.0)
@@ -198,14 +216,14 @@ class MyRobot(wpilib.TimedRobot):
         self.driveTrain.Drive(chassisSpeeds, self.getPeriod())
 
     def MoveToPose2d(self, pose: wpimath.geometry.Pose2d):
-        #trajectory = self.lastOdometryPose.relativeTo(pose)
         trajectory = pose.relativeTo(self.lastOdometryPose)
+        rotation = pose.rotation().radians() - self.lastOdometryPose.rotation().radians()
 
         self.smartdashboard.putNumber("trajectoryX", trajectory.X())
         self.smartdashboard.putNumber("trajectoryY", trajectory.Y())
-        self.smartdashboard.putNumber("trajectoryR", trajectory.rotation().radians())
+        self.smartdashboard.putNumber("trajectoryR", rotation)
 
-        rotate = trajectory.rotation().radians() * 0.3 # TODO pid controller
+        rotate = rotation * 0.1
         forward = trajectory.X()
         horizontal = trajectory.Y()
 
@@ -219,7 +237,7 @@ class MyRobot(wpilib.TimedRobot):
         # Cap the speed
         forward = capValue(forward, 1)
         horizontal = capValue(horizontal, 1)
-        rotate = capValue(rotate, math.pi)
+        rotate = capValue(rotate, 0.1)
 
         output = wpimath.geometry.Pose2d(forward, horizontal, rotate)
         return output
@@ -231,6 +249,10 @@ if __name__ == "__main__":
     wpilib.run(MyRobot)
 
 def capValue(value, cap):
+    if abs(value) < cap:
+        if abs(value) > 0.1 * cap:
+            value *= 0.25
+
     if value > cap:
         return cap
     elif value < -1 * cap:
