@@ -17,7 +17,8 @@ class SwerveModule(object):
         self._drive_motor.setInverted(False)
         self._angle_motor = rev.CANSparkMax(sdp_._angle_motor.id, rev.CANSparkLowLevel.MotorType.kBrushless)
         self._angle_motor.setInverted(True)
-        self._driveMotorConversionFactor = (1/self._sdp._k_drive_gear_ratio) * math.pi * (self._sdp._k_wheel_diameter/39.37)
+        circumference =  math.pi * (self._sdp._k_wheel_diameter/39.37)
+        self._driveMotorConversionFactor = (circumference / self._sdp._k_drive_gear_ratio) # distance per motor rotation (meters)
         self._angleMotorConversionFactor = ((1/self._sdp._k_angle_gear_ratio) * math.pi * 2)
 
         self._drive_motor_encoder = self._drive_motor.getEncoder()
@@ -26,7 +27,7 @@ class SwerveModule(object):
 
         self._angle_motor_encoder = self._angle_motor.getEncoder()
         self._angle_motor_encoder.setPositionConversionFactor(self._angleMotorConversionFactor)
-        self._angle_motor_encoder.setVelocityConversionFactor(self._angle_motor_encoder.getVelocityConversionFactor() / 60)
+        self._angle_motor_encoder.setVelocityConversionFactor(self._angle_motor_encoder.getPositionConversionFactor() / 60)
 
         self._encoder = phoenix6.hardware.CANcoder(sdp_._angle_encoder.id)
         encoder_config = phoenix6.configs.CANcoderConfiguration()
@@ -42,6 +43,7 @@ class SwerveModule(object):
         self._angle_pid_controller.setD(self._sdp._angle_motor.pid_d)
         self._angle_pid_controller.setIZone(0)
         self._angle_pid_controller.setFF(0)
+        #self._angle_pid_controller.setFF(self._sdp._angle_k_v)
         self._angle_pid_controller.setPositionPIDWrappingEnabled(True)
         self._angle_pid_controller.setOutputRange(-0.2, 0.2)
         self._angle_pid_controller.setPositionPIDWrappingMinInput(-math.pi)
@@ -52,9 +54,11 @@ class SwerveModule(object):
         self._drive_pid_controller.setI(self._sdp._drive_motor.pid_i)
         self._drive_pid_controller.setD(self._sdp._drive_motor.pid_d)
         self._drive_pid_controller.setIZone(0)
-        self._drive_pid_controller.setFF(0.000015)
-        self._drive_pid_controller.setOutputRange(-0.5, 0.5) # TODO go to 1.0 for competition
+        self._drive_pid_controller.setFF(self._sdp._k_v)
+        self._drive_pid_controller.setOutputRange(-1.0, 1.0)
 
+        self.speedRPM = 0.0
+        self.speed = 0.0
 
         self.timer = wpilib.Timer()
         self.timer.start()
@@ -92,7 +96,10 @@ class SwerveModule(object):
         swerve_module_state_ = SwerveModuleState.optimize(swerve_module_state_, self.get_swerve_state().angle)        
 
         self._angle_pid_controller.setReference(swerve_module_state_.angle.radians(), rev.CANSparkMax.ControlType.kPosition)
-        self._drive_pid_controller.setReference(swerve_module_state_.speed * 60 / self._driveMotorConversionFactor, rev.CANSparkMax.ControlType.kVelocity)
+
+        self.speedRPM = swerve_module_state_.speed * 60 / self._driveMotorConversionFactor
+        self.speed = swerve_module_state_.speed
+        self._drive_pid_controller.setReference(self.speed, rev.CANSparkMax.ControlType.kVelocity)
 
     def stop(self):
         self._drive_motor.set(0)

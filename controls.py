@@ -20,8 +20,6 @@ class Controls(object):
         rotate = self.xbox0.getRightX()
         # Counter-Clockwise is positive
         rotate *= -1
-        # Limit the output
-        rotate *= 0.1
         return rotate
     
     def launcher(self):
@@ -51,3 +49,6 @@ class Controls(object):
     
     def reset_goal(self):
         return self.xbox0.getBackButton()
+    
+    def climber(self):
+        return self.xbox1.getLeftX()
