@@ -1,0 +1,68 @@
+{
+  "version": 1.0,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 1.0212487186743262,
+        "y": 1.979131376237074
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 4.35308024462203,
+        "y": 1.8944530196752711
+      },
+      "isLocked": true,
+      "linkedName": "right path 1"
+    },
+    {
+      "anchor": {
+        "x": 2.5307559163963402,
+        "y": 3.3896994047143063
+      },
+      "prevControl": {
+        "x": 3.0926259029004792,
+        "y": 2.353620717755774
+      },
+      "nextControl": {
+        "x": 2.014614798460368,
+        "y": 4.341454836755828
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 1.9948809128387501,
+        "y": 5.634024344971768
+      },
+      "prevControl": {
+        "x": 1.9948809128387501,
+        "y": 5.68335905902581
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "fortnite"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 3.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 180.0,
+    "rotateFast": true
+  },
+  "reversed": false,
+  "folder": "Right Paths (BLUE)",
+  "previewStartingState": {
+    "rotation": 180.0,
+    "velocity": 0
+  },
+  "useDefaultConstraints": false
+}
