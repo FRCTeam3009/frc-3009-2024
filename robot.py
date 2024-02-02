@@ -34,7 +34,8 @@ class MyRobot(wpilib.TimedRobot):
         self.kDefaultLauncherScale = 0.62
         self.kDefaultScoopScale = 0.5
         self.kDefaultMiddleRampScale = 1.0
-        self.kMaxSpeed = 5.0 # meters per second
+        self.kMaxSpeed = 10.0 # meters per second
+        self.kMaxRotate = 0.5 # radians? per second
 
         self.goalPosition = 0.0
         self.currentPosition = 0.0
@@ -72,13 +73,13 @@ class MyRobot(wpilib.TimedRobot):
         # Rear Left
         rldriveMotorParams = motorParams.Motorparams(24, p_value, i_value, d_value)
         rlangleMotorParams = motorParams.Motorparams(25, angle_p_value)
-        rlEncoderParams = encoderParams.EncoderParams(33, -0.106934)
+        rlEncoderParams = encoderParams.EncoderParams(33, -0.094971)
         rlParams = swerve_drive_params.SwerveDriveParams(rldriveMotorParams, rlangleMotorParams, rlEncoderParams)
 
         # Front Right
         frdriveMotorParams = motorParams.Motorparams(20, p_value, i_value, d_value)
         frangleMotorParams = motorParams.Motorparams(21, angle_p_value)
-        frEncoderParams = encoderParams.EncoderParams(31, 0.143799)
+        frEncoderParams = encoderParams.EncoderParams(31, 0.037842)
         frParams = swerve_drive_params.SwerveDriveParams(frdriveMotorParams, frangleMotorParams, frEncoderParams)
         
         # Rear Right
@@ -230,7 +231,7 @@ class MyRobot(wpilib.TimedRobot):
 
     def Drive(self, pose: wpimath.geometry.Pose2d, fieldRelative):
         rotation = pose.rotation().radians()
-        rotation *= 0.1
+        rotation *= self.kMaxRotate
         if fieldRelative:
             gyroYaw = self.GetRotation()
             relativeRotation = wpimath.geometry.Rotation2d.fromDegrees(gyroYaw)
@@ -248,9 +249,9 @@ class MyRobot(wpilib.TimedRobot):
         self.smartdashboard.putNumber("trajectoryY", trajectory.Y())
         self.smartdashboard.putNumber("trajectoryR", rotation)
 
-        rotate = rotation
-        forward = trajectory.X()
-        horizontal = trajectory.Y()
+        rotate = rotation * self.kMaxRotate
+        forward = trajectory.X() * self.kMaxSpeed
+        horizontal = trajectory.Y() * self.kMaxSpeed
 
         if abs(forward) < 0.01:
             forward = 0.0
@@ -262,7 +263,7 @@ class MyRobot(wpilib.TimedRobot):
         # Cap the speed
         forward = capValue(forward, self.kMaxSpeed)
         horizontal = capValue(horizontal, self.kMaxSpeed)
-        rotate = capValue(rotate, 0.1)
+        rotate = capValue(rotate, self.kMaxRotate)
 
         output = wpimath.geometry.Pose2d(forward, horizontal, rotate)
         return output

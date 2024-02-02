@@ -57,6 +57,8 @@ class SwerveModule(object):
         self._drive_pid_controller.setFF(self._sdp._k_v)
         self._drive_pid_controller.setOutputRange(-1.0, 1.0)
 
+        self.drive_feed_forward = SimpleMotorFeedforwardMeters(sdp_._k_s, sdp_._k_v, sdp_._k_a)
+
         self.speedRPM = 0.0
         self.speed = 0.0
 
@@ -86,7 +88,7 @@ class SwerveModule(object):
         self._angle_motor_encoder.setPosition(self.get_angle_absolute())
     
     def get_swerve_state(self):
-        rotation = Rotation2d(self.get_angle_position())
+        rotation = Rotation2d(self.get_angle_absolute())
         return SwerveModuleState(self.get_drive_velocity(), rotation)
 
     def set_swerve_state(self, swerve_module_state_: SwerveModuleState):
@@ -98,7 +100,7 @@ class SwerveModule(object):
         self._angle_pid_controller.setReference(swerve_module_state_.angle.radians(), rev.CANSparkMax.ControlType.kPosition)
 
         self.speedRPM = swerve_module_state_.speed * 60 / self._driveMotorConversionFactor
-        self.speed = swerve_module_state_.speed
+        self.speed = self.drive_feed_forward.calculate(swerve_module_state_.speed)
         self._drive_pid_controller.setReference(self.speed, rev.CANSparkMax.ControlType.kVelocity)
 
     def stop(self):
@@ -107,5 +109,5 @@ class SwerveModule(object):
 
     def getSwerveModulePosition(self):
         distance = self.get_drive_position()
-        rotation = Rotation2d(self.get_angle_position())
+        rotation = Rotation2d(self.get_angle_absolute())
         return SwerveModulePosition(distance, rotation)
