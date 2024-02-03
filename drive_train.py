@@ -3,18 +3,16 @@ from wpimath.geometry import Translation2d
 import swerve_module
 import wpimath
 import wpimath.geometry
-
-class Chassis(object):
-    def __init__(self):
-        self._wheel_base_width = 21
-        self._wheel_base_length = 25
+import wpimath.kinematics
 
 class DriveTrain(object):
-    def __init__(self, fl, fr, rl, rr):
-        self.fl = swerve_module.SwerveModule(fl)
-        self.fr = swerve_module.SwerveModule(fr)
-        self.rl = swerve_module.SwerveModule(rl)
-        self.rr = swerve_module.SwerveModule(rr)
+    def __init__(self, chassis, fl, fr, rl, rr):
+        self._chassis = chassis
+
+        self.fl = swerve_module.SwerveModule(fl, self._chassis)
+        self.fr = swerve_module.SwerveModule(fr, self._chassis)
+        self.rl = swerve_module.SwerveModule(rl, self._chassis)
+        self.rr = swerve_module.SwerveModule(rr, self._chassis)
 
         self.fl.reset_encoders()
         self.fr.reset_encoders()
@@ -24,7 +22,6 @@ class DriveTrain(object):
         self.fr._drive_motor.setInverted(True)
         self.rr._drive_motor.setInverted(True)
 
-        self._chassis = Chassis()
         self._drive_kinematics = SwerveDrive4Kinematics(
             Translation2d( self._chassis._wheel_base_width / 2.0, self._chassis._wheel_base_length / 2.0),
             Translation2d( self._chassis._wheel_base_width / 2.0, -self._chassis._wheel_base_length / 2.0),
@@ -35,9 +32,11 @@ class DriveTrain(object):
         zeroRotate = wpimath.geometry.Rotation2d()
         self.odometry = SwerveDrive4Odometry(self._drive_kinematics, zeroRotate, self.getSwerveModulePositions())
 
-    def Drive(self, chassisSpeeds, period):
+    def Drive(self, chassisSpeeds, period, max_speed):
         discretized = wpimath.kinematics.ChassisSpeeds.discretize(chassisSpeeds, period)
-        fl, fr, rl, rr = self._drive_kinematics.toSwerveModuleStates(discretized)
+        swerve_states = self._drive_kinematics.toSwerveModuleStates(discretized)
+        
+        fl, fr, rl, rr = wpimath.kinematics.SwerveDrive4Kinematics.desaturateWheelSpeeds(swerve_states, max_speed)
 
         self.fl.set_swerve_state(fl)
         self.fr.set_swerve_state(fr)

@@ -9,6 +9,7 @@ import wpimath.filter
 import controls
 import swerve_drive_params
 import drive_train
+import chassis
 import rev
 import sys
 import test_imu
@@ -27,15 +28,17 @@ class MyRobot(wpilib.TimedRobot):
         This function is called upon program startup and
         should be used for any initialization code.
         """
+        self.chassis = chassis.Chassis()
+
         self.kSubwoofertags = [3, 4, 7, 8]
-        self.kAmptags = [5, 6, 2]# to do remove 2 
+        self.kAmptags = [5, 6] 
         self.kStagetags = [11, 12, 13, 14, 15, 16]
         self.kSourcetags = [1, 2, 9, 10]
         self.kDefaultLauncherScale = 0.62
         self.kDefaultScoopScale = 0.5
         self.kDefaultMiddleRampScale = 1.0
-        self.kMaxSpeed = 10.0 # meters per second
-        self.kMaxRotate = 0.5 # radians? per second
+        self.kMaxSpeed = 4.0 # meters per second
+        self.kMaxRotate = self.kMaxSpeed / self.chassis._turn_meters_per_radian # radians per second
 
         self.goalPosition = 0.0
         self.currentPosition = 0.0
@@ -62,7 +65,9 @@ class MyRobot(wpilib.TimedRobot):
         i_value = 1e-6
         d_value = 0
 
-        angle_p_value = 0.1
+        angle_p_value = 6e-5
+        self.something = 0.0
+        self.chassisSpeeds = wpimath.kinematics.ChassisSpeeds.fromRobotRelativeSpeeds(0,0,0,wpimath.geometry.Rotation2d())
         
         # Front Left
         fldriveMotorParams = motorParams.Motorparams(22, p_value, i_value, d_value)
@@ -88,7 +93,7 @@ class MyRobot(wpilib.TimedRobot):
         rrEncoderParams = encoderParams.EncoderParams(30, -0.236328)
         rrParams = swerve_drive_params.SwerveDriveParams(rrdriveMotorParams, rrangleMotorParams, rrEncoderParams)
 
-        self.driveTrain = drive_train.DriveTrain(flParams, frParams, rlParams, rrParams)
+        self.driveTrain = drive_train.DriveTrain(self.chassis, flParams, frParams, rlParams, rrParams)
 
         self.gyro = test_imu.TestIMU()
         if "pytest" not in sys.modules:
@@ -156,17 +161,26 @@ class MyRobot(wpilib.TimedRobot):
         self.smartdashboard.putNumber("RL_RPM", self.driveTrain.rl.speedRPM)
         self.smartdashboard.putNumber("RR_RPM", self.driveTrain.rr.speedRPM)
 
-        self.smartdashboard.putNumber("FL_Speed", self.driveTrain.fl.speed)
-        self.smartdashboard.putNumber("FR_Speed", self.driveTrain.fr.speed)
-        self.smartdashboard.putNumber("RL_Speed", self.driveTrain.rl.speed)
-        self.smartdashboard.putNumber("RR_Speed", self.driveTrain.rr.speed)
+        self.smartdashboard.putNumber("FL_FF", self.driveTrain.fl.driveFF)
+        self.smartdashboard.putNumber("FR_FF", self.driveTrain.fr.driveFF)
+        self.smartdashboard.putNumber("RL_FF", self.driveTrain.rl.driveFF)
+        self.smartdashboard.putNumber("RR_FF", self.driveTrain.rr.driveFF)
 
         self.smartdashboard.putNumber("FL_Velocity", self.driveTrain.fl.get_drive_velocity())
         self.smartdashboard.putNumber("FR_Velocity", self.driveTrain.fr.get_drive_velocity())
         self.smartdashboard.putNumber("RL_Velocity", self.driveTrain.rl.get_drive_velocity())
         self.smartdashboard.putNumber("RR_Velocity", self.driveTrain.rr.get_drive_velocity())
 
-        
+        self.smartdashboard.putNumber("motor_factor", self.driveTrain.fl._chassis._driveMotorConversionFactor)
+        self.smartdashboard.putNumber("rotate_factor", self.driveTrain.fl._chassis._angleMotorConversionFactor)
+        self.smartdashboard.putNumber("max_speed", self.kMaxSpeed)
+        self.smartdashboard.putNumber("max_rotate", self.kMaxRotate)
+        self.smartdashboard.putNumber("something_rotation", self.something)
+        self.smartdashboard.putNumber("chassis_speeds_vx", self.chassisSpeeds.vx)
+        self.smartdashboard.putNumber("chassis_speeds_vy", self.chassisSpeeds.vy)
+        self.smartdashboard.putNumber("chassis_speeds_omega", self.chassisSpeeds.omega)
+
+
     def autonomousInit(self):
         """This function is run once each time the robot enters autonomous mode."""
         self.timer.reset()
@@ -201,7 +215,7 @@ class MyRobot(wpilib.TimedRobot):
 
         forward = self.controls.forward() * self.kMaxSpeed
         horizontal = self.controls.horizontal() * self.kMaxSpeed
-        rotate = self.controls.rotate()
+        rotate = self.controls.rotate() * self.kMaxRotate
         pose = wpimath.geometry.Pose2d(forward, horizontal, rotate)
         fieldRelative = True
 
@@ -230,16 +244,21 @@ class MyRobot(wpilib.TimedRobot):
             self.timer.reset()
 
     def Drive(self, pose: wpimath.geometry.Pose2d, fieldRelative):
-        rotation = pose.rotation().radians()
-        rotation *= self.kMaxRotate
-        if fieldRelative:
-            gyroYaw = self.GetRotation()
-            relativeRotation = wpimath.geometry.Rotation2d.fromDegrees(gyroYaw)
-            chassisSpeeds = wpimath.kinematics.ChassisSpeeds.fromFieldRelativeSpeeds(pose.X(), pose.Y() , rotation, relativeRotation)
-        else:
-            chassisSpeeds = wpimath.kinematics.ChassisSpeeds(pose.X(), pose.Y(), rotation)
+         # Cap the speeds
+        forward = capValue(pose.X(), self.kMaxSpeed)
+        horizontal = capValue(pose.Y(), self.kMaxSpeed)
+        rotate = capValue(pose.rotation().radians(), self.kMaxRotate)
+        self.something = pose.rotation().radians()
 
-        self.driveTrain.Drive(chassisSpeeds, self.getPeriod())
+        gyroYaw = self.GetRotation()
+        relativeRotation = wpimath.geometry.Rotation2d.fromDegrees(gyroYaw)
+
+        chassisSpeeds = wpimath.kinematics.ChassisSpeeds.fromRobotRelativeSpeeds(forward, horizontal, rotate, relativeRotation)
+        if fieldRelative:
+            chassisSpeeds = wpimath.kinematics.ChassisSpeeds.fromFieldRelativeSpeeds(forward, horizontal, rotate, relativeRotation)
+
+        self.chassisSpeeds = wpimath.kinematics.ChassisSpeeds.discretize(chassisSpeeds, self.getPeriod())
+        self.driveTrain.Drive(chassisSpeeds, self.getPeriod(), self.kMaxSpeed)
 
     def MoveToPose2d(self, pose: wpimath.geometry.Pose2d):
         trajectory = pose.relativeTo(self.lastOdometryPose)
@@ -257,13 +276,8 @@ class MyRobot(wpilib.TimedRobot):
             forward = 0.0
         if abs(horizontal) < 0.01:
             horizontal = 0.0
-        if abs(rotate) < 0.001:
+        if abs(rotate) < 0.01:
             rotate = 0.0
-
-        # Cap the speed
-        forward = capValue(forward, self.kMaxSpeed)
-        horizontal = capValue(horizontal, self.kMaxSpeed)
-        rotate = capValue(rotate, self.kMaxRotate)
 
         output = wpimath.geometry.Pose2d(forward, horizontal, rotate)
         return output

@@ -1,6 +1,8 @@
 {
   "Docking": {
-    "Data": []
+    "Data": [
+      "DockNode  ID=0x00000001 Pos=29,680 Size=744,278 Selected=0x6AE6D891"
+    ]
   },
   "MainWindow": {
     "GLOBAL": {
@@ -15,6 +17,11 @@
     }
   },
   "Table": {
+    "0x965B9C9E,2": {
+      "Column 0  Width": "160",
+      "Column 1  Weight": "1.0000",
+      "RefScale": "16"
+    },
     "0xE56EC1C2,4": {
       "Column 0  Weight": "1.0000",
       "Column 1  Weight": "1.0000",
@@ -23,6 +30,11 @@
     }
   },
   "Window": {
+    "###/FMSInfo": {
+      "Collapsed": "0",
+      "Pos": "60,60",
+      "Size": "217,194"
+    },
     "###FMS": {
       "Collapsed": "0",
       "Pos": "2,713",
@@ -30,33 +42,40 @@
     },
     "###Joysticks": {
       "Collapsed": "0",
-      "Pos": "384,622",
-      "Size": "976,278"
+      "DockId": "0x00000001,0",
+      "Pos": "29,680",
+      "Size": "744,278"
     },
     "###NetworkTables": {
       "Collapsed": "0",
-      "Pos": "349,314",
-      "Size": "937,231"
+      "Pos": "210,32",
+      "Size": "937,627"
     },
     "###NetworkTables Info": {
       "Collapsed": "0",
-      "Pos": "250,130",
+      "Pos": "193,31",
       "Size": "750,145"
     },
     "###Other Devices": {
       "Collapsed": "0",
       "Pos": "1417,36",
-      "Size": "312,868"
+      "Size": "438,868"
+    },
+    "###Plot <0>": {
+      "Collapsed": "0",
+      "Pos": "827,644",
+      "Size": "568,313"
     },
     "###RoboRIO": {
       "Collapsed": "0",
-      "Pos": "5,125",
+      "Pos": "20,415",
       "Size": "141,164"
     },
     "###System Joysticks": {
       "Collapsed": "0",
-      "Pos": "6,437",
-      "Size": "232,254"
+      "DockId": "0x00000001,1",
+      "Pos": "29,680",
+      "Size": "744,278"
     },
     "###Timing": {
       "Collapsed": "0",
