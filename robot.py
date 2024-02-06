@@ -20,6 +20,7 @@ from photonlibpy import photonCamera, photonPoseEstimator
 import ntcore
 import phoenix6
 import phoenix5
+import math
 
 class MyRobot(wpilib.TimedRobot):
 
@@ -34,11 +35,14 @@ class MyRobot(wpilib.TimedRobot):
         self.kAmptags = [5, 6] 
         self.kStagetags = [11, 12, 13, 14, 15, 16]
         self.kSourcetags = [1, 2, 9, 10]
+        self.kAlltags=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
         self.kDefaultLauncherScale = 0.62
         self.kDefaultScoopScale = 0.5
         self.kDefaultMiddleRampScale = 1.0
         self.kMaxSpeed = 4.0 # meters per second
         self.kMaxRotate = self.kMaxSpeed / self.chassis._turn_meters_per_radian # radians per second
+        self.kSubwooferDistance = 36.17 # inches
+        self.kSubwooferStopDistance = self.kSubwooferDistance + 11.0
 
         self.goalPosition = 0.0
         self.currentPosition = 0.0
@@ -233,6 +237,21 @@ class MyRobot(wpilib.TimedRobot):
             goal = wpimath.geometry.Pose2d(goalX, goalY, rotation)
             pose = self.MoveToPose2d(goal)
             fieldRelative = False
+        elif self.controls.target_amp():
+            pose = self.line_up_to_target(self.kAmptags)
+            fieldRelative = False
+        elif self.controls.target_subwoofer():
+            pose = self.line_up_to_target(self.kSubwoofertags)
+            magnitude = math.sqr(pose.X()**2 pose.Y()**2)
+            if magnitude < self.kSubwooferStopDistance:
+                pose = wpimath.geometry.Pose2d()
+            fieldRelative = False
+        elif self.controls.target_stage():
+            pose = self.line_up_to_target(self.kStagetags)
+            fieldRelative = False
+        elif self.controls.target_closest():
+            pose = self.line_up_to_target(self.kAlltags)
+            fieldRelative = False
 
         self.Drive(pose, fieldRelative)
 
@@ -284,6 +303,18 @@ class MyRobot(wpilib.TimedRobot):
     
     def GetRotation(self):
         return self.gyro.getAngle(wpilib.ADIS16470_IMU.IMUAxis.kYaw)
+    
+    def line_up_to_target(self, tag_list):
+        for targetSeen in self.lastCameraPose.targetsUsed:
+            for targetid in tag_list:
+                if targetid == targetSeen.getFiducialId():
+                    transform = targetSeen.getBestCameraToTarget()
+                    rotate = targetSeen.getYaw()
+                    rotation = wpimath.geometry.Rotation2d.fromDegrees(rotate)
+                    pose = wpimath.geometry.Pose2d(transform.X(), transform.Y(), rotation)
+                    return pose
+                
+        return wpimath.geometry.Pose2d()
     
 if __name__ == "__main__":
     wpilib.run(MyRobot)
