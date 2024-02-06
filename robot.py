@@ -22,6 +22,18 @@ import phoenix6
 import phoenix5
 import math
 
+# TODO turbo mode
+# TODO slow mode
+# TODO light sensor for knowing if a note is collected
+# TODO launcher motor velocity pid
+# TODO wait for launcher to hit speed before shooting (hold like a gatling gun)
+# TODO set intake to run middle rollers too until note detected
+# TODO set launcher speeds needed to hit each target
+# TODO add trap opener push thingy
+# TODO limit switch/torque detection on the climbing motors
+# TODO pathplanner
+# TODO (extra) coral machine learning vision for notes
+
 class MyRobot(wpilib.TimedRobot):
 
     def robotInit(self):
