@@ -54,14 +54,14 @@ class Controls(object):
         return self.xbox1.getLeftX()
     
     def target_amp(self):
-        return self.xbox0.POVRight()
+        return self.xbox0.getPOV() == 90
     
     def target_subwoofer(self):
-        return self.xbox0.POVLeft()
+        return self.xbox0.getPOV() == 270
     
     def target_stage(self):
-        return self.xbox0.POVUp()
+        return self.xbox0.getPOV() == 0
     
     def target_closest(self):
-        return self.xbox0.POVDown()
+        return self.xbox0.getPOV() == 180
 

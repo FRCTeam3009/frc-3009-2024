@@ -1,6 +1,4 @@
 import rev
-import phoenix5
-import phoenix5.sensors
 import phoenix6
 import math
 from swerve_drive_params import SwerveDriveParams as sdp

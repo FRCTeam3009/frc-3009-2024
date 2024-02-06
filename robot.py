@@ -18,21 +18,29 @@ import encoderParams
 import robotpy_apriltag
 from photonlibpy import photonCamera, photonPoseEstimator
 import ntcore
-import phoenix6
 import phoenix5
 import math
 
+# TODO ===First===
 # TODO turbo mode
 # TODO slow mode
 # TODO light sensor for knowing if a note is collected
 # TODO launcher motor velocity pid
-# TODO wait for launcher to hit speed before shooting (hold like a gatling gun)
-# TODO set intake to run middle rollers too until note detected
-# TODO set launcher speeds needed to hit each target
-# TODO add trap opener push thingy
+
+# TODO ===Second===
+# TODO set specific launcher speeds needed to hit each target (with buttons to choose which speed)
 # TODO limit switch/torque detection on the climbing motors
 # TODO pathplanner
-# TODO (extra) coral machine learning vision for notes
+# TODO average startup position using camera position
+
+# TODO ===Dependencies Required===
+# TODO add trap opener push thingy (requires the assembled thingy)
+# TODO wait for launcher to hit speed before shooting (hold like a gatling gun) (needs velocity pid)
+# TODO set intake to run middle rollers too until note detected (needs light sensor)
+# TODO (extra) coral machine learning vision for notes (needs ML usb thing)
+
+# TODO ===Last===
+# TODO teach the team how the robot works so they can explain it to judges
 
 class MyRobot(wpilib.TimedRobot):
 
@@ -254,7 +262,7 @@ class MyRobot(wpilib.TimedRobot):
             fieldRelative = False
         elif self.controls.target_subwoofer():
             pose = self.line_up_to_target(self.kSubwoofertags)
-            magnitude = math.sqr(pose.X()**2 pose.Y()**2)
+            magnitude = math.sqrt(pose.X()**2 + pose.Y()**2)
             if magnitude < self.kSubwooferStopDistance:
                 pose = wpimath.geometry.Pose2d()
             fieldRelative = False
@@ -317,14 +325,15 @@ class MyRobot(wpilib.TimedRobot):
         return self.gyro.getAngle(wpilib.ADIS16470_IMU.IMUAxis.kYaw)
     
     def line_up_to_target(self, tag_list):
-        for targetSeen in self.lastCameraPose.targetsUsed:
-            for targetid in tag_list:
-                if targetid == targetSeen.getFiducialId():
-                    transform = targetSeen.getBestCameraToTarget()
-                    rotate = targetSeen.getYaw()
-                    rotation = wpimath.geometry.Rotation2d.fromDegrees(rotate)
-                    pose = wpimath.geometry.Pose2d(transform.X(), transform.Y(), rotation)
-                    return pose
+        if self.lastCameraPose is not None:
+            for targetSeen in self.lastCameraPose.targetsUsed:
+                for targetid in tag_list:
+                    if targetid == targetSeen.getFiducialId():
+                        transform = targetSeen.getBestCameraToTarget()
+                        rotate = targetSeen.getYaw()
+                        rotation = wpimath.geometry.Rotation2d.fromDegrees(rotate)
+                        pose = wpimath.geometry.Pose2d(transform.X(), transform.Y(), rotation)
+                        return pose
                 
         return wpimath.geometry.Pose2d()
     
