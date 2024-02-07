@@ -20,10 +20,9 @@ from photonlibpy import photonCamera, photonPoseEstimator
 import ntcore
 import phoenix5
 import math
+import shooter
 
 # TODO ===First===
-# TODO turbo mode
-# TODO slow mode
 # TODO light sensor for knowing if a note is collected
 # TODO launcher motor velocity pid
 
@@ -56,7 +55,6 @@ class MyRobot(wpilib.TimedRobot):
         self.kStagetags = [11, 12, 13, 14, 15, 16]
         self.kSourcetags = [1, 2, 9, 10]
         self.kAlltags=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
-        self.kDefaultLauncherScale = 0.62
         self.kDefaultScoopScale = 0.5
         self.kDefaultMiddleRampScale = 1.0
         self.kMaxSpeed = 4.0 # meters per second
@@ -76,7 +74,6 @@ class MyRobot(wpilib.TimedRobot):
         self.nt = ntcore.NetworkTableInstance.getDefault()
         self.nt.startServer()
         self.smartdashboard = self.nt.getTable("SmartDashboard")
-        self.smartdashboard.putNumber("launcher_speed", self.kDefaultLauncherScale)
         self.smartdashboard.putNumber("scoop_speed", self.kDefaultScoopScale)
         self.smartdashboard.putNumber("middle_ramp_speed", self.kDefaultMiddleRampScale)
         self.smartdashboard.putNumber("amp_distance", 0.5)
@@ -123,12 +120,9 @@ class MyRobot(wpilib.TimedRobot):
         if "pytest" not in sys.modules:
             self.gyro = wpilib.ADIS16470_IMU()
 
-        self.launcher = rev.CANSparkMax(6, rev._rev.CANSparkLowLevel.MotorType.kBrushless)
-        self.launcher2 = rev.CANSparkMax(8, rev._rev.CANSparkLowLevel.MotorType.kBrushless)
-        self.launcher2.follow(self.launcher, True)
+        self.shooter = shooter.Shooter(6, 8, 7)
 
         self.intakeScoop = rev.CANSparkMax(9, rev._rev.CANSparkLowLevel.MotorType.kBrushless)
-        self.middleRamp = rev.CANSparkMax(7, rev._rev.CANSparkLowLevel.MotorType.kBrushless)
 
         self.climber = phoenix5.TalonFX(10)
 
@@ -224,22 +218,21 @@ class MyRobot(wpilib.TimedRobot):
         """This function is called periodically during operator control."""
         if self.controls.reset_gyro():
             self.gyro.reset()
-
-        launcherscale = self.smartdashboard.getNumber("launcher_speed", self.kDefaultLauncherScale)
-        launcherspeed = self.controls.launcher()
-        self.launcher.set(launcherspeed * launcherscale)
+        
+        if self.controls.shootspeaker():
+            self.shooter.fire(shooter.Shooter.speakerscale) 
+        elif self.controls.shootamp():
+            self.shooter.fire(shooter.Shooter.ampscale)
+        else: 
+            self.shooter.stop()
 
         scoopscale = self.smartdashboard.getNumber("scoop_speed", self.kDefaultScoopScale)
         scoopspeed = self.controls.scoop_speed()
         self.intakeScoop.set(scoopspeed * scoopscale)
 
-        middlescale = self.smartdashboard.getNumber("middle_ramp_speed", self.kDefaultMiddleRampScale)
-        middlespeed = self.controls.middle_speed()
-        self.middleRamp.set(middlespeed * middlescale)
-
-        forward = self.controls.forward() * self.kMaxSpeed
-        horizontal = self.controls.horizontal() * self.kMaxSpeed
-        rotate = self.controls.rotate() * self.kMaxRotate
+        forward = self.controls.forward() * self.getInputSpeed(self.kMaxSpeed)
+        horizontal = self.controls.horizontal() * self.getInputSpeed(self.kMaxSpeed)
+        rotate = self.controls.rotate() * self.getInputSpeed(self.kMaxRotate)
         pose = wpimath.geometry.Pose2d(forward, horizontal, rotate)
         fieldRelative = True
 
@@ -337,6 +330,15 @@ class MyRobot(wpilib.TimedRobot):
                 
         return wpimath.geometry.Pose2d()
     
+
+    def getInputSpeed(self, speed):
+        if self.controls.turbo():
+            return speed
+        elif self.controls.slow():
+            return 0.25 * speed
+        else:
+            return 0.75 * speed
+
 if __name__ == "__main__":
     wpilib.run(MyRobot)
 

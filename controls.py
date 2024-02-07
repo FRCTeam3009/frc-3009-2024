@@ -22,15 +22,20 @@ class Controls(object):
         rotate *= -1
         return rotate
     
-    def launcher(self):
+    def shootspeaker(self):
         right = self.xbox1.getRightTriggerAxis()
+        if right > 0.5:
+            return 1.0
+        else: 
+            return 0.0
+    
+    def shootamp(self):
         left = self.xbox1.getLeftTriggerAxis()
-
-        if left > 0:
-            return left * -1
-        else:
-            return right
-        
+        if left > 0.5:
+            return 1.0
+        else: 
+            return 0.0
+   
     def rotate_to_target(self):
         value=self.xbox0.getStartButton()
         return value
@@ -64,4 +69,10 @@ class Controls(object):
     
     def target_closest(self):
         return self.xbox0.getPOV() == 180
+
+    def turbo(self):
+        return self.xbox0.getRightBumper()
+    
+    def slow(self):
+        return self.xbox0.getLeftBumper()
 

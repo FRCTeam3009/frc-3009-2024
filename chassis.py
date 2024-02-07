@@ -29,5 +29,6 @@ class Chassis(object):
         self._driveMotorConversionFactor = self._wheel_circumference / self._k_drive_gear_ratio # distance per motor rotation (meters)
         self._angleMotorConversionFactor = 2 * math.pi / self._k_angle_gear_ratio # wheel rotation per motor rotation (radians)
 
-        self._turn_meters_per_radian = self._turn_circumference / (2*math.pi)
+        idk = 1.07
+        self._turn_meters_per_radian = self._turn_circumference / (idk * math.pi * self._driveMotorConversionFactor)
 
