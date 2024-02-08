@@ -2,8 +2,6 @@ import rev
 from wpimath.controller import SimpleMotorFeedforwardMeters
 import SparkMotor
 
-
-
 class Shooter:
     speakerscale = 0.62
     ampscale = 0.5

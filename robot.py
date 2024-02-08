@@ -24,10 +24,8 @@ import shooter
 
 # TODO ===First===
 # TODO light sensor for knowing if a note is collected
-# TODO launcher motor velocity pid
 
 # TODO ===Second===
-# TODO set specific launcher speeds needed to hit each target (with buttons to choose which speed)
 # TODO limit switch/torque detection on the climbing motors
 # TODO pathplanner
 # TODO average startup position using camera position
