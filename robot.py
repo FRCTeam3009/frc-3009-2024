@@ -149,6 +149,7 @@ class MyRobot(wpilib.TimedRobot):
         self.timer = wpilib.Timer()
         self.cameraTimer = wpilib.Timer()
         self.cameraTimer.start()
+        self.noteSensor = wpilib.DigitalInput(9)
 
     def robotPeriodic(self):
         swerveModulePositions = self.driveTrain.getSwerveModulePositions()
@@ -195,6 +196,7 @@ class MyRobot(wpilib.TimedRobot):
         self.smartdashboard.putNumber("chassis_speeds_vx", self.chassisSpeeds.vx)
         self.smartdashboard.putNumber("chassis_speeds_vy", self.chassisSpeeds.vy)
         self.smartdashboard.putNumber("chassis_speeds_omega", self.chassisSpeeds.omega)
+        self.smartdashboard.putNumber("note sensor", self.noteSensor.get())
 
 
     def autonomousInit(self):
