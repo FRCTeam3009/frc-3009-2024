@@ -118,9 +118,10 @@ class MyRobot(wpilib.TimedRobot):
         if "pytest" not in sys.modules:
             self.gyro = wpilib.ADIS16470_IMU()
 
-        self.shooter = shooter.Shooter(6, 8, 7)
-
+        self.noteSensor = wpilib.DigitalInput(9)
         self.intakeScoop = rev.CANSparkMax(9, rev._rev.CANSparkLowLevel.MotorType.kBrushless)
+        self.shooter = shooter.Shooter(6, 8, 7, self.noteSensor, self.intakeScoop)
+
 
         self.climber = phoenix5.TalonFX(10)
 
@@ -149,7 +150,6 @@ class MyRobot(wpilib.TimedRobot):
         self.timer = wpilib.Timer()
         self.cameraTimer = wpilib.Timer()
         self.cameraTimer.start()
-        self.noteSensor = wpilib.DigitalInput(9)
 
     def robotPeriodic(self):
         swerveModulePositions = self.driveTrain.getSwerveModulePositions()
@@ -226,10 +226,7 @@ class MyRobot(wpilib.TimedRobot):
         else: 
             self.shooter.stop()
 
-        scoopscale = self.smartdashboard.getNumber("scoop_speed", self.kDefaultScoopScale)
-        scoopspeed = self.controls.scoop_speed()
-        self.intakeScoop.set(scoopspeed * scoopscale)
-
+        
         forward = self.controls.forward() * self.getInputSpeed(self.kMaxSpeed)
         horizontal = self.controls.horizontal() * self.getInputSpeed(self.kMaxSpeed)
         rotate = self.controls.rotate() * self.getInputSpeed(self.kMaxRotate)

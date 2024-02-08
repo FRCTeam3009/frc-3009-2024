@@ -5,7 +5,7 @@ import SparkMotor
 class Shooter:
     speakerscale = 0.62
     ampscale = 0.5
-    def __init__(self, topId, bottomId, middleId):
+    def __init__(self, topId, bottomId, middleId, noteSensor, intakeScoop):
         self.kMaxRpm = 5600
 
         self.topMotor = rev.CANSparkMax(topId, rev._rev.CANSparkLowLevel.MotorType.kBrushless)
@@ -13,9 +13,27 @@ class Shooter:
         self.middleRamp = rev.CANSparkMax(middleId, rev._rev.CANSparkLowLevel.MotorType.kBrushless) 
         self.topspark = SparkMotor.SparkMotor(self.topMotor)
         self.bottomMotorspark = SparkMotor.SparkMotor(self.bottomMotor)
-
+        self.noteSensor = noteSensor
+        self.intakeScoop= intakeScoop
+        self.kscoopspeed = 0.5
+        self.wasLookingForNote = False
+        self.needsreset=False
     
     def fire(self, value):
+        if not self.noteSensor.get():
+            self.intakeScoop.set(self.kscoopspeed)
+            self.middleRamp.set(1.0)
+            self.wasLookingForNote = True
+            return
+        elif self.wasLookingForNote is True:
+            self.intakeScoop.set(0.0)
+            self.middleRamp.set(0.0)
+            self.wasLookingForNote = False
+            self.needsreset=True
+
+        if self.needsreset:
+            return
+        
         rpm = value * self.kMaxRpm
         topFF = self.topspark.FeedForward.calculate(rpm)
         self.topspark._Motor_Pid_.setReference(rpm, rev.CANSparkMax.ControlType.kVelocity, arbFeedforward=topFF)
@@ -32,6 +50,8 @@ class Shooter:
     def stop(self):
         self.bottomMotorspark._Motor_Pid_.setReference(0, rev.CANSparkMax.ControlType.kVelocity)
         self.topspark._Motor_Pid_.setReference(0, rev.CANSparkMax.ControlType.kVelocity)
-        self.middleRamp.set(0) # TODO scoop 
+        self.middleRamp.set(0)
+        self.intakeScoop.set(0)
+        self.needsreset=False
 
            
