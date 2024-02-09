@@ -22,10 +22,7 @@ import phoenix5
 import math
 import shooter
 
-# TODO ===First===
-
-# TODO ===Second===
-# TODO (maybe. Switch plugs into motor.)limit switch/torque detection on the climbing motors
+# TODO ===FIRST===
 # TODO pathplanner
 # TODO average startup position using camera position
 
