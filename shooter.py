@@ -21,7 +21,7 @@ class Shooter:
         self.needsreset=False
     
     def fire(self, value):
-        if not self.noteSensorBottom.get() or not self.noteSensorTop:
+        if False:# not self.noteSensorBottom.get() or not self.noteSensorTop.get():
             # We're looking for notes to intake
             # TODO explicitly set launcher motors to not run
             self.intakeScoopSpark._Motor_Pid_.setReference(self.kMaxRpm, rev.CANSparkMax.ControlType.kVelocity)
@@ -43,13 +43,13 @@ class Shooter:
         
         rpm = value * self.kMaxRpm
         topFF = self.topspark.FeedForward.calculate(rpm)
-        self.topspark._Motor_Pid_.setReference(rpm, rev.CANSparkMax.ControlType.kVelocity, arbFeedforward=topFF)
+        self.topspark._Motor_Pid_.setReference(rpm * -1, rev.CANSparkMax.ControlType.kVelocity, arbFeedforward=0)
         bottomFF = self.bottomMotorspark.FeedForward.calculate(rpm * -1)
-        self.bottomMotorspark._Motor_Pid_.setReference(rpm * -1, rev.CANSparkMax.ControlType.kVelocity, arbFeedforward=bottomFF)
+        self.bottomMotorspark._Motor_Pid_.setReference(rpm, rev.CANSparkMax.ControlType.kVelocity, arbFeedforward=0)
 
         toprpm = self.topspark.encoder.getVelocity()
         bottomrpm = self.bottomMotorspark.encoder.getVelocity()
-        if toprpm >= rpm and bottomrpm <= -1 * rpm:
+        if bottomrpm >= rpm and toprpm <= -1 * rpm:
             self.middleRampSpark._Motor_Pid_.setReference(self.kMaxRpm, rev.CANSparkMax.ControlType.kVelocity)
         else: 
             self.middleRampSpark._Motor_Pid_.setReference(0, rev.CANSparkMax.ControlType.kVelocity)

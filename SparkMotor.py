@@ -14,7 +14,7 @@ class SparkMotor:
        self._Motor_Pid_.setI(i_value)
        self._Motor_Pid_.setD(d_value)
        self._Motor_Pid_.setIZone(0)
-       self._Motor_Pid_.setFF(k_v)
+       self._Motor_Pid_.setFF(0)
        self._Motor_Pid_.setOutputRange(-1.0, 1.0)
 
        self._k_s = 0.25 / _k_volts

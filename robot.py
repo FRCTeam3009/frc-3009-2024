@@ -191,7 +191,7 @@ class MyRobot(wpilib.TimedRobot):
         self.smartdashboard.putNumber("chassis_speeds_vx", self.chassisSpeeds.vx)
         self.smartdashboard.putNumber("chassis_speeds_vy", self.chassisSpeeds.vy)
         self.smartdashboard.putNumber("chassis_speeds_omega", self.chassisSpeeds.omega)
-        self.smartdashboard.putNumber("note sensor", self.noteSensor.get())
+        self.smartdashboard.putNumber("note sensor", self.noteSensorTop.get())
 
 
     def autonomousInit(self):
