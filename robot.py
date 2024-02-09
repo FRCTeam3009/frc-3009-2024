@@ -23,7 +23,6 @@ import math
 import shooter
 
 # TODO ===First===
-# TODO light sensor for knowing if a note is collected
 
 # TODO ===Second===
 # TODO limit switch/torque detection on the climbing motors
@@ -118,9 +117,10 @@ class MyRobot(wpilib.TimedRobot):
         if "pytest" not in sys.modules:
             self.gyro = wpilib.ADIS16470_IMU()
 
-        self.noteSensor = wpilib.DigitalInput(9)
+        self.noteSensorBottom = wpilib.DigitalInput(9)
+        self.noteSensorTop = wpilib.DigitalInput(8)
         self.intakeScoop = rev.CANSparkMax(9, rev._rev.CANSparkLowLevel.MotorType.kBrushless)
-        self.shooter = shooter.Shooter(6, 8, 7, self.noteSensor, self.intakeScoop)
+        self.shooter = shooter.Shooter(6, 8, 7, self.noteSensorBottom, self.noteSensorTop, self.intakeScoop)
 
 
         self.climber = phoenix5.TalonFX(10)

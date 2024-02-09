@@ -5,33 +5,40 @@ import SparkMotor
 class Shooter:
     speakerscale = 0.62
     ampscale = 0.5
-    def __init__(self, topId, bottomId, middleId, noteSensor, intakeScoop):
-        self.kMaxRpm = 5600
+    def __init__(self, topId, bottomId, middleId, noteSensorBottom, noteSensorTop, intakeScoop):
+        self.kMaxRpm = 5600.0
 
         self.topMotor = rev.CANSparkMax(topId, rev._rev.CANSparkLowLevel.MotorType.kBrushless)
         self.bottomMotor = rev.CANSparkMax(bottomId, rev._rev.CANSparkLowLevel.MotorType.kBrushless)
         self.middleRamp = rev.CANSparkMax(middleId, rev._rev.CANSparkLowLevel.MotorType.kBrushless) 
         self.topspark = SparkMotor.SparkMotor(self.topMotor)
         self.bottomMotorspark = SparkMotor.SparkMotor(self.bottomMotor)
-        self.noteSensor = noteSensor
-        self.intakeScoop= intakeScoop
-        self.kscoopspeed = 0.5
+        self.middleRampSpark = SparkMotor.SparkMotor(self.middleRamp)
+        self.noteSensorBottom = noteSensorBottom
+        self.noteSensorTop = noteSensorTop
+        self.intakeScoopSpark = SparkMotor.SparkMotor(intakeScoop)
         self.wasLookingForNote = False
         self.needsreset=False
     
     def fire(self, value):
-        if not self.noteSensor.get():
-            self.intakeScoop.set(self.kscoopspeed)
-            self.middleRamp.set(1.0)
+        if not self.noteSensorBottom.get() or not self.noteSensorTop:
+            # We're looking for notes to intake
+            # TODO explicitly set launcher motors to not run
+            self.intakeScoopSpark._Motor_Pid_.setReference(self.kMaxRpm, rev.CANSparkMax.ControlType.kVelocity)
+            self.middleRampSpark._Motor_Pid_.setReference(self.kMaxRpm, rev.CANSparkMax.ControlType.kVelocity)
             self.wasLookingForNote = True
             return
         elif self.wasLookingForNote is True:
-            self.intakeScoop.set(0.0)
-            self.middleRamp.set(0.0)
+            # We grabbed a note but need to let off before firing
+            self.intakeScoopSpark._Motor_Pid_.setReference(0, rev.CANSparkMax.ControlType.kVelocity)
+            self.middleRampSpark._Motor_Pid_.setReference(0, rev.CANSparkMax.ControlType.kVelocity)
             self.wasLookingForNote = False
             self.needsreset=True
 
+        # At this point we have a note and are preparing to fire
         if self.needsreset:
+            self.stop_motors()
+            self.intakeScoopSpark._Motor_Pid_.setReference(self.kMaxRpm * -0.1, rev.CANSparkMax.ControlType.kVelocity)
             return
         
         rpm = value * self.kMaxRpm
@@ -43,15 +50,18 @@ class Shooter:
         toprpm = self.topspark.encoder.getVelocity()
         bottomrpm = self.bottomMotorspark.encoder.getVelocity()
         if toprpm >= rpm and bottomrpm <= -1 * rpm:
-            self.middleRamp.set(1.0)
+            self.middleRampSpark._Motor_Pid_.setReference(self.kMaxRpm, rev.CANSparkMax.ControlType.kVelocity)
         else: 
-            self.middleRamp.set(0)
-    
-    def stop(self):
+            self.middleRampSpark._Motor_Pid_.setReference(0, rev.CANSparkMax.ControlType.kVelocity)
+
+    def stop_motors(self):
         self.bottomMotorspark._Motor_Pid_.setReference(0, rev.CANSparkMax.ControlType.kVelocity)
         self.topspark._Motor_Pid_.setReference(0, rev.CANSparkMax.ControlType.kVelocity)
-        self.middleRamp.set(0)
-        self.intakeScoop.set(0)
+        self.middleRampSpark._Motor_Pid_.setReference(0, rev.CANSparkMax.ControlType.kVelocity)
+        self.intakeScoopSpark._Motor_Pid_.setReference(0, rev.CANSparkMax.ControlType.kVelocity)
+
+    def stop(self):
+        self.stop_motors()
         self.needsreset=False
 
            
