@@ -5,6 +5,7 @@ import SparkMotor
 class Shooter:
     speakerscale = 0.62
     ampscale = 0.5
+
     def __init__(self, topId, bottomId, middleId, noteSensorBottom, noteSensorTop, intakeScoop):
         self.kMaxRpm = 5600.0
 
@@ -18,7 +19,7 @@ class Shooter:
         self.noteSensorTop = noteSensorTop
         self.intakeScoopSpark = SparkMotor.SparkMotor(intakeScoop)
         self.wasLookingForNote = False
-        self.needsreset=False
+        self.needsreset = False
     
     def fire(self, value):
         if False:# not self.noteSensorBottom.get() or not self.noteSensorTop.get():
@@ -33,7 +34,7 @@ class Shooter:
             self.intakeScoopSpark._Motor_Pid_.setReference(0, rev.CANSparkMax.ControlType.kVelocity)
             self.middleRampSpark._Motor_Pid_.setReference(0, rev.CANSparkMax.ControlType.kVelocity)
             self.wasLookingForNote = False
-            self.needsreset=True
+            self.needsreset = True
 
         # At this point we have a note and are preparing to fire
         if self.needsreset:
