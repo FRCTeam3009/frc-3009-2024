@@ -25,14 +25,12 @@ import shooter
 # TODO ===First===
 
 # TODO ===Second===
-# TODO limit switch/torque detection on the climbing motors
+# TODO (maybe. Switch plugs into motor.)limit switch/torque detection on the climbing motors
 # TODO pathplanner
 # TODO average startup position using camera position
 
 # TODO ===Dependencies Required===
 # TODO add trap opener push thingy (requires the assembled thingy)
-# TODO wait for launcher to hit speed before shooting (hold like a gatling gun) (needs velocity pid)
-# TODO set intake to run middle rollers too until note detected (needs light sensor)
 # TODO (extra) coral machine learning vision for notes (needs ML usb thing)
 
 # TODO ===Last===
