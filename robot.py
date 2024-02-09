@@ -21,6 +21,8 @@ import ntcore
 import phoenix5
 import math
 import shooter
+from pathplannerlib.auto import PathPlannerAuto
+
 
 # TODO ===FIRST===
 # TODO pathplanner
@@ -49,8 +51,6 @@ class MyRobot(wpilib.TimedRobot):
         self.kAlltags=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
         self.kDefaultScoopScale = 0.5
         self.kDefaultMiddleRampScale = 1.0
-        self.kMaxSpeed = 4.0 # meters per second
-        self.kMaxRotate = self.kMaxSpeed / self.chassis._turn_meters_per_radian # radians per second
         self.kSubwooferDistance = 36.17 # inches
         self.kSubwooferStopDistance = self.kSubwooferDistance + 11.0
 
@@ -106,11 +106,11 @@ class MyRobot(wpilib.TimedRobot):
         rrEncoderParams = encoderParams.EncoderParams(30, -0.236328)
         rrParams = swerve_drive_params.SwerveDriveParams(rrdriveMotorParams, rrangleMotorParams, rrEncoderParams)
 
-        self.driveTrain = drive_train.DriveTrain(self.chassis, flParams, frParams, rlParams, rrParams)
-
         self.gyro = test_imu.TestIMU()
         if "pytest" not in sys.modules:
             self.gyro = wpilib.ADIS16470_IMU()
+            
+        self.driveTrain = drive_train.DriveTrain(self.chassis, flParams, frParams, rlParams, rrParams, self.getPeriod(), self.gyro)
 
         self.noteSensorBottom = wpilib.DigitalInput(9)
         self.noteSensorTop = wpilib.DigitalInput(8)
@@ -145,6 +145,9 @@ class MyRobot(wpilib.TimedRobot):
         self.timer = wpilib.Timer()
         self.cameraTimer = wpilib.Timer()
         self.cameraTimer.start()
+
+        self.automode = PathPlannerAuto("rightSpeakerBLUE")
+        
 
     def robotPeriodic(self):
         swerveModulePositions = self.driveTrain.getSwerveModulePositions()
@@ -185,8 +188,8 @@ class MyRobot(wpilib.TimedRobot):
 
         self.smartdashboard.putNumber("motor_factor", self.driveTrain.fl._chassis._driveMotorConversionFactor)
         self.smartdashboard.putNumber("rotate_factor", self.driveTrain.fl._chassis._angleMotorConversionFactor)
-        self.smartdashboard.putNumber("max_speed", self.kMaxSpeed)
-        self.smartdashboard.putNumber("max_rotate", self.kMaxRotate)
+        self.smartdashboard.putNumber("max_speed", self.driveTrain.kMaxSpeed)
+        self.smartdashboard.putNumber("max_rotate", self.driveTrain.kMaxRotate)
         self.smartdashboard.putNumber("something_rotation", self.something)
         self.smartdashboard.putNumber("chassis_speeds_vx", self.chassisSpeeds.vx)
         self.smartdashboard.putNumber("chassis_speeds_vy", self.chassisSpeeds.vy)
@@ -198,6 +201,7 @@ class MyRobot(wpilib.TimedRobot):
         """This function is run once each time the robot enters autonomous mode."""
         self.timer.reset()
         self.timer.start()
+        self.automode.schedule()
 
     def autonomousPeriodic(self):
         """This function is called periodically during autonomous."""
@@ -222,9 +226,9 @@ class MyRobot(wpilib.TimedRobot):
             self.shooter.stop()
 
         
-        forward = self.controls.forward() * self.getInputSpeed(self.kMaxSpeed)
-        horizontal = self.controls.horizontal() * self.getInputSpeed(self.kMaxSpeed)
-        rotate = self.controls.rotate() * self.getInputSpeed(self.kMaxRotate)
+        forward = self.controls.forward() * self.getInputSpeed(self.driveTrain.kMaxSpeed)
+        horizontal = self.controls.horizontal() * self.getInputSpeed(self.driveTrain.kMaxSpeed)
+        rotate = self.controls.rotate() * self.getInputSpeed(self.driveTrain.kMaxRotate)
         pose = wpimath.geometry.Pose2d(forward, horizontal, rotate)
         fieldRelative = True
 
@@ -269,9 +273,9 @@ class MyRobot(wpilib.TimedRobot):
 
     def Drive(self, pose: wpimath.geometry.Pose2d, fieldRelative):
          # Cap the speeds
-        forward = capValue(pose.X(), self.kMaxSpeed)
-        horizontal = capValue(pose.Y(), self.kMaxSpeed)
-        rotate = capValue(pose.rotation().radians(), self.kMaxRotate)
+        forward = capValue(pose.X(), self.driveTrain.kMaxSpeed)
+        horizontal = capValue(pose.Y(), self.driveTrain.kMaxSpeed)
+        rotate = capValue(pose.rotation().radians(), self.driveTrain.kMaxRotate)
         self.something = pose.rotation().radians()
 
         gyroYaw = self.GetRotation()
@@ -282,7 +286,7 @@ class MyRobot(wpilib.TimedRobot):
             chassisSpeeds = wpimath.kinematics.ChassisSpeeds.fromFieldRelativeSpeeds(forward, horizontal, rotate, relativeRotation)
 
         self.chassisSpeeds = wpimath.kinematics.ChassisSpeeds.discretize(chassisSpeeds, self.getPeriod())
-        self.driveTrain.Drive(chassisSpeeds, self.getPeriod(), self.kMaxSpeed)
+        self.driveTrain.Drive(chassisSpeeds)
 
     def MoveToPose2d(self, pose: wpimath.geometry.Pose2d):
         trajectory = pose.relativeTo(self.lastOdometryPose)
@@ -292,9 +296,9 @@ class MyRobot(wpilib.TimedRobot):
         self.smartdashboard.putNumber("trajectoryY", trajectory.Y())
         self.smartdashboard.putNumber("trajectoryR", rotation)
 
-        rotate = rotation * self.kMaxRotate
-        forward = trajectory.X() * self.kMaxSpeed
-        horizontal = trajectory.Y() * self.kMaxSpeed
+        rotate = rotation * self.driveTrain.kMaxRotate
+        forward = trajectory.X() * self.driveTrain.kMaxSpeed
+        horizontal = trajectory.Y() * self.driveTrain.kMaxSpeed
 
         if abs(forward) < 0.01:
             forward = 0.0
