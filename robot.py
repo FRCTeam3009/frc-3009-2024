@@ -23,7 +23,6 @@ import math
 import shooter
 from pathplannerlib.auto import PathPlannerAuto
 
-
 # TODO ===FIRST===
 # TODO pathplanner
 # TODO average startup position using camera position
@@ -117,7 +116,6 @@ class MyRobot(wpilib.TimedRobot):
         self.intakeScoop = rev.CANSparkMax(9, rev._rev.CANSparkLowLevel.MotorType.kBrushless)
         self.shooter = shooter.Shooter(6, 8, 7, self.noteSensorBottom, self.noteSensorTop, self.intakeScoop)
 
-
         self.climber = phoenix5.TalonFX(10)
 
         robotToCameraRotation = wpimath.geometry.Rotation3d(0, 0, 0)
@@ -146,7 +144,7 @@ class MyRobot(wpilib.TimedRobot):
         self.cameraTimer = wpilib.Timer()
         self.cameraTimer.start()
 
-        self.automode = PathPlannerAuto("rightSpeakerBLUE")
+        # self.automode = PathPlannerAuto("rightSpeakerBLUE")
         
 
     def robotPeriodic(self):
@@ -201,7 +199,7 @@ class MyRobot(wpilib.TimedRobot):
         """This function is run once each time the robot enters autonomous mode."""
         self.timer.reset()
         self.timer.start()
-        self.automode.schedule()
+        # self.automode.schedule()
 
     def autonomousPeriodic(self):
         """This function is called periodically during autonomous."""

@@ -4,15 +4,13 @@ import swerve_module
 import wpimath
 import wpimath.geometry
 import wpimath.kinematics
-from pathplannerlib.auto import AutoBuilder, PathPlannerAuto
+from pathplannerlib.auto import AutoBuilder
 from pathplannerlib.config import HolonomicPathFollowerConfig, ReplanningConfig, PIDConstants
-from wpilib import DriverStation
 from swerve_drive_params import SwerveDriveParams
 import chassis
 import wpilib
 
-
-class DriveTrain(object):
+class DriveTrain():
     def __init__(self, chassis : chassis.Chassis, fl : SwerveDriveParams, fr : SwerveDriveParams, rl : SwerveDriveParams, rr : SwerveDriveParams, period, gyro):
         self._chassis = chassis
 
@@ -44,21 +42,21 @@ class DriveTrain(object):
         zeroRotate = wpimath.geometry.Rotation2d()
         self.odometry = SwerveDrive4Odometry(self._drive_kinematics, zeroRotate, self.getSwerveModulePositions())
 
-        AutoBuilder.configureHolonomic(
-            self.odometry.getPose, # Robot pose supplier
-            self.odometry.resetPosition, # Method to reset odometry (will be called if your auto has a starting pose)
-            self.getspeeds, # ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
-            self.Drive, # Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
-            HolonomicPathFollowerConfig( # HolonomicPathFollowerConfig, this should likely live in your Constants class
-                PIDConstants(fl._drive_motor.pid_p, fl._drive_motor.pid_i, fl._drive_motor.pid_d), # Translation PID constants
-                PIDConstants(fl._angle_motor.pid_p, fl._angle_motor.pid_i, fl._angle_motor.pid_d), # Rotation PID constants
-                4.0, # Max module speed, in m/s
-                chassis._turn_circumference, # Drive base radius in meters. Distance from robot center to furthest module.
-                ReplanningConfig() # Default path replanning config. See the API for the options here
-            ),
-            self.shouldFlipPath, # Supplier to control path flipping based on alliance color
-            self # Reference to this subsystem to set requirements
-        )
+        # AutoBuilder.configureHolonomic(
+        #     self.odometry.getPose, # Robot pose supplier
+        #     self.resetPosition, # Method to reset odometry (will be called if your auto has a starting pose)
+        #     self.getspeeds, # ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
+        #     self.Drive, # Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
+        #     HolonomicPathFollowerConfig( # HolonomicPathFollowerConfig, this should likely live in your Constants class
+        #         PIDConstants(fl._drive_motor.pid_p, fl._drive_motor.pid_i, fl._drive_motor.pid_d), # Translation PID constants
+        #         PIDConstants(fl._angle_motor.pid_p, fl._angle_motor.pid_i, fl._angle_motor.pid_d), # Rotation PID constants
+        #         4.0, # Max module speed, in m/s
+        #         chassis._turn_circumference, # Drive base radius in meters. Distance from robot center to furthest module.
+        #         ReplanningConfig() # Default path replanning config. See the API for the options here
+        #     ),
+        #     self.shouldFlipPath, # Supplier to control path flipping based on alliance color
+        #     None # Reference to this subsystem to set requirements
+        # )
 
 
     def Drive(self, chassisSpeeds):
@@ -77,9 +75,12 @@ class DriveTrain(object):
 
     def shouldFlipPath(self):
         return False
+    
     def getspeeds(self):
         swerevestates = [self.fl.get_swerve_state(), self.fr.get_swerve_state(), self.rl.get_swerve_state(), self.rr.get_swerve_state()]
         return self._drive_kinematics.toChassisSpeeds(swerevestates)
-    def resetPosition(self, pose:wpimath.geometry.Pose2d):
+    
+    def resetPosition(self, pose: wpimath.geometry.Pose2d):
         angle = self.gyro.getAngle(wpilib.ADIS16470_IMU.IMUAxis.kYaw)
-        self.odometry.resetPosition(angle, self.getSwerveModulePositions(), pose)
+        rotate = wpimath.geometry.Rotation2d.fromDegrees(angle)
+        self.odometry.resetPosition(rotate, self.getSwerveModulePositions(), pose)

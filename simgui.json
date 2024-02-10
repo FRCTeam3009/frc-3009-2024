@@ -41,7 +41,10 @@
   },
   "NetworkTables": {
     "transitory": {
-      "SmartDashboard": {
+      "photonvision": {
+        "limelight1": {
+          "open": true
+        },
         "open": true
       }
     }

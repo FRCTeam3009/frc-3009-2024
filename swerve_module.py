@@ -13,9 +13,9 @@ class SwerveModule(object):
     def __init__(self, sdp_: sdp, chassis_: chassis.Chassis):
         self._sdp = sdp_
         self._chassis = chassis_
-        self._drive_motor = rev.CANSparkMax(sdp_._drive_motor.id, rev.CANSparkLowLevel.MotorType.kBrushless)
+        self._drive_motor = rev.CANSparkMax(self._sdp._drive_motor.id, rev.CANSparkLowLevel.MotorType.kBrushless)
         self._drive_motor.setInverted(False)
-        self._angle_motor = rev.CANSparkMax(sdp_._angle_motor.id, rev.CANSparkLowLevel.MotorType.kBrushless)
+        self._angle_motor = rev.CANSparkMax(self._sdp._angle_motor.id, rev.CANSparkLowLevel.MotorType.kBrushless)
         self._angle_motor.setInverted(True)
 
         self._drive_motor_encoder = self._drive_motor.getEncoder()
@@ -26,9 +26,9 @@ class SwerveModule(object):
         self._angle_motor_encoder.setPositionConversionFactor(self._chassis._angleMotorConversionFactor)
         self._angle_motor_encoder.setVelocityConversionFactor(self._angle_motor_encoder.getPositionConversionFactor())
 
-        self._encoder = phoenix6.hardware.CANcoder(sdp_._angle_encoder.id)
+        self._encoder = phoenix6.hardware.CANcoder(self._sdp._angle_encoder.id)
         encoder_config = phoenix6.configs.CANcoderConfiguration()
-        encoder_config.magnet_sensor.magnet_offset = sdp_._angle_encoder.offset * -1
+        encoder_config.magnet_sensor.magnet_offset = self._sdp._angle_encoder.offset * -1
         self._encoder.configurator.apply(encoder_config)
         self._encoder.get_position().set_update_frequency(100)
         self._encoder.get_absolute_position().set_update_frequency(100)
