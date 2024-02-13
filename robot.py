@@ -42,6 +42,17 @@ class MyRobot(wpilib.TimedRobot):
         should be used for any initialization code.
         """
         self.chassis = chassis.Chassis()
+        self.leds = wpilib.AddressableLED(5)
+        self.ledLength = 151
+        self.leds.setLength(self.ledLength)
+        self.ledLit = 0
+        self.ledBuff = []
+        for led in range(self.ledLength):
+            self.ledBuff.append(self.leds.LEDData())
+            led_data = self.ledBuff[led]
+            led_data.setRGB(0,0,0)
+        self.leds.setData(self.ledBuff)
+        self.leds.start()
 
         self.kSubwoofertags = [3, 4, 7, 8]
         self.kAmptags = [5, 6] 
@@ -148,6 +159,15 @@ class MyRobot(wpilib.TimedRobot):
         
 
     def robotPeriodic(self):
+        for led in range(self.ledLength):
+            led_data = self.ledBuff[led]
+            if self.ledLit % self.ledLength == led:
+                led_data.setRGB(250,0,0)
+            else:
+                led_data.setRGB(0,0,250)
+        self.ledLit += 1
+        self.leds.setData(self.ledBuff)
+
         swerveModulePositions = self.driveTrain.getSwerveModulePositions()
         rotation = wpimath.geometry.Rotation2d.fromDegrees(self.GetRotation())
 
