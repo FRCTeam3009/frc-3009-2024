@@ -22,6 +22,7 @@ import phoenix5
 import math
 import shooter
 from pathplannerlib.auto import PathPlannerAuto
+import pathplannerlib.auto
 
 # TODO ===FIRST===
 # TODO pathplanner
@@ -33,6 +34,8 @@ from pathplannerlib.auto import PathPlannerAuto
 
 # TODO ===Last===
 # TODO teach the team how the robot works so they can explain it to judges
+
+TestCanId = 0
 
 class MyRobot(wpilib.TimedRobot):
 
@@ -93,27 +96,27 @@ class MyRobot(wpilib.TimedRobot):
         self.chassisSpeeds = wpimath.kinematics.ChassisSpeeds.fromRobotRelativeSpeeds(0,0,0,wpimath.geometry.Rotation2d())
         
         # Front Left
-        fldriveMotorParams = motorParams.Motorparams(22, p_value, i_value, d_value)
-        flangleMotorParams = motorParams.Motorparams(23, angle_p_value)
-        flEncoderParams = encoderParams.EncoderParams(32, -0.089844)
+        fldriveMotorParams = motorParams.Motorparams(GetCanId(22), p_value, i_value, d_value)
+        flangleMotorParams = motorParams.Motorparams(GetCanId(23), angle_p_value)
+        flEncoderParams = encoderParams.EncoderParams(GetCanId(32), -0.089844)
         flParams = swerve_drive_params.SwerveDriveParams(fldriveMotorParams, flangleMotorParams, flEncoderParams)
 
         # Rear Left
-        rldriveMotorParams = motorParams.Motorparams(24, p_value, i_value, d_value)
-        rlangleMotorParams = motorParams.Motorparams(25, angle_p_value)
-        rlEncoderParams = encoderParams.EncoderParams(33, -0.094971)
+        rldriveMotorParams = motorParams.Motorparams(GetCanId(24), p_value, i_value, d_value)
+        rlangleMotorParams = motorParams.Motorparams(GetCanId(25), angle_p_value)
+        rlEncoderParams = encoderParams.EncoderParams(GetCanId(33), -0.094971)
         rlParams = swerve_drive_params.SwerveDriveParams(rldriveMotorParams, rlangleMotorParams, rlEncoderParams)
 
         # Front Right
-        frdriveMotorParams = motorParams.Motorparams(20, p_value, i_value, d_value)
-        frangleMotorParams = motorParams.Motorparams(21, angle_p_value)
-        frEncoderParams = encoderParams.EncoderParams(31, 0.037842)
+        frdriveMotorParams = motorParams.Motorparams(GetCanId(20), p_value, i_value, d_value)
+        frangleMotorParams = motorParams.Motorparams(GetCanId(21), angle_p_value)
+        frEncoderParams = encoderParams.EncoderParams(GetCanId(31), 0.037842)
         frParams = swerve_drive_params.SwerveDriveParams(frdriveMotorParams, frangleMotorParams, frEncoderParams)
         
         # Rear Right
-        rrdriveMotorParams = motorParams.Motorparams(26, p_value, i_value, d_value)
-        rrangleMotorParams = motorParams.Motorparams(27, angle_p_value)
-        rrEncoderParams = encoderParams.EncoderParams(30, -0.236328)
+        rrdriveMotorParams = motorParams.Motorparams(GetCanId(26), p_value, i_value, d_value)
+        rrangleMotorParams = motorParams.Motorparams(GetCanId(27), angle_p_value)
+        rrEncoderParams = encoderParams.EncoderParams(GetCanId(30), -0.236328)
         rrParams = swerve_drive_params.SwerveDriveParams(rrdriveMotorParams, rrangleMotorParams, rrEncoderParams)
 
         self.gyro = test_imu.TestIMU()
@@ -124,10 +127,10 @@ class MyRobot(wpilib.TimedRobot):
 
         self.noteSensorBottom = wpilib.DigitalInput(9)
         self.noteSensorTop = wpilib.DigitalInput(8)
-        self.intakeScoop = rev.CANSparkMax(9, rev._rev.CANSparkLowLevel.MotorType.kBrushless)
-        self.shooter = shooter.Shooter(6, 8, 7, self.noteSensorBottom, self.noteSensorTop, self.intakeScoop)
+        self.intakeScoop = rev.CANSparkMax(GetCanId(9), rev._rev.CANSparkLowLevel.MotorType.kBrushless)
+        self.shooter = shooter.Shooter(GetCanId(6), GetCanId(8), GetCanId(7), self.noteSensorBottom, self.noteSensorTop, self.intakeScoop)
 
-        self.climber = phoenix5.TalonFX(10)
+        self.climber = phoenix5.TalonFX(GetCanId(10))
 
         robotToCameraRotation = wpimath.geometry.Rotation3d(0, 0, 0)
         self.robotToCamera = wpimath.geometry.Transform3d(
@@ -155,7 +158,7 @@ class MyRobot(wpilib.TimedRobot):
         self.cameraTimer = wpilib.Timer()
         self.cameraTimer.start()
 
-        # self.automode = PathPlannerAuto("rightSpeakerBLUE")
+        pathplannerlib.auto.NamedCommands.registerCommand("shoot", TestCommand())
         
 
     def robotPeriodic(self):
@@ -219,12 +222,16 @@ class MyRobot(wpilib.TimedRobot):
         """This function is run once each time the robot enters autonomous mode."""
         self.timer.reset()
         self.timer.start()
-        # self.automode.schedule()
+
+        self.driveTrain.AutoInit()
+        self.automode = PathPlannerAuto("rightSpeakerBLUE")
+        self.automode.initialize()
 
     def autonomousPeriodic(self):
         """This function is called periodically during autonomous."""
         #m = self.GetCameraMovement()
         #self.Drive(m.forward, m.horizontal, m.rotate, False)
+        self.automode.execute()
 
     def teleopInit(self):
         """This function is run once each time the robot enters teleop mode."""
@@ -352,6 +359,11 @@ class MyRobot(wpilib.TimedRobot):
             return 0.25 * speed
         else:
             return 0.75 * speed
+        
+class TestCommand(pathplannerlib.auto.Command):
+    def execute(self):
+        print("SHOOTING")
+        return super().execute()
 
 if __name__ == "__main__":
     wpilib.run(MyRobot)
@@ -363,3 +375,11 @@ def capValue(value, cap):
         return -1 * cap
     else:
         return value
+    
+def GetCanId(id):
+    global TestCanId
+    if "pyfrc.tests" in sys.modules:
+        TestCanId += 1
+        return TestCanId
+    else:
+        return id
