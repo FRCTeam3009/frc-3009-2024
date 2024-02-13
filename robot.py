@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import wpilib
+import commands2
 import wpilib.drive
 import wpimath.kinematics
 import wpimath.geometry
@@ -162,6 +163,9 @@ class MyRobot(wpilib.TimedRobot):
         
 
     def robotPeriodic(self):
+
+        commands2.CommandScheduler.getInstance().run()
+
         for led in range(self.ledLength):
             led_data = self.ledBuff[led]
             if self.ledLit % self.ledLength == led:
@@ -173,6 +177,8 @@ class MyRobot(wpilib.TimedRobot):
 
         swerveModulePositions = self.driveTrain.getSwerveModulePositions()
         rotation = wpimath.geometry.Rotation2d.fromDegrees(self.GetRotation())
+
+        self.automode = None
 
         self.lastCameraPose = self.poseEstimator.update()
         ambiguity = 0
@@ -225,16 +231,15 @@ class MyRobot(wpilib.TimedRobot):
 
         self.driveTrain.AutoInit()
         self.automode = PathPlannerAuto("rightSpeakerBLUE")
-        self.automode.initialize()
+        self.automode.schedule()
 
     def autonomousPeriodic(self):
         """This function is called periodically during autonomous."""
-        #m = self.GetCameraMovement()
-        #self.Drive(m.forward, m.horizontal, m.rotate, False)
-        self.automode.execute()
+        #this function exists for some reason
 
     def teleopInit(self):
         """This function is run once each time the robot enters teleop mode."""
+        commands2.CommandScheduler.getInstance().cancelAll()
         self.timer.reset()
         self.timer.start()
 
@@ -360,10 +365,15 @@ class MyRobot(wpilib.TimedRobot):
         else:
             return 0.75 * speed
         
+
+    def testInit(self) -> None:
+        commands2.CommandScheduler.getInstance().cancelAll()
+        
 class TestCommand(pathplannerlib.auto.Command):
     def execute(self):
         print("SHOOTING")
-        return super().execute()
+    def isFinished(self):
+        return True
 
 if __name__ == "__main__":
     wpilib.run(MyRobot)
