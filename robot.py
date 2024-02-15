@@ -80,6 +80,7 @@ class MyRobot(wpilib.TimedRobot):
         self.smartdashboard.putNumber("goalR", 0.0)
 
         self.trapServo = wpilib.Servo(1)
+        self.trapServo.set(0.5)
 
         p_value = 6e-5
         i_value = 1e-6
@@ -215,6 +216,8 @@ class MyRobot(wpilib.TimedRobot):
         self.timer.reset()
         self.timer.start()
 
+        self.trapServo.set(0.5)
+
         self.driveTrain.AutoInit()
         self.automode = PathPlannerAuto("rightSpeakerBLUE")
         self.automode.schedule()
@@ -225,6 +228,8 @@ class MyRobot(wpilib.TimedRobot):
 
     def teleopInit(self):
         """This function is run once each time the robot enters teleop mode."""
+        self.trapServo.set(0.5)
+
         commands2.CommandScheduler.getInstance().cancelAll()
         self.timer.reset()
         self.timer.start()
@@ -242,7 +247,10 @@ class MyRobot(wpilib.TimedRobot):
             self.shooter.stop()
         
         if self.controls.push_trap():
-            self.trapServo.set(1.0)
+            if self.trapServo.get() > 0.75:
+                self.trapServo.set(0.5)
+            else:
+                self.trapServo.set(1.0)
 
         
         forward = self.controls.forward() * self.getInputSpeed(self.driveTrain.kMaxSpeed)
