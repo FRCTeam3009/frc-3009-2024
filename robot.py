@@ -88,6 +88,8 @@ class MyRobot(wpilib.TimedRobot):
         self.smartdashboard.putNumber("goalY", 0.0)
         self.smartdashboard.putNumber("goalR", 0.0)
 
+        self.trapServo = wpilib.Servo(1)
+
         p_value = 6e-5
         i_value = 1e-6
         d_value = 0
@@ -254,6 +256,9 @@ class MyRobot(wpilib.TimedRobot):
             self.shooter.fire(shooter.Shooter.ampscale)
         else: 
             self.shooter.stop()
+        
+        if self.controls.push_trap():
+            self.trapServo.set(1.0)
 
         
         forward = self.controls.forward() * self.getInputSpeed(self.driveTrain.kMaxSpeed)

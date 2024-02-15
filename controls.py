@@ -75,4 +75,7 @@ class Controls(object):
     
     def slow(self):
         return self.xbox0.getLeftBumper()
+    
+    def push_trap(self):
+        return self.xbox0.getYButtonPressed()
 
