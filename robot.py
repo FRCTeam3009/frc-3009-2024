@@ -24,13 +24,13 @@ import math
 import shooter
 from pathplannerlib.auto import PathPlannerAuto
 import pathplannerlib.auto
+import led
 
 # TODO ===FIRST===
 # TODO pathplanner
 # TODO average startup position using camera position
 
 # TODO ===Dependencies Required===
-# TODO add trap opener push thingy (requires the assembled thingy)
 # TODO (extra) coral machine learning vision for notes (needs ML usb thing)
 
 # TODO ===Last===
@@ -46,17 +46,8 @@ class MyRobot(wpilib.TimedRobot):
         should be used for any initialization code.
         """
         self.chassis = chassis.Chassis()
-        self.leds = wpilib.AddressableLED(5)
-        self.ledLength = 151
-        self.leds.setLength(self.ledLength)
-        self.ledLit = 0
-        self.ledBuff = []
-        for led in range(self.ledLength):
-            self.ledBuff.append(self.leds.LEDData())
-            led_data = self.ledBuff[led]
-            led_data.setRGB(0,0,0)
-        self.leds.setData(self.ledBuff)
-        self.leds.start()
+
+        self.ledStrips = led.ledStrips()
 
         self.kSubwoofertags = [3, 4, 7, 8]
         self.kAmptags = [5, 6] 
@@ -168,14 +159,7 @@ class MyRobot(wpilib.TimedRobot):
 
         commands2.CommandScheduler.getInstance().run()
 
-        for led in range(self.ledLength):
-            led_data = self.ledBuff[led]
-            if self.ledLit % self.ledLength == led:
-                led_data.setRGB(250,0,0)
-            else:
-                led_data.setRGB(0,0,250)
-        self.ledLit += 1
-        self.leds.setData(self.ledBuff)
+        self.ledStrips.solid(0, 250, 0)
 
         swerveModulePositions = self.driveTrain.getSwerveModulePositions()
         rotation = wpimath.geometry.Rotation2d.fromDegrees(self.GetRotation())
