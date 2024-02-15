@@ -4,7 +4,8 @@ import swerve_module
 import wpimath
 import wpimath.geometry
 import wpimath.kinematics
-from pathplannerlib.auto import AutoBuilder
+#from pathplannerlib.auto import AutoBuilder
+import pathplannerlib.auto
 from pathplannerlib.config import HolonomicPathFollowerConfig, ReplanningConfig, PIDConstants
 from swerve_drive_params import SwerveDriveParams
 import chassis
@@ -50,21 +51,22 @@ class DriveTrain():
         angleI = self.fl._drive_pid_controller.getI()
         angleD = self.fl._drive_pid_controller.getD()
 
-        AutoBuilder.configureHolonomic(
-            self.odometry.getPose, # Robot pose supplier
-            self.resetPosition, # Method to reset odometry (will be called if your auto has a starting pose)
-            self.getspeeds, # ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
-            self.Drive, # Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
-            HolonomicPathFollowerConfig( # HolonomicPathFollowerConfig, this should likely live in your Constants class
-                PIDConstants(driveP, driveI, driveD), # Translation PID constants
-                PIDConstants(angleP, angleI, angleD), # Rotation PID constants
-                4.0, # Max module speed, in m/s
-                self._chassis._turn_circumference, # Drive base radius in meters. Distance from robot center to furthest module.
-                ReplanningConfig() # Default path replanning config. See the API for the options here
-            ),
-            self.shouldFlipPath, # Supplier to control path flipping based on alliance color
-            None # Reference to this subsystem to set requirements
-        )
+        if not pathplannerlib.auto.AutoBuilder.isConfigured():
+            pathplannerlib.auto.AutoBuilder.configureHolonomic(
+                self.odometry.getPose, # Robot pose supplier
+                self.resetPosition, # Method to reset odometry (will be called if your auto has a starting pose)
+                self.getspeeds, # ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
+                self.Drive, # Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
+                HolonomicPathFollowerConfig( # HolonomicPathFollowerConfig, this should likely live in your Constants class
+                    PIDConstants(driveP, driveI, driveD), # Translation PID constants
+                    PIDConstants(angleP, angleI, angleD), # Rotation PID constants
+                    4.0, # Max module speed, in m/s
+                    self._chassis._turn_circumference, # Drive base radius in meters. Distance from robot center to furthest module.
+                    ReplanningConfig() # Default path replanning config. See the API for the options here
+                ),
+                self.shouldFlipPath, # Supplier to control path flipping based on alliance color
+                None # Reference to this subsystem to set requirements
+            )
 
 
     def Drive(self, chassisSpeeds):
