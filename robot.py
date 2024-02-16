@@ -91,26 +91,26 @@ class MyRobot(wpilib.TimedRobot):
         self.chassisSpeeds = wpimath.kinematics.ChassisSpeeds.fromRobotRelativeSpeeds(0,0,0,wpimath.geometry.Rotation2d())
         
         # Front Left
-        fldriveMotorParams = motorParams.Motorparams(GetCanId(22), p_value, i_value, d_value)
-        flangleMotorParams = motorParams.Motorparams(GetCanId(23), angle_p_value)
+        fldriveMotorParams = motorParams.Motorparams(GetCanId(14), p_value, i_value, d_value)
+        flangleMotorParams = motorParams.Motorparams(GetCanId(20), angle_p_value)
         flEncoderParams = encoderParams.EncoderParams(GetCanId(32), -0.089844)
         flParams = swerve_drive_params.SwerveDriveParams(fldriveMotorParams, flangleMotorParams, flEncoderParams)
 
         # Rear Left
-        rldriveMotorParams = motorParams.Motorparams(GetCanId(24), p_value, i_value, d_value)
-        rlangleMotorParams = motorParams.Motorparams(GetCanId(25), angle_p_value)
+        rldriveMotorParams = motorParams.Motorparams(GetCanId(13), p_value, i_value, d_value)
+        rlangleMotorParams = motorParams.Motorparams(GetCanId(12), angle_p_value)
         rlEncoderParams = encoderParams.EncoderParams(GetCanId(33), -0.094971)
         rlParams = swerve_drive_params.SwerveDriveParams(rldriveMotorParams, rlangleMotorParams, rlEncoderParams)
 
         # Front Right
-        frdriveMotorParams = motorParams.Motorparams(GetCanId(20), p_value, i_value, d_value)
-        frangleMotorParams = motorParams.Motorparams(GetCanId(21), angle_p_value)
+        frdriveMotorParams = motorParams.Motorparams(GetCanId(19), p_value, i_value, d_value)
+        frangleMotorParams = motorParams.Motorparams(GetCanId(17), angle_p_value)
         frEncoderParams = encoderParams.EncoderParams(GetCanId(31), 0.037842)
         frParams = swerve_drive_params.SwerveDriveParams(frdriveMotorParams, frangleMotorParams, frEncoderParams)
         
         # Rear Right
-        rrdriveMotorParams = motorParams.Motorparams(GetCanId(26), p_value, i_value, d_value)
-        rrangleMotorParams = motorParams.Motorparams(GetCanId(27), angle_p_value)
+        rrdriveMotorParams = motorParams.Motorparams(GetCanId(11), p_value, i_value, d_value)
+        rrangleMotorParams = motorParams.Motorparams(GetCanId(15), angle_p_value)
         rrEncoderParams = encoderParams.EncoderParams(GetCanId(30), -0.236328)
         rrParams = swerve_drive_params.SwerveDriveParams(rrdriveMotorParams, rrangleMotorParams, rrEncoderParams)
 
@@ -120,12 +120,12 @@ class MyRobot(wpilib.TimedRobot):
             
         self.driveTrain = drive_train.DriveTrain(self.chassis, flParams, frParams, rlParams, rrParams, self.getPeriod(), self.gyro)
 
-        self.noteSensorBottom = wpilib.DigitalInput(9)
-        self.noteSensorTop = wpilib.DigitalInput(8)
+        self.noteSensorBottom = wpilib.DigitalInput(0)
+        self.noteSensorTop = wpilib.DigitalInput(1)
         self.intakeScoop = rev.CANSparkMax(GetCanId(9), rev._rev.CANSparkLowLevel.MotorType.kBrushless)
         self.shooter = shooter.Shooter(GetCanId(6), GetCanId(8), GetCanId(7), self.noteSensorBottom, self.noteSensorTop, self.intakeScoop)
 
-        self.climber = phoenix5.TalonFX(GetCanId(10))
+        self.climber = phoenix5.TalonFX(GetCanId(35))
 
         robotToCameraRotation = wpimath.geometry.Rotation3d(0, 0, 0)
         self.robotToCamera = wpimath.geometry.Transform3d(

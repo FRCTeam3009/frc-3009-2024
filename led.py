@@ -62,7 +62,6 @@ class ledStrips(object):
         i = 0
         while i < self.ledLength:
             led = self.ledBuff[i]
-            print(i)
             if i % 2 == 0:
                 setLedColor(led, kGreen)
             else:
