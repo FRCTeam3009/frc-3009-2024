@@ -141,12 +141,12 @@ class MyRobot(wpilib.TimedRobot):
             self.target[i] = {"target":None, "misses":self.k_maxmisses}
 
         self.aprilTagFieldLayout = robotpy_apriltag.loadAprilTagLayoutField(robotpy_apriltag.AprilTagField.k2024Crescendo)
-        self.poseEstimator = photonPoseEstimator.PhotonPoseEstimator(
-            self.aprilTagFieldLayout,
-            photonPoseEstimator.PoseStrategy(1),
-            self.limelight1,
-            self.robotToCamera,
-        )
+        # self.poseEstimator = photonPoseEstimator.PhotonPoseEstimator(
+        #     self.aprilTagFieldLayout,
+        #     photonPoseEstimator.PoseStrategy(1),
+        #     self.limelight1,
+        #     self.robotToCamera,
+        # )
 
         self.controls = controls.Controls(0, 1)
         self.timer = wpilib.Timer()
@@ -160,22 +160,23 @@ class MyRobot(wpilib.TimedRobot):
 
         commands2.CommandScheduler.getInstance().run()
 
-        self.ledStrips.solid(0, 250, 0)
+        #self.ledStrips.solid(0, 250, 0)
+        self.ledStrips.gbRotate()
 
         swerveModulePositions = self.driveTrain.getSwerveModulePositions()
         rotation = wpimath.geometry.Rotation2d.fromDegrees(self.GetRotation())
 
         self.automode = None
 
-        self.lastCameraPose = self.poseEstimator.update()
-        ambiguity = 0
-        if self.lastCameraPose is not None:
-            cameraPose = self.lastCameraPose.estimatedPose.toPose2d()
-            if len(self.lastCameraPose.targetsUsed) > 0:
-                ambiguity = self.lastCameraPose.targetsUsed[0].getPoseAmbiguity()
-                if ambiguity == 0 and self.cameraTimer.hasElapsed(5):
-                    self.driveTrain.odometry.resetPosition(rotation, swerveModulePositions, cameraPose)
-                    self.cameraTimer.reset()
+        #self.lastCameraPose = self.poseEstimator.update()
+        # ambiguity = 0
+        # if self.lastCameraPose is not None:
+        #     cameraPose = self.lastCameraPose.estimatedPose.toPose2d()
+        #     if len(self.lastCameraPose.targetsUsed) > 0:
+        #         ambiguity = self.lastCameraPose.targetsUsed[0].getPoseAmbiguity()
+        #         if ambiguity == 0 and self.cameraTimer.hasElapsed(5):
+        #             self.driveTrain.odometry.resetPosition(rotation, swerveModulePositions, cameraPose)
+        #             self.cameraTimer.reset()
 
 
         self.lastOdometryPose = self.driveTrain.odometry.update(rotation, swerveModulePositions)
@@ -183,7 +184,6 @@ class MyRobot(wpilib.TimedRobot):
         self.smartdashboard.putNumber("odometryX", self.lastOdometryPose.X())
         self.smartdashboard.putNumber("odometryY", self.lastOdometryPose.Y())
         self.smartdashboard.putNumber("rotation", self.lastOdometryPose.rotation().radians())
-        self.smartdashboard.putNumber("ambiguity", ambiguity)
 
         self.smartdashboard.putNumber("FL_RPM", self.driveTrain.fl.speedRPM)
         self.smartdashboard.putNumber("FR_RPM", self.driveTrain.fr.speedRPM)
