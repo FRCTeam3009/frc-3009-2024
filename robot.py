@@ -78,8 +78,8 @@ class MyRobot(wpilib.TimedRobot):
         self.smartdashboard.putNumber("goalY", 0.0)
         self.smartdashboard.putNumber("goalR", 0.0)
 
-        self.limelight0 = self.nt.getTable("limelight0")
-        self.limelight1 = self.nt.getTable("limelight1")
+        self.NoteCam = self.nt.getTable("NoteCam")
+        self.ATagCam = self.nt.getTable("ATagCam")
 
         self.trapServo = wpilib.Servo(ids.Servo)
         self.trapServo.set(0.5)
@@ -158,6 +158,12 @@ class MyRobot(wpilib.TimedRobot):
         self.cameraTimer.start()
 
         pathplannerlib.auto.NamedCommands.registerCommand("shoot", TestCommand())
+
+        self.txATag=0
+        self.tyATag=0
+        self.txNote=0
+        self.tyNote=0
+        self.botpose=None
         
 
     def robotPeriodic(self):
@@ -203,7 +209,16 @@ class MyRobot(wpilib.TimedRobot):
         self.smartdashboard.putNumber("chassis_speeds_omega", self.chassisSpeeds.omega)
         self.smartdashboard.putNumber("note sensor", self.noteSensorTop.get())
 
+        ATagCamTargetSeen = self.ATagCam.getNumber("tv",0)
+        NoteCamTargetSeen = self.NoteCam.getNumber("tv",0)
+        if ATagCamTargetSeen > 0:
+            self.txATag=self.ATagCam.getNumber("tx",0)
+            self.tyATag=self.ATagCam.getNumber("ty",0)
 
+        if NoteCamTargetSeen > 0:
+            self.txNote=self.NoteCam.getNumber("tx",0)
+            self.tyNote=self.NoteCam.getNumber("ty",0)
+            self.botpose=self.ATagCam.getEntry("botpose").getDoubleArray(None)
     def autonomousInit(self):
         """This function is run once each time the robot enters autonomous mode."""
         self.timer.reset()
@@ -259,12 +274,7 @@ class MyRobot(wpilib.TimedRobot):
 
         # Overwrite movement from camera if we say so
         if self.controls.rotate_to_target():
-            goalX = self.smartdashboard.getNumber("goalX", 0.0)
-            goalY = self.smartdashboard.getNumber("goalY", 0.0)
-            goalRotation = self.smartdashboard.getNumber("goalR", 0.0)
-            rotation = wpimath.geometry.Rotation2d(goalRotation)
-            goal = wpimath.geometry.Pose2d(goalX, goalY, rotation)
-            pose = self.MoveToPose2d(goal)
+            pose = self.noteLineup()
             fieldRelative = False
         elif self.controls.target_amp():
             pose = self.line_up_to_target(self.kAmptags)
@@ -334,16 +344,13 @@ class MyRobot(wpilib.TimedRobot):
         return self.gyro.getAngle(wpilib.ADIS16470_IMU.IMUAxis.kYaw)
     
     def line_up_to_target(self, tag_list):
-        if self.lastCameraPose is not None:
-            for targetSeen in self.lastCameraPose.targetsUsed:
-                for targetid in tag_list:
-                    if targetid == targetSeen.getFiducialId():
-                        transform = targetSeen.getBestCameraToTarget()
-                        rotate = targetSeen.getYaw()
-                        rotation = wpimath.geometry.Rotation2d.fromDegrees(rotate)
-                        pose = wpimath.geometry.Pose2d(transform.X(), transform.Y(), rotation)
-                        return pose
-                
+        tid = self.ATagCam.getEntry("tid").getDoubleArray(None)
+        if tid is not None and len(tid) > 0:
+            if tid[0] in tag_list:
+                r = self.txATag
+                x = math.tan(self.tyATag) * self.robotToCamera.Z()
+                return wpimath.geometry.Pose2d(x,0,r)
+            
         return wpimath.geometry.Pose2d()
     
 
@@ -358,6 +365,14 @@ class MyRobot(wpilib.TimedRobot):
 
     def testInit(self) -> None:
         commands2.CommandScheduler.getInstance().cancelAll()
+
+    def noteLineup(self):
+        goalX = math.tan(self.tyNote)*self.robotToCamera.Z()
+        goalY = self.smartdashboard.getNumber("goalY", 0.0)
+        goalRotation = self.txNote
+        rotation = wpimath.geometry.Rotation2d(goalRotation)
+        goal = wpimath.geometry.Pose2d(goalX, goalY, rotation)
+        return self.MoveToPose2d(goal)
         
 class TestCommand(pathplannerlib.auto.Command):
     def execute(self):
