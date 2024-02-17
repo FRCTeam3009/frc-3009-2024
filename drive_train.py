@@ -29,8 +29,8 @@ class DriveTrain():
         self.rl.reset_encoders()
         self.rr.reset_encoders()
 
-        self.fr._drive_motor.setInverted(True)
-        self.rr._drive_motor.setInverted(True)
+        self.fl._drive_motor.setInverted(True)
+        self.rl._drive_motor.setInverted(True)
 
         self._drive_kinematics = SwerveDrive4Kinematics(
             Translation2d( self._chassis._wheel_base_width / 2.0, self._chassis._wheel_base_length / 2.0),

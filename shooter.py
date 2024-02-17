@@ -3,7 +3,7 @@ from wpimath.controller import SimpleMotorFeedforwardMeters
 import SparkMotor
 
 class Shooter:
-    speakerscale = 0.62
+    speakerscale = 0.8#0.62
     ampscale = 0.5
 
     def __init__(self, topId, bottomId, middleId, noteSensorBottom, noteSensorTop, intakeScoop):
@@ -20,13 +20,15 @@ class Shooter:
         self.intakeScoopSpark = SparkMotor.SparkMotor(intakeScoop)
         self.wasLookingForNote = False
         self.needsreset = False
+        self.isLaunching = False
     
     def fire(self, value):
-        if False:# not self.noteSensorBottom.get() or not self.noteSensorTop.get():
+        if not (self.noteSensorBottom.get() or self.noteSensorTop.get()) and not self.isLaunching:
             # We're looking for notes to intake
-            # TODO explicitly set launcher motors to not run
             self.intakeScoopSpark._Motor_Pid_.setReference(self.kMaxRpm, rev.CANSparkMax.ControlType.kVelocity)
-            self.middleRampSpark._Motor_Pid_.setReference(self.kMaxRpm, rev.CANSparkMax.ControlType.kVelocity)
+            self.middleRampSpark._Motor_Pid_.setReference(self.kMaxRpm/2, rev.CANSparkMax.ControlType.kVelocity)
+            self.bottomMotorspark._Motor_Pid_.setReference(0, rev.CANSparkMax.ControlType.kVelocity)
+            self.topspark._Motor_Pid_.setReference(0, rev.CANSparkMax.ControlType.kVelocity)
             self.wasLookingForNote = True
             return
         elif self.wasLookingForNote is True:
@@ -42,6 +44,7 @@ class Shooter:
             self.intakeScoopSpark._Motor_Pid_.setReference(self.kMaxRpm * -0.1, rev.CANSparkMax.ControlType.kVelocity)
             return
         
+        self.isLaunching = True
         rpm = value * self.kMaxRpm
         topFF = self.topspark.FeedForward.calculate(rpm)
         self.topspark._Motor_Pid_.setReference(rpm * -1, rev.CANSparkMax.ControlType.kVelocity, arbFeedforward=0)
@@ -64,5 +67,6 @@ class Shooter:
     def stop(self):
         self.stop_motors()
         self.needsreset=False
+        self.isLaunching = False
 
            

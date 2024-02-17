@@ -88,7 +88,7 @@ class MyRobot(wpilib.TimedRobot):
         i_value = 1e-6
         d_value = 0
 
-        angle_p_value = 6e-5
+        angle_p_value = 0.5
         self.something = 0.0
         self.chassisSpeeds = wpimath.kinematics.ChassisSpeeds.fromRobotRelativeSpeeds(0,0,0,wpimath.geometry.Rotation2d())
         
@@ -210,7 +210,10 @@ class MyRobot(wpilib.TimedRobot):
         self.smartdashboard.putNumber("chassis_speeds_vx", self.chassisSpeeds.vx)
         self.smartdashboard.putNumber("chassis_speeds_vy", self.chassisSpeeds.vy)
         self.smartdashboard.putNumber("chassis_speeds_omega", self.chassisSpeeds.omega)
-        self.smartdashboard.putNumber("note sensor", self.noteSensorTop.get())
+        self.smartdashboard.putNumber("note sensor top", self.noteSensorTop.get())
+        self.smartdashboard.putNumber("note sensor bottom", self.noteSensorBottom.get())
+        self.smartdashboard.putNumber("note sensor front", self.noteSensorFront.get())
+
 
         ATagCamTargetSeen = self.ATagCam.getNumber("tv",0)
         NoteCamTargetSeen = self.NoteCam.getNumber("tv",0)

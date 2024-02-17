@@ -39,10 +39,10 @@ class SwerveModule(object):
         self._angle_pid_controller.setI(self._sdp._angle_motor.pid_i)
         self._angle_pid_controller.setD(self._sdp._angle_motor.pid_d)
         self._angle_pid_controller.setIZone(0)
-        self._angle_pid_controller.setFF(0)
+        self._angle_pid_controller.setFF(0.00000004)
         #self._angle_pid_controller.setFF(self._sdp._angle_k_v)
         self._angle_pid_controller.setPositionPIDWrappingEnabled(True)
-        self._angle_pid_controller.setOutputRange(-0.2, 0.2)
+        self._angle_pid_controller.setOutputRange(-1.0, 1.0)
         self._angle_pid_controller.setPositionPIDWrappingMinInput(-math.pi)
         self._angle_pid_controller.setPositionPIDWrappingMaxInput(math.pi)
 
@@ -51,7 +51,8 @@ class SwerveModule(object):
         self._drive_pid_controller.setI(self._sdp._drive_motor.pid_i)
         self._drive_pid_controller.setD(self._sdp._drive_motor.pid_d)
         self._drive_pid_controller.setIZone(0)
-        self._drive_pid_controller.setFF(self._chassis._k_v)
+        #self._drive_pid_controller.setFF(self._chassis._k_v)
+        self._drive_pid_controller.setFF(0.00000005)
         self._drive_pid_controller.setOutputRange(-1.0, 1.0)
 
         self.drive_feed_forward = SimpleMotorFeedforwardMeters(self._chassis._k_s, self._chassis._k_v, self._chassis._k_a)
@@ -94,11 +95,11 @@ class SwerveModule(object):
             return
 
         swerve_module_state_ = SwerveModuleState.optimize(swerve_module_state_, self.get_swerve_state().angle)        
-
         self._angle_pid_controller.setReference(swerve_module_state_.angle.radians(), rev.CANSparkMax.ControlType.kPosition)
 
         self.speedRPM = swerve_module_state_.speed * 60 / self._chassis._driveMotorConversionFactor
-        self.driveFF = self.drive_feed_forward.calculate(swerve_module_state_.speed)
+        #self.driveFF = self.drive_feed_forward.calculate(swerve_module_state_.speed)
+        self.driveFF = 0.0000005
         self._drive_pid_controller.setReference(self.speedRPM, rev.CANSparkMax.ControlType.kVelocity, arbFeedforward=self.driveFF)
 
     def stop(self):
