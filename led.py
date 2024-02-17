@@ -1,5 +1,5 @@
 import wpilib
-import ids
+import constants
 
 
 #for led in range(self.ledLength):
@@ -40,7 +40,7 @@ def setLedColor(led: wpilib.AddressableLED.LEDData, c: color) -> None:
 class ledStrips(object):
 
     def __init__(self) -> None:
-        self.leds = wpilib.AddressableLED(ids.LEDs)
+        self.leds = wpilib.AddressableLED(constants.LEDs)
         self.ledLength = 151
         self.leds.setLength(self.ledLength)
         self.ledBuff = []

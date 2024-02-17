@@ -25,7 +25,7 @@ import shooter
 from pathplannerlib.auto import PathPlannerAuto
 import pathplannerlib.auto
 import led
-import ids
+import constants
 
 # TODO ===FIRST===
 # TODO pathplanner
@@ -81,7 +81,7 @@ class MyRobot(wpilib.TimedRobot):
         self.NoteCam = self.nt.getTable("NoteCam")
         self.ATagCam = self.nt.getTable("ATagCam")
 
-        self.trapServo = wpilib.Servo(ids.Servo)
+        self.trapServo = wpilib.Servo(constants.Servo)
         self.trapServo.set(0.5)
 
         p_value = 6e-5
@@ -93,27 +93,27 @@ class MyRobot(wpilib.TimedRobot):
         self.chassisSpeeds = wpimath.kinematics.ChassisSpeeds.fromRobotRelativeSpeeds(0,0,0,wpimath.geometry.Rotation2d())
         
         # Front Left
-        fldriveMotorParams = motorParams.Motorparams(GetCanId(ids.FLDrive), p_value, i_value, d_value)
-        flangleMotorParams = motorParams.Motorparams(GetCanId(ids.FLAngle), angle_p_value)
-        flEncoderParams = encoderParams.EncoderParams(GetCanId(ids.FLEncoder), -0.089844)
+        fldriveMotorParams = motorParams.Motorparams(GetCanId(constants.FLDrive), p_value, i_value, d_value)
+        flangleMotorParams = motorParams.Motorparams(GetCanId(constants.FLAngle), angle_p_value)
+        flEncoderParams = encoderParams.EncoderParams(GetCanId(constants.FLEncoder), constants.FLEncoderOffset)
         flParams = swerve_drive_params.SwerveDriveParams(fldriveMotorParams, flangleMotorParams, flEncoderParams)
 
         # Rear Left
-        rldriveMotorParams = motorParams.Motorparams(GetCanId(ids.RLDrive), p_value, i_value, d_value)
-        rlangleMotorParams = motorParams.Motorparams(GetCanId(ids.RLAngle), angle_p_value)
-        rlEncoderParams = encoderParams.EncoderParams(GetCanId(ids.RLEncoder), -0.094971)
+        rldriveMotorParams = motorParams.Motorparams(GetCanId(constants.RLDrive), p_value, i_value, d_value)
+        rlangleMotorParams = motorParams.Motorparams(GetCanId(constants.RLAngle), angle_p_value)
+        rlEncoderParams = encoderParams.EncoderParams(GetCanId(constants.RLEncoder), constants.RLEncoderOffset)
         rlParams = swerve_drive_params.SwerveDriveParams(rldriveMotorParams, rlangleMotorParams, rlEncoderParams)
 
         # Front Right
-        frdriveMotorParams = motorParams.Motorparams(GetCanId(ids.FRDrive), p_value, i_value, d_value)
-        frangleMotorParams = motorParams.Motorparams(GetCanId(ids.FRAngle), angle_p_value)
-        frEncoderParams = encoderParams.EncoderParams(GetCanId(ids.FREncoder), 0.037842)
+        frdriveMotorParams = motorParams.Motorparams(GetCanId(constants.FRDrive), p_value, i_value, d_value)
+        frangleMotorParams = motorParams.Motorparams(GetCanId(constants.FRAngle), angle_p_value)
+        frEncoderParams = encoderParams.EncoderParams(GetCanId(constants.FREncoder), constants.FREncoderOffset)
         frParams = swerve_drive_params.SwerveDriveParams(frdriveMotorParams, frangleMotorParams, frEncoderParams)
         
         # Rear Right
-        rrdriveMotorParams = motorParams.Motorparams(GetCanId(ids.RRDrive), p_value, i_value, d_value)
-        rrangleMotorParams = motorParams.Motorparams(GetCanId(ids.RRAngle), angle_p_value)
-        rrEncoderParams = encoderParams.EncoderParams(GetCanId(ids.RREncoder), -0.236328)
+        rrdriveMotorParams = motorParams.Motorparams(GetCanId(constants.RRDrive), p_value, i_value, d_value)
+        rrangleMotorParams = motorParams.Motorparams(GetCanId(constants.RRAngle), angle_p_value)
+        rrEncoderParams = encoderParams.EncoderParams(GetCanId(constants.RREncoder), constants.RREncoderOffset)
         rrParams = swerve_drive_params.SwerveDriveParams(rrdriveMotorParams, rrangleMotorParams, rrEncoderParams)
 
         self.gyro = test_imu.TestIMU()
@@ -122,20 +122,20 @@ class MyRobot(wpilib.TimedRobot):
             
         self.driveTrain = drive_train.DriveTrain(self.chassis, flParams, frParams, rlParams, rrParams, self.getPeriod(), self.gyro)
 
-        self.noteSensorBottom = wpilib.DigitalInput(ids.NoteSensorBottom)
-        self.noteSensorTop = wpilib.DigitalInput(ids.NoteSensorTop)
-        self.noteSensorFront = wpilib.DigitalInput(ids.NoteSensorFront)
+        self.noteSensorBottom = wpilib.DigitalInput(constants.NoteSensorBottom)
+        self.noteSensorTop = wpilib.DigitalInput(constants.NoteSensorTop)
+        self.noteSensorFront = wpilib.DigitalInput(constants.NoteSensorFront)
 
-        self.intakeScoop = rev.CANSparkMax(GetCanId(ids.Scoop), rev._rev.CANSparkLowLevel.MotorType.kBrushless)
+        self.intakeScoop = rev.CANSparkMax(GetCanId(constants.Scoop), rev._rev.CANSparkLowLevel.MotorType.kBrushless)
         self.shooter = shooter.Shooter(
-            GetCanId(ids.ShooterTop),
-            GetCanId(ids.ShooterBottom),
-            GetCanId(ids.Middle),
+            GetCanId(constants.ShooterTop),
+            GetCanId(constants.ShooterBottom),
+            GetCanId(constants.Middle),
             self.noteSensorBottom,
             self.noteSensorTop,
             self.intakeScoop)
 
-        self.climber = phoenix5.TalonFX(GetCanId(ids.Climber))
+        self.climber = phoenix5.TalonFX(GetCanId(constants.Climber))
 
         robotToCameraRotation = wpimath.geometry.Rotation3d(0, 0, 0)
         self.robotToCamera = wpimath.geometry.Transform3d(
@@ -154,6 +154,7 @@ class MyRobot(wpilib.TimedRobot):
 
         self.controls = controls.Controls(0, 1)
         self.timer = wpilib.Timer()
+        self.startPoseTimer = wpilib.Timer()
         self.cameraTimer = wpilib.Timer()
         self.cameraTimer.start()
 
@@ -164,6 +165,8 @@ class MyRobot(wpilib.TimedRobot):
         self.txNote=0
         self.tyNote=0
         self.botpose=None
+        self.startPose = None
+        self.startPoseCalibrating = True
         
 
     def robotPeriodic(self):
@@ -219,6 +222,11 @@ class MyRobot(wpilib.TimedRobot):
             self.txNote=self.NoteCam.getNumber("tx",0)
             self.tyNote=self.NoteCam.getNumber("ty",0)
             self.botpose=self.ATagCam.getEntry("botpose").getDoubleArray(None)
+            if self.startPoseCalibrating:
+                self.startPose = self.botpose
+                if self.startPoseTimer.hasElapsed(5):
+                    self.startPoseCalibrating = False
+
     def autonomousInit(self):
         """This function is run once each time the robot enters autonomous mode."""
         self.timer.reset()
@@ -341,7 +349,7 @@ class MyRobot(wpilib.TimedRobot):
         return output
     
     def GetRotation(self):
-        return self.gyro.getAngle(wpilib.ADIS16470_IMU.IMUAxis.kYaw)
+        return self.gyro.getAngle(wpilib.ADIS16470_IMU.IMUAxis.kRoll)
     
     def line_up_to_target(self, tag_list):
         tid = self.ATagCam.getEntry("tid").getDoubleArray(None)
