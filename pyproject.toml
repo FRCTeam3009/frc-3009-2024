@@ -31,5 +31,4 @@ robotpy_extras = [
 requires = [
     "phoenix6==24.1.0",
     "robotpy-ctre",
-    "photonlibpy==2024.2.4",
 ]

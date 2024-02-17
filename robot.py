@@ -17,7 +17,7 @@ import test_imu
 import motorParams
 import encoderParams
 import robotpy_apriltag
-from photonlibpy import photonCamera, photonPoseEstimator
+from photonlibpy import photonCamera
 import ntcore
 import phoenix5
 import math
@@ -29,10 +29,8 @@ import ids
 
 # TODO ===FIRST===
 # TODO pathplanner
-# TODO average startup position using camera position
-
-# TODO ===Dependencies Required===
-# TODO (extra) coral machine learning vision for notes (needs ML usb thing)
+# TODO limelight global position
+# TODO limelight visual servoing (auto-aim)
 
 # TODO ===Last===
 # TODO teach the team how the robot works so they can explain it to judges
@@ -79,6 +77,9 @@ class MyRobot(wpilib.TimedRobot):
         self.smartdashboard.putNumber("goalX", 0.0)
         self.smartdashboard.putNumber("goalY", 0.0)
         self.smartdashboard.putNumber("goalR", 0.0)
+
+        self.limelight0 = self.nt.getTable("limelight0")
+        self.limelight1 = self.nt.getTable("limelight1")
 
         self.trapServo = wpilib.Servo(ids.Servo)
         self.trapServo.set(0.5)
@@ -150,12 +151,6 @@ class MyRobot(wpilib.TimedRobot):
             self.target[i] = {"target":None, "misses":self.k_maxmisses}
 
         self.aprilTagFieldLayout = robotpy_apriltag.loadAprilTagLayoutField(robotpy_apriltag.AprilTagField.k2024Crescendo)
-        # self.poseEstimator = photonPoseEstimator.PhotonPoseEstimator(
-        #     self.aprilTagFieldLayout,
-        #     photonPoseEstimator.PoseStrategy(1),
-        #     self.limelight1,
-        #     self.robotToCamera,
-        # )
 
         self.controls = controls.Controls(0, 1)
         self.timer = wpilib.Timer()
@@ -176,17 +171,6 @@ class MyRobot(wpilib.TimedRobot):
         rotation = wpimath.geometry.Rotation2d.fromDegrees(self.GetRotation())
 
         self.automode = None
-
-        #self.lastCameraPose = self.poseEstimator.update()
-        # ambiguity = 0
-        # if self.lastCameraPose is not None:
-        #     cameraPose = self.lastCameraPose.estimatedPose.toPose2d()
-        #     if len(self.lastCameraPose.targetsUsed) > 0:
-        #         ambiguity = self.lastCameraPose.targetsUsed[0].getPoseAmbiguity()
-        #         if ambiguity == 0 and self.cameraTimer.hasElapsed(5):
-        #             self.driveTrain.odometry.resetPosition(rotation, swerveModulePositions, cameraPose)
-        #             self.cameraTimer.reset()
-
 
         self.lastOdometryPose = self.driveTrain.odometry.update(rotation, swerveModulePositions)
         
