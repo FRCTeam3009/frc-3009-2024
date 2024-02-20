@@ -3,79 +3,74 @@ import wpilib
 class Controls(object):
     
     def __init__(self, port0, port1):
-        self.xbox0 = wpilib.XboxController(port0)
-        self.xbox1 = wpilib.XboxController(port1)
+        self.driverController = wpilib.XboxController(port0)
+        self.shooterController = wpilib.XboxController(port1)
 
     def forward(self):
-        y = self.xbox0.getLeftY()
+        y = self.driverController.getLeftY()
         # Negate the value, for some reason it's reversed.
         return pow(y, 3) * -1
 
     def horizontal(self):
-        x = self.xbox0.getLeftX()
+        x = self.driverController.getLeftX()
         # Negate because CC positive?
         return pow(x, 3) * -1
     
     def rotate(self):
-        rotate = self.xbox0.getRightX()
+        rotate = self.driverController.getRightX()
         # Counter-Clockwise is positive
         rotate *= -1
         return pow(rotate, 3)
     
     def shootspeaker(self):
-        right = self.xbox1.getRightTriggerAxis()
+        right = self.shooterController.getRightTriggerAxis()
         if right > 0.5:
             return 1.0
         else: 
             return 0.0
     
     def shootamp(self):
-        left = self.xbox1.getLeftTriggerAxis()
+        left = self.shooterController.getLeftTriggerAxis()
         if left > 0.5:
             return 1.0
         else: 
             return 0.0
    
     def rotate_to_target(self):
-        value=self.xbox0.getStartButton()
+        value=self.driverController.getStartButton()
         return value
     
     def reset_gyro(self):
-        value=self.xbox0.getXButton()
+        value=self.driverController.getXButton()
         return value
     
-    def scoop_speed(self):
-        value = self.xbox1.getLeftY()
-        return value * -1
-    
-    def middle_speed(self):
-        value = self.xbox1.getRightY()
-        return value * -1
-    
     def reset_goal(self):
-        return self.xbox0.getBackButton()
+        return self.driverController.getBackButton()
     
     def climber(self):
-        return self.xbox1.getLeftX()
+        return self.shooterController.getLeftX()
     
     def target_amp(self):
-        return self.xbox0.getPOV() == 90
+        return self.driverController.getPOV() == 90
     
     def target_subwoofer(self):
-        return self.xbox0.getPOV() == 270
+        return self.driverController.getPOV() == 270
     
     def target_stage(self):
-        return self.xbox0.getPOV() == 0
+        return self.driverController.getPOV() == 0
     
     def target_closest(self):
-        return self.xbox0.getPOV() == 180
+        return self.driverController.getPOV() == 180
 
     def turbo(self):
-        return self.xbox0.getRightBumper()
+        return self.driverController.getRightBumper()
     
     def slow(self):
-        return self.xbox0.getLeftBumper()
+        return self.driverController.getLeftBumper()
     
     def push_trap(self):
-        return self.xbox0.getYButtonPressed()
+        return self.driverController.getYButtonPressed()
+    
+    def override(self):
+        return self.shooterController.getYButton()
 

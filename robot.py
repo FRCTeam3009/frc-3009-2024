@@ -259,9 +259,9 @@ class MyRobot(wpilib.TimedRobot):
             self.gyro.reset()
         
         if self.controls.shootspeaker():
-            self.shooter.fire(shooter.Shooter.speakerscale) 
+            self.shooter.fire(shooter.Shooter.speakerscale, self.controls.override()) 
         elif self.controls.shootamp():
-            self.shooter.fire(shooter.Shooter.ampscale)
+            self.shooter.fire(shooter.Shooter.ampscale, self.controls.override())
         else: 
             self.shooter.stop()
         

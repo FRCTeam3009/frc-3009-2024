@@ -22,8 +22,11 @@ class Shooter:
         self.needsreset = False
         self.isLaunching = False
     
-    def fire(self, value):
-        if not (self.noteSensorBottom.get() or self.noteSensorTop.get()) and not self.isLaunching:
+    def fire(self, value, override):
+        seen = (self.noteSensorBottom.get() or self.noteSensorTop.get())
+        if override:
+            seen = not seen
+        if not seen and not self.isLaunching:
             # We're looking for notes to intake
             self.intakeScoopSpark._Motor_Pid_.setReference(self.kMaxRpm, rev.CANSparkMax.ControlType.kVelocity)
             self.middleRampSpark._Motor_Pid_.setReference(self.kMaxRpm/2, rev.CANSparkMax.ControlType.kVelocity)
@@ -36,7 +39,10 @@ class Shooter:
             self.intakeScoopSpark._Motor_Pid_.setReference(0, rev.CANSparkMax.ControlType.kVelocity)
             self.middleRampSpark._Motor_Pid_.setReference(0, rev.CANSparkMax.ControlType.kVelocity)
             self.wasLookingForNote = False
-            self.needsreset = True
+            if not override:
+                self.needsreset = True
+            else:
+                self.stop_motors()
 
         # At this point we have a note and are preparing to fire
         if self.needsreset:
