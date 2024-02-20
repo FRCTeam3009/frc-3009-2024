@@ -352,7 +352,7 @@ class MyRobot(wpilib.TimedRobot):
         return output
     
     def GetRotation(self):
-        return self.gyro.getAngle(wpilib.ADIS16470_IMU.IMUAxis.kRoll)
+        return self.gyro.getAngle(wpilib.ADIS16470_IMU.IMUAxis.kPitch)
     
     def line_up_to_target(self, tag_list):
         tid = self.ATagCam.getEntry("tid").getDoubleArray(None)
