@@ -82,7 +82,7 @@ class MyRobot(wpilib.TimedRobot):
         self.ATagCam = self.nt.getTable("ATagCam")
 
         self.trapServo = wpilib.Servo(constants.Servo)
-        self.trapServo.set(0.5)
+        self.trapServo.set(0.21)
 
         p_value = 6e-5
         i_value = 1e-6
@@ -235,7 +235,7 @@ class MyRobot(wpilib.TimedRobot):
         self.timer.reset()
         self.timer.start()
 
-        self.trapServo.set(0.5)
+        self.trapServo.set(0.21)
 
         self.driveTrain.AutoInit()
         self.automode = PathPlannerAuto("rightSpeakerBLUE")
@@ -247,7 +247,7 @@ class MyRobot(wpilib.TimedRobot):
 
     def teleopInit(self):
         """This function is run once each time the robot enters teleop mode."""
-        self.trapServo.set(0.5)
+        self.trapServo.set(0.21)
 
         commands2.CommandScheduler.getInstance().cancelAll()
         self.timer.reset()
@@ -266,10 +266,10 @@ class MyRobot(wpilib.TimedRobot):
             self.shooter.stop()
         
         if self.controls.push_trap():
-            if self.trapServo.get() > 0.75:
-                self.trapServo.set(0.5)
+            if self.trapServo.get() < 0.15:
+                self.trapServo.set(0.21)
             else:
-                self.trapServo.set(1.0)
+                self.trapServo.set(0.02)
 
         
         forward = self.controls.forward() * self.getInputSpeed(self.driveTrain.kMaxSpeed)
