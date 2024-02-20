@@ -9,18 +9,18 @@ class Controls(object):
     def forward(self):
         y = self.xbox0.getLeftY()
         # Negate the value, for some reason it's reversed.
-        return y * -1
+        return pow(y, 3) * -1
 
     def horizontal(self):
         x = self.xbox0.getLeftX()
         # Negate because CC positive?
-        return x * -1
+        return pow(x, 3) * -1
     
     def rotate(self):
         rotate = self.xbox0.getRightX()
         # Counter-Clockwise is positive
         rotate *= -1
-        return rotate
+        return pow(rotate, 3)
     
     def shootspeaker(self):
         right = self.xbox1.getRightTriggerAxis()
