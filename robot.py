@@ -29,8 +29,6 @@ import constants
 
 # TODO ===FIRST===
 # TODO pathplanner
-# TODO limelight global position
-# TODO limelight visual servoing (auto-aim)
 
 # TODO ===Last===
 # TODO teach the team how the robot works so they can explain it to judges
@@ -82,7 +80,7 @@ class MyRobot(wpilib.TimedRobot):
         self.ATagCam = self.nt.getTable("ATagCam")
 
         self.trapServo = wpilib.Servo(constants.Servo)
-        self.trapServo.set(0.21)
+        self.trapServo.set(constants.ServoClosed)
 
         p_value = 6e-5
         i_value = 1e-6
@@ -136,13 +134,28 @@ class MyRobot(wpilib.TimedRobot):
             self.intakeScoop)
 
         self.climber = phoenix5.TalonFX(GetCanId(constants.Climber))
+        cameraHeightConversion = wpimath.units.inchesToMeters(20.5)
+        cameraXConversion = wpimath.units.inchesToMeters(13.5)
+        cameraYConversion = wpimath.units.inchesToMeters(1)
 
-        robotToCameraRotation = wpimath.geometry.Rotation3d(0, 0, 0)
-        self.robotToCamera = wpimath.geometry.Transform3d(
-            wpimath.units.meters(0.0),
-            wpimath.units.meters(0.0),
-            wpimath.units.meters(0.0),
-            robotToCameraRotation)
+        # -30 degrees
+        robotToNoteCameraRotation = wpimath.geometry.Rotation3d(0, math.pi/-6, 0)
+        self.robotToNoteCamera = wpimath.geometry.Transform3d(
+            cameraXConversion,
+            cameraYConversion,
+            cameraHeightConversion,
+            robotToNoteCameraRotation)
+        
+        cameraXConversion = wpimath.units.inchesToMeters(12.5)
+
+        # 25 degrees
+        robotToAprilCameraRotation = wpimath.geometry.Rotation3d(0, math.pi/7.2, 0)
+        self.robotToAprilCamera = wpimath.geometry.Transform3d(
+            cameraXConversion,
+            cameraYConversion,
+            cameraHeightConversion,
+            robotToAprilCameraRotation)
+        
 
         self.limelight1 = photonCamera.PhotonCamera("limelight1")
         self.k_maxmisses = 5
@@ -164,8 +177,9 @@ class MyRobot(wpilib.TimedRobot):
         self.tyATag=0
         self.txNote=0
         self.tyNote=0
-        self.botpose=None
-        self.startPose = None
+        self.botpose=[0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        self.startPose = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        self.startPoselist = []
         self.startPoseCalibrating = True
         
 
@@ -214,28 +228,32 @@ class MyRobot(wpilib.TimedRobot):
         self.smartdashboard.putNumber("note sensor bottom", self.noteSensorBottom.get())
         self.smartdashboard.putNumber("note sensor front", self.noteSensorFront.get())
 
+        self.smartdashboard.putNumberArray("startpose", self.startPose)
+
 
         ATagCamTargetSeen = self.ATagCam.getNumber("tv",0)
         NoteCamTargetSeen = self.NoteCam.getNumber("tv",0)
-        if ATagCamTargetSeen > 0:
+        if NoteCamTargetSeen > 0:
             self.txATag=self.ATagCam.getNumber("tx",0)
             self.tyATag=self.ATagCam.getNumber("ty",0)
 
-        if NoteCamTargetSeen > 0:
+        if ATagCamTargetSeen > 0:
             self.txNote=self.NoteCam.getNumber("tx",0)
             self.tyNote=self.NoteCam.getNumber("ty",0)
-            self.botpose=self.ATagCam.getEntry("botpose").getDoubleArray(None)
+            self.botpose=self.ATagCam.getEntry("botpose").getDoubleArray([0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
             if self.startPoseCalibrating:
-                self.startPose = self.botpose
+                self.startPoselist.append(self.botpose)
                 if self.startPoseTimer.hasElapsed(5):
                     self.startPoseCalibrating = False
+                    self.startPose= averagePoses(self.startPoselist)
+
 
     def autonomousInit(self):
         """This function is run once each time the robot enters autonomous mode."""
         self.timer.reset()
         self.timer.start()
 
-        self.trapServo.set(0.21)
+        self.trapServo.set(constants.ServoClosed)
 
         self.driveTrain.AutoInit()
         self.automode = PathPlannerAuto("rightSpeakerBLUE")
@@ -247,7 +265,7 @@ class MyRobot(wpilib.TimedRobot):
 
     def teleopInit(self):
         """This function is run once each time the robot enters teleop mode."""
-        self.trapServo.set(0.21)
+        self.trapServo.set(constants.ServoClosed)
 
         commands2.CommandScheduler.getInstance().cancelAll()
         self.timer.reset()
@@ -259,17 +277,17 @@ class MyRobot(wpilib.TimedRobot):
             self.gyro.reset()
         
         if self.controls.shootspeaker():
-            self.shooter.fire(shooter.Shooter.speakerscale, self.controls.override()) 
+            self.shooter.fire(shooter.Shooter.speakerscale, self.controls.override(), self.controls.reverseOverride()) 
         elif self.controls.shootamp():
-            self.shooter.fire(shooter.Shooter.ampscale, self.controls.override())
+            self.shooter.fire(shooter.Shooter.ampscale, self.controls.override(), self.controls.reverseOverride())
         else: 
             self.shooter.stop()
         
         if self.controls.push_trap():
             if self.trapServo.get() < 0.15:
-                self.trapServo.set(0.21)
+                self.trapServo.set(constants.ServoClosed)
             else:
-                self.trapServo.set(0.02)
+                self.trapServo.set(constants.ServoOpen)
 
         
         forward = self.controls.forward() * self.getInputSpeed(self.driveTrain.kMaxSpeed)
@@ -284,7 +302,7 @@ class MyRobot(wpilib.TimedRobot):
             self.smartdashboard.putNumber("goalR", self.driveTrain.odometry.getPose().rotation().radians())
 
         # Overwrite movement from camera if we say so
-        if self.controls.rotate_to_target():
+        if self.controls.note_pickup():
             pose = self.noteLineup()
             fieldRelative = False
         elif self.controls.target_amp():
@@ -358,8 +376,12 @@ class MyRobot(wpilib.TimedRobot):
         tid = self.ATagCam.getEntry("tid").getDoubleArray(None)
         if tid is not None and len(tid) > 0:
             if tid[0] in tag_list:
-                r = self.txATag
-                x = math.tan(self.tyATag) * self.robotToCamera.Z()
+                r = -self.txATag
+                verticalAngle = self.tyATag - self.robotToAprilCamera.rotation().y_degrees
+                x = -math.tan(verticalAngle) * self.robotToAprilCamera.Z()
+                # if we're targeting the speaker adjust for the base
+                if tid[0] in self.kSubwoofertags:
+                    x = x - 1.2
                 return wpimath.geometry.Pose2d(x,0,r)
             
         return wpimath.geometry.Pose2d()
@@ -378,7 +400,7 @@ class MyRobot(wpilib.TimedRobot):
         commands2.CommandScheduler.getInstance().cancelAll()
 
     def noteLineup(self):
-        goalX = math.tan(self.tyNote)*self.robotToCamera.Z()
+        goalX = math.tan(self.tyNote + self.robotToNoteCamera.rotation().y_degrees)*self.robotToNoteCamera.Z()
         goalY = self.smartdashboard.getNumber("goalY", 0.0)
         goalRotation = self.txNote
         rotation = wpimath.geometry.Rotation2d(goalRotation)
@@ -409,3 +431,20 @@ def GetCanId(id):
         return TestCanId
     else:
         return id
+    
+def averagePoses(poselist):
+    output= [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+
+    for pose in poselist:
+        i = 0
+        while i < 6:
+            output[i] = output[i] + pose[i]
+            i += 1
+
+    n = len(poselist)
+    i = 0
+    while i < 6:
+        output[i] = output[i] / n
+        i += 1
+
+    return output

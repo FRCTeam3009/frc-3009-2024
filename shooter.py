@@ -22,8 +22,13 @@ class Shooter:
         self.needsreset = False
         self.isLaunching = False
     
-    def fire(self, value, override):
+    def fire(self, value, override, reverseOverride):
         seen = (self.noteSensorBottom.get() or self.noteSensorTop.get())
+        if reverseOverride:
+            self.intakeScoopSpark._Motor_Pid_.setReference(-self.kMaxRpm, rev.CANSparkMax.ControlType.kVelocity)
+            self.middleRampSpark._Motor_Pid_.setReference(-self.kMaxRpm/2, rev.CANSparkMax.ControlType.kVelocity)
+            return
+
         if override:
             seen = not seen
         if not seen and not self.isLaunching:

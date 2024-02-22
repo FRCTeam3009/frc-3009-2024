@@ -36,8 +36,8 @@ class Controls(object):
         else: 
             return 0.0
    
-    def rotate_to_target(self):
-        value=self.driverController.getStartButton()
+    def note_pickup(self):
+        value=self.shooterController.getStartButton()
         return value
     
     def reset_gyro(self):
@@ -74,3 +74,5 @@ class Controls(object):
     def override(self):
         return self.shooterController.getYButton()
 
+    def reverseOverride(self):
+        return self.shooterController.getXButton()

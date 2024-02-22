@@ -38,3 +38,5 @@ Climber = 35
 LEDs = 1
 
 Servo = 0
+ServoClosed = 0.35
+ServoOpen = 0.0
