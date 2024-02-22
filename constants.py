@@ -40,3 +40,5 @@ LEDs = 1
 Servo = 0
 ServoClosed = 0.35
 ServoOpen = 0.0
+
+MaxSpeed = 4.0 # meters per second

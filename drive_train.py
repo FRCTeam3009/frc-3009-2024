@@ -9,9 +9,10 @@ from pathplannerlib.config import HolonomicPathFollowerConfig, ReplanningConfig,
 from swerve_drive_params import SwerveDriveParams
 import chassis
 import wpilib
+import wpilib.simulation
 
 class DriveTrain():
-    def __init__(self, chassis : chassis.Chassis, fl : SwerveDriveParams, fr : SwerveDriveParams, rl : SwerveDriveParams, rr : SwerveDriveParams, period, gyro):
+    def __init__(self, chassis : chassis.Chassis, fl : SwerveDriveParams, fr : SwerveDriveParams, rl : SwerveDriveParams, rr : SwerveDriveParams, period):
         self._chassis = chassis
 
         self.fl = swerve_module.SwerveModule(fl, self._chassis)
@@ -19,9 +20,10 @@ class DriveTrain():
         self.rl = swerve_module.SwerveModule(rl, self._chassis)
         self.rr = swerve_module.SwerveModule(rr, self._chassis)
         self.period = period 
-        self.kMaxSpeed = 4.0 # meters per second
-        self.kMaxRotate = self.kMaxSpeed / self._chassis._turn_meters_per_radian # radians per second4
-        self.gyro = gyro
+        self.maxSpeed = 4.0 # meters per second
+        self.maxRotate = self.maxSpeed / self._chassis._turn_meters_per_radian # radians per second4
+        self.gyro = wpilib.ADIS16470_IMU()
+        self.gyroSim = wpilib.simulation.ADIS16470_IMUSim(self.gyro)
 
         self.fl.reset_encoders()
         self.fr.reset_encoders()
@@ -72,7 +74,7 @@ class DriveTrain():
         discretized = wpimath.kinematics.ChassisSpeeds.discretize(chassisSpeeds, self.period)
         swerve_states = self._drive_kinematics.toSwerveModuleStates(discretized)
         
-        fl, fr, rl, rr = wpimath.kinematics.SwerveDrive4Kinematics.desaturateWheelSpeeds(swerve_states, self.kMaxSpeed)
+        fl, fr, rl, rr = wpimath.kinematics.SwerveDrive4Kinematics.desaturateWheelSpeeds(swerve_states, self.maxSpeed)
 
         self.fl.set_swerve_state(fl)
         self.fr.set_swerve_state(fr)
@@ -90,6 +92,13 @@ class DriveTrain():
         return self._drive_kinematics.toChassisSpeeds(swerevestates)
     
     def resetPosition(self, pose: wpimath.geometry.Pose2d):
-        angle = self.gyro.getAngle(wpilib.ADIS16470_IMU.IMUAxis.kYaw)
+        angle = self.GetRotation()
         rotate = wpimath.geometry.Rotation2d.fromDegrees(angle)
         self.odometry.resetPosition(rotate, self.getSwerveModulePositions(), pose)
+
+    def GetRotation(self):
+        return self.gyro.getAngle(wpilib.ADIS16470_IMU.IMUAxis.kPitch)
+    
+    def UpdateMaxSpeed(self, speed):
+        self.maxSpeed = speed
+        self.maxRotate = self.maxSpeed / self._chassis._turn_meters_per_radian
