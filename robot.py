@@ -65,6 +65,9 @@ class MyRobot(wpilib.TimedRobot):
         self.smartdashboard.putNumber("middle_ramp_speed", self.kDefaultMiddleRampScale)
         self.smartdashboard.putNumber("amp_distance", 0.5)
 
+        self.smartdashboard.putNumber("servo open", constants.ServoOpen)
+        self.smartdashboard.putNumber("servo closed", constants.ServoClosed)
+
         self.NoteCam = self.nt.getTable("NoteCam")
         self.ATagCam = self.nt.getTable("ATagCam")
 
@@ -197,6 +200,9 @@ class MyRobot(wpilib.TimedRobot):
         self.smartdashboard.putNumber("note sensor bottom", self.noteSensorBottom.get())
         self.smartdashboard.putNumber("note sensor front", self.noteSensorFront.get())
 
+        constants.ServoOpen = self.smartdashboard.getNumber("servo open", constants.ServoOpen)
+        constants.ServoClosed = self.smartdashboard.getNumber("servo closed", constants.ServoClosed)
+
         self.smartdashboard.putNumberArray("startpose", self.startPose)
 
         ATagCamTargetSeen = self.ATagCam.getNumber("tv",0)
@@ -210,13 +216,14 @@ class MyRobot(wpilib.TimedRobot):
             self.tyNote=self.NoteCam.getNumber("ty",0)
             self.botpose=self.ATagCam.getEntry("botpose").getDoubleArray([0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
             if self.startPoseCalibrating:
+                # TODO this did not work when testing live
                 self.startPoselist.append(self.botpose)
                 if self.startPoseTimer.hasElapsed(5):
                     self.startPoseCalibrating = False
                     self.startPose= averagePoses(self.startPoselist)
                     startPose2d = pose2dFromNTPose(self.startPose)
                     self.driveTrain.resetPosition(startPose2d)
-
+                    self.smartdashboard.putNumberArray("startpose", self.startPose)
 
     def autonomousInit(self):
         """This function is run once each time the robot enters autonomous mode."""
@@ -239,6 +246,8 @@ class MyRobot(wpilib.TimedRobot):
     def autonomousPeriodic(self):
         """This function is called periodically during autonomous."""
         # This function is empty because we're using the command scheduler to run our autonomous
+        self.shooter.stop_motors()
+        self.climber.set(phoenix5.TalonFXControlMode.PercentOutput, 0)
 
     def teleopInit(self):
         """This function is run once each time the robot enters teleop mode."""
