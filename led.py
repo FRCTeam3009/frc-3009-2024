@@ -37,7 +37,7 @@ def setLedColor(led: wpilib.AddressableLED.LEDData, c: color) -> None:
     """setRGB actually uses GRB ordering, so this handles the re-ordering for us."""
     led.setRGB(c.green, c.red, c.blue)
 
-class ledStrips(object):
+class LedStrips(object):
 
     def __init__(self) -> None:
         self.leds = wpilib.AddressableLED(constants.LEDs)

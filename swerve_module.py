@@ -98,7 +98,6 @@ class SwerveModule(object):
         self._angle_pid_controller.setReference(swerve_module_state_.angle.radians(), rev.CANSparkMax.ControlType.kPosition)
 
         self.speedRPM = swerve_module_state_.speed * 60 / self._chassis._driveMotorConversionFactor
-        #self.driveFF = self.drive_feed_forward.calculate(swerve_module_state_.speed)
         self.driveFF = 0.0000005
         self._drive_pid_controller.setReference(self.speedRPM, rev.CANSparkMax.ControlType.kVelocity, arbFeedforward=self.driveFF)
 

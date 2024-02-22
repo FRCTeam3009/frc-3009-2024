@@ -57,9 +57,7 @@ class Shooter:
         
         self.isLaunching = True
         rpm = value * self.kMaxRpm
-        topFF = self.topspark.FeedForward.calculate(rpm)
         self.topspark._Motor_Pid_.setReference(rpm * -1, rev.CANSparkMax.ControlType.kVelocity, arbFeedforward=0)
-        bottomFF = self.bottomMotorspark.FeedForward.calculate(rpm * -1)
         self.bottomMotorspark._Motor_Pid_.setReference(rpm, rev.CANSparkMax.ControlType.kVelocity, arbFeedforward=0)
 
         toprpm = self.topspark.encoder.getVelocity()

@@ -4,7 +4,6 @@ import swerve_module
 import wpimath
 import wpimath.geometry
 import wpimath.kinematics
-#from pathplannerlib.auto import AutoBuilder
 import pathplannerlib.auto
 from pathplannerlib.config import HolonomicPathFollowerConfig, ReplanningConfig, PIDConstants
 from swerve_drive_params import SwerveDriveParams

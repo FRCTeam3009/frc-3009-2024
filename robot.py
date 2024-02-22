@@ -44,7 +44,7 @@ class MyRobot(wpilib.TimedRobot):
         """
         self.chassis = chassis.Chassis()
 
-        self.ledStrips = led.ledStrips()
+        self.ledStrips = led.LedStrips()
 
         self.kSubwoofertags = [3, 4, 7, 8]
         self.kAmptags = [5, 6] 
@@ -56,14 +56,7 @@ class MyRobot(wpilib.TimedRobot):
         self.kSubwooferDistance = 36.17 # inches
         self.kSubwooferStopDistance = self.kSubwooferDistance + 11.0
 
-        self.goalPosition = 0.0
-        self.currentPosition = 0.0
-        self.closeApproach = False
-
-        self.lastTarget = wpimath.geometry.Pose3d()
         self.lastOdometryPose = wpimath.geometry.Pose2d()
-        self.lastCameraPose = wpimath.geometry.Pose2d()
-        self.lastDistance = 0.0
 
         self.nt = ntcore.NetworkTableInstance.getDefault()
         self.nt.startServer()
@@ -71,10 +64,6 @@ class MyRobot(wpilib.TimedRobot):
         self.smartdashboard.putNumber("scoop_speed", self.kDefaultScoopScale)
         self.smartdashboard.putNumber("middle_ramp_speed", self.kDefaultMiddleRampScale)
         self.smartdashboard.putNumber("amp_distance", 0.5)
-
-        self.smartdashboard.putNumber("goalX", 0.0)
-        self.smartdashboard.putNumber("goalY", 0.0)
-        self.smartdashboard.putNumber("goalR", 0.0)
 
         self.NoteCam = self.nt.getTable("NoteCam")
         self.ATagCam = self.nt.getTable("ATagCam")
@@ -87,7 +76,6 @@ class MyRobot(wpilib.TimedRobot):
         d_value = 0
 
         angle_p_value = 0.5
-        self.something = 0.0
         self.chassisSpeeds = wpimath.kinematics.ChassisSpeeds.fromRobotRelativeSpeeds(0,0,0,wpimath.geometry.Rotation2d())
         
         # Front Left
@@ -201,26 +189,11 @@ class MyRobot(wpilib.TimedRobot):
         self.smartdashboard.putNumber("odometryY", self.lastOdometryPose.Y())
         self.smartdashboard.putNumber("rotation", self.lastOdometryPose.rotation().radians())
 
-        self.smartdashboard.putNumber("FL_RPM", self.driveTrain.fl.speedRPM)
-        self.smartdashboard.putNumber("FR_RPM", self.driveTrain.fr.speedRPM)
-        self.smartdashboard.putNumber("RL_RPM", self.driveTrain.rl.speedRPM)
-        self.smartdashboard.putNumber("RR_RPM", self.driveTrain.rr.speedRPM)
-
-        self.smartdashboard.putNumber("FL_FF", self.driveTrain.fl.driveFF)
-        self.smartdashboard.putNumber("FR_FF", self.driveTrain.fr.driveFF)
-        self.smartdashboard.putNumber("RL_FF", self.driveTrain.rl.driveFF)
-        self.smartdashboard.putNumber("RR_FF", self.driveTrain.rr.driveFF)
-
         self.smartdashboard.putNumber("FL_Velocity", self.driveTrain.fl.get_drive_velocity())
         self.smartdashboard.putNumber("FR_Velocity", self.driveTrain.fr.get_drive_velocity())
         self.smartdashboard.putNumber("RL_Velocity", self.driveTrain.rl.get_drive_velocity())
         self.smartdashboard.putNumber("RR_Velocity", self.driveTrain.rr.get_drive_velocity())
 
-        self.smartdashboard.putNumber("motor_factor", self.driveTrain.fl._chassis._driveMotorConversionFactor)
-        self.smartdashboard.putNumber("rotate_factor", self.driveTrain.fl._chassis._angleMotorConversionFactor)
-        self.smartdashboard.putNumber("max_speed", self.driveTrain.kMaxSpeed)
-        self.smartdashboard.putNumber("max_rotate", self.driveTrain.kMaxRotate)
-        self.smartdashboard.putNumber("something_rotation", self.something)
         self.smartdashboard.putNumber("chassis_speeds_vx", self.chassisSpeeds.vx)
         self.smartdashboard.putNumber("chassis_speeds_vy", self.chassisSpeeds.vy)
         self.smartdashboard.putNumber("chassis_speeds_omega", self.chassisSpeeds.omega)
@@ -229,7 +202,6 @@ class MyRobot(wpilib.TimedRobot):
         self.smartdashboard.putNumber("note sensor front", self.noteSensorFront.get())
 
         self.smartdashboard.putNumberArray("startpose", self.startPose)
-
 
         ATagCamTargetSeen = self.ATagCam.getNumber("tv",0)
         NoteCamTargetSeen = self.NoteCam.getNumber("tv",0)
@@ -296,11 +268,6 @@ class MyRobot(wpilib.TimedRobot):
         pose = wpimath.geometry.Pose2d(forward, horizontal, rotate)
         fieldRelative = True
 
-        if self.controls.reset_goal():
-            self.smartdashboard.putNumber("goalX", self.driveTrain.odometry.getPose().X())
-            self.smartdashboard.putNumber("goalY", self.driveTrain.odometry.getPose().Y())
-            self.smartdashboard.putNumber("goalR", self.driveTrain.odometry.getPose().rotation().radians())
-
         # Overwrite movement from camera if we say so
         if self.controls.note_pickup():
             pose = self.noteLineup()
@@ -326,8 +293,6 @@ class MyRobot(wpilib.TimedRobot):
         self.climber.set(phoenix5.TalonFXControlMode.PercentOutput, self.controls.climber())
 
         if self.timer.hasElapsed(0.5):
-            #print("Results: " + str(self.limelight1.getLatestResult()))
-            #print("Pose - " + str(self.lastPose))
             self.timer.reset()
 
     def Drive(self, pose: wpimath.geometry.Pose2d, fieldRelative):
@@ -335,7 +300,6 @@ class MyRobot(wpilib.TimedRobot):
         forward = capValue(pose.X(), self.driveTrain.kMaxSpeed)
         horizontal = capValue(pose.Y(), self.driveTrain.kMaxSpeed)
         rotate = capValue(pose.rotation().radians(), self.driveTrain.kMaxRotate)
-        self.something = pose.rotation().radians()
 
         gyroYaw = self.GetRotation()
         relativeRotation = wpimath.geometry.Rotation2d.fromDegrees(gyroYaw)
@@ -374,15 +338,15 @@ class MyRobot(wpilib.TimedRobot):
     
     def line_up_to_target(self, tag_list):
         tid = self.ATagCam.getEntry("tid").getDoubleArray(None)
-        if tid is not None and len(tid) > 0:
-            if tid[0] in tag_list:
-                r = -self.txATag
-                verticalAngle = self.tyATag - self.robotToAprilCamera.rotation().y_degrees
-                x = -math.tan(verticalAngle) * self.robotToAprilCamera.Z()
-                # if we're targeting the speaker adjust for the base
-                if tid[0] in self.kSubwoofertags:
-                    x = x - 1.2
-                return wpimath.geometry.Pose2d(x,0,r)
+        tagFound = tid is not None and len(tid) > 0
+        if tagFound and tid[0] in tag_list:
+            r = -self.txATag
+            verticalAngle = self.tyATag - self.robotToAprilCamera.rotation().y_degrees
+            x = -math.tan(verticalAngle) * self.robotToAprilCamera.Z()
+            # if we're targeting the speaker adjust for the base
+            if tid[0] in self.kSubwoofertags:
+                x = x - 1.2
+            return wpimath.geometry.Pose2d(x,0,r)
             
         return wpimath.geometry.Pose2d()
     
@@ -401,7 +365,7 @@ class MyRobot(wpilib.TimedRobot):
 
     def noteLineup(self):
         goalX = math.tan(self.tyNote + self.robotToNoteCamera.rotation().y_degrees)*self.robotToNoteCamera.Z()
-        goalY = self.smartdashboard.getNumber("goalY", 0.0)
+        goalY = 0.0
         goalRotation = self.txNote
         rotation = wpimath.geometry.Rotation2d(goalRotation)
         goal = wpimath.geometry.Pose2d(goalX, goalY, rotation)
