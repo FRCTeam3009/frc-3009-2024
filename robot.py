@@ -26,6 +26,7 @@ from pathplannerlib.auto import PathPlannerAuto
 import pathplannerlib.auto
 import led
 import constants
+import pathPlanner
 
 # TODO ===FIRST===
 # TODO pathplanner
@@ -160,7 +161,10 @@ class MyRobot(wpilib.TimedRobot):
         self.cameraTimer = wpilib.Timer()
         self.cameraTimer.start()
 
-        pathplannerlib.auto.NamedCommands.registerCommand("shoot", TestCommand())
+        pathplannerlib.auto.NamedCommands.registerCommand("shootSpeaker", pathPlanner.shootCommand(self.shooter, shooter.Shooter.speakerscale))
+        pathplannerlib.auto.NamedCommands.registerCommand("shootAmp", pathPlanner.shootCommand(self.shooter, shooter.Shooter.ampscale))
+        # TODO add note and april tag commands
+        #pathplannerlib.auto.NamedCommands.registerCommand("lineUpNote", pathPlanner.)
 
         self.txATag=0
         self.tyATag=0
@@ -304,28 +308,12 @@ class MyRobot(wpilib.TimedRobot):
             pose = self.line_up_to_target(self.kAlltags)
             fieldRelative = False
 
-        self.Drive(pose, fieldRelative)
+        self.driveTrain.Drive(pose, fieldRelative)
 
         self.climber.set(phoenix5.TalonFXControlMode.PercentOutput, self.controls.climber())
 
         if self.timer.hasElapsed(0.5):
             self.timer.reset()
-
-    def Drive(self, pose: wpimath.geometry.Pose2d, fieldRelative):
-         # Cap the speeds
-        forward = capValue(pose.X(), self.driveTrain.maxSpeed)
-        horizontal = capValue(pose.Y(), self.driveTrain.maxSpeed)
-        rotate = capValue(pose.rotation().radians(), self.driveTrain.maxRotate)
-
-        gyroYaw = self.GetRotation()
-        relativeRotation = wpimath.geometry.Rotation2d.fromDegrees(gyroYaw)
-
-        chassisSpeeds = wpimath.kinematics.ChassisSpeeds.fromRobotRelativeSpeeds(forward, horizontal, rotate, relativeRotation)
-        if fieldRelative:
-            chassisSpeeds = wpimath.kinematics.ChassisSpeeds.fromFieldRelativeSpeeds(forward, horizontal, rotate, relativeRotation)
-
-        self.chassisSpeeds = wpimath.kinematics.ChassisSpeeds.discretize(chassisSpeeds, self.getPeriod())
-        self.driveTrain.Drive(chassisSpeeds)
 
     def MoveToPose2d(self, pose: wpimath.geometry.Pose2d):
         trajectory = pose.relativeTo(self.lastOdometryPose)
@@ -394,23 +382,10 @@ class MyRobot(wpilib.TimedRobot):
         rotate = wpimath.geometry.Rotation2d.fromDegrees(testAngle)
         current = self.driveTrain.odometry.getPose()
         self.driveTrain.odometry.resetPosition(rotate, self.driveTrain.getSwerveModulePositions(), current)
-        
-class TestCommand(pathplannerlib.auto.Command):
-    def execute(self):
-        print("SHOOTING")
-    def isFinished(self):
-        return True
 
 if __name__ == "__main__":
     wpilib.run(MyRobot)
 
-def capValue(value, cap):
-    if value > cap:
-        return cap
-    elif value < -1 * cap:
-        return -1 * cap
-    else:
-        return value
     
 def GetCanId(id):
     global TestCanId

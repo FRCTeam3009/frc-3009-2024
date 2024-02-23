@@ -57,7 +57,7 @@ class DriveTrain():
                 self.odometry.getPose, # Robot pose supplier
                 self.resetPosition, # Method to reset odometry (will be called if your auto has a starting pose)
                 self.getspeeds, # ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
-                self.Drive, # Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
+                self.DriveRobotRelative, # Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
                 HolonomicPathFollowerConfig( # HolonomicPathFollowerConfig, this should likely live in your Constants class
                     PIDConstants(driveP, driveI, driveD), # Translation PID constants
                     PIDConstants(angleP, angleI, angleD), # Rotation PID constants
@@ -69,8 +69,23 @@ class DriveTrain():
                 None # Reference to this subsystem to set requirements
             )
 
+    def Drive(self, pose: wpimath.geometry.Pose2d, fieldRelative):
+         # Cap the speeds
+        forward = capValue(pose.X(), self.maxSpeed)
+        horizontal = capValue(pose.Y(), self.maxSpeed)
+        rotate = capValue(pose.rotation().radians(), self.maxRotate)
 
-    def Drive(self, chassisSpeeds):
+        gyroYaw = self.GetRotation()
+        relativeRotation = wpimath.geometry.Rotation2d.fromDegrees(gyroYaw)
+
+        chassisSpeeds = wpimath.kinematics.ChassisSpeeds.fromRobotRelativeSpeeds(forward, horizontal, rotate, relativeRotation)
+        if fieldRelative:
+            chassisSpeeds = wpimath.kinematics.ChassisSpeeds.fromFieldRelativeSpeeds(forward, horizontal, rotate, relativeRotation)
+
+        self.chassisSpeeds = wpimath.kinematics.ChassisSpeeds.discretize(chassisSpeeds, self.period)
+        self.DriveRobotRelative(chassisSpeeds)
+
+    def DriveRobotRelative(self, chassisSpeeds):
         discretized = wpimath.kinematics.ChassisSpeeds.discretize(chassisSpeeds, self.period)
         swerve_states = self._drive_kinematics.toSwerveModuleStates(discretized)
         
@@ -102,3 +117,12 @@ class DriveTrain():
     def UpdateMaxSpeed(self, speed):
         self.maxSpeed = speed
         self.maxRotate = self.maxSpeed / self._chassis._turn_meters_per_radian
+
+
+def capValue(value, cap):
+    if value > cap:
+        return cap
+    elif value < -1 * cap:
+        return -1 * cap
+    else:
+        return value

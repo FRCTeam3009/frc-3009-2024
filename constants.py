@@ -2,7 +2,7 @@
 FLDrive = 14
 FLAngle = 20
 FLEncoder = 32
-FLEncoderOffset = -0.405518
+FLEncoderOffset = -0.440430
 
 # Rear Left Swerve
 RLDrive = 13

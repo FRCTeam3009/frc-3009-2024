@@ -21,9 +21,12 @@ class Shooter:
         self.wasLookingForNote = False
         self.needsreset = False
         self.isLaunching = False
+
+    def hasNote(self):
+         return (self.noteSensorBottom.get() or self.noteSensorTop.get())
     
     def fire(self, value, override, reverseOverride):
-        seen = (self.noteSensorBottom.get() or self.noteSensorTop.get())
+        seen = self.hasNote()
         if reverseOverride:
             self.intakeScoopSpark._Motor_Pid_.setReference(-self.kMaxRpm, rev.CANSparkMax.ControlType.kVelocity)
             self.middleRampSpark._Motor_Pid_.setReference(-self.kMaxRpm/2, rev.CANSparkMax.ControlType.kVelocity)
