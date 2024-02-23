@@ -79,7 +79,7 @@ class MyRobot(wpilib.TimedRobot):
         d_value = 0
 
         angle_p_value = 0.5
-        self.chassisSpeeds = wpimath.kinematics.ChassisSpeeds.fromRobotRelativeSpeeds(0,0,0,wpimath.geometry.Rotation2d())
+        self.chassisSpeeds = wpimath.kinematics.ChassisSpeeds.fromRobotRelativeSpeeds(0, 0, 0, wpimath.geometry.Rotation2d())
         
         # Front Left
         fldriveMotorParams = motorParams.Motorparams(GetCanId(constants.FLDrive), p_value, i_value, d_value)
@@ -155,6 +155,7 @@ class MyRobot(wpilib.TimedRobot):
         self.controls = controls.Controls(0, 1)
         self.timer = wpilib.Timer()
         self.startPoseTimer = wpilib.Timer()
+        self.startPoseTimer.start()
         self.cameraTimer = wpilib.Timer()
         self.cameraTimer.start()
 
@@ -216,11 +217,10 @@ class MyRobot(wpilib.TimedRobot):
             self.tyNote=self.NoteCam.getNumber("ty",0)
             self.botpose=self.ATagCam.getEntry("botpose").getDoubleArray([0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
             if self.startPoseCalibrating:
-                # TODO this did not work when testing live
                 self.startPoselist.append(self.botpose)
                 if self.startPoseTimer.hasElapsed(5):
                     self.startPoseCalibrating = False
-                    self.startPose= averagePoses(self.startPoselist)
+                    self.startPose = averagePoses(self.startPoselist)
                     startPose2d = pose2dFromNTPose(self.startPose)
                     self.driveTrain.resetPosition(startPose2d)
                     self.smartdashboard.putNumberArray("startpose", self.startPose)
@@ -440,9 +440,9 @@ def pose2dFromNTPose(ntPose) -> wpimath.geometry.Pose2d:
     if len(ntPose) != 6:
         return wpimath.geometry.Pose2d()
 
-    x = ntPose[0]
-    y = ntPose[1]
-    z = ntPose[2] # not needed, we can't fly
+    x = wpimath.units.meters(ntPose[0])
+    y = wpimath.units.meters(ntPose[1])
+    z = wpimath.units.meters(ntPose[2]) # not needed, we can't fly
     rotate = wpimath.geometry.Rotation3d(ntPose[3], ntPose[4], ntPose[5])
 
-    return wpimath.geometry.Pose2d(x, y, rotate)
+    return wpimath.geometry.Pose2d(x, y, rotate.toRotation2d())

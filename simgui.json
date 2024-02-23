@@ -65,6 +65,9 @@
     },
     "transitory": {
       "SmartDashboard": {
+        "double[]##v_/SmartDashboard/startpose": {
+          "open": true
+        },
         "open": true
       },
       "photonvision": {
