@@ -112,6 +112,7 @@ class MyRobot(wpilib.TimedRobot):
         self.noteSensorFront = wpilib.DigitalInput(constants.NoteSensorFront)
 
         self.intakeScoop = rev.CANSparkMax(GetCanId(constants.Scoop), rev._rev.CANSparkLowLevel.MotorType.kBrushless)
+        self.intakeScoop.setInverted(True)
         self.shooter = shooter.Shooter(
             GetCanId(constants.ShooterTop),
             GetCanId(constants.ShooterBottom),
