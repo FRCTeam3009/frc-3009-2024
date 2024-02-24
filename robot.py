@@ -163,6 +163,10 @@ class MyRobot(wpilib.TimedRobot):
 
         pathplannerlib.auto.NamedCommands.registerCommand("shootSpeaker", pathPlanner.shootCommand(self.shooter, shooter.Shooter.speakerscale))
         pathplannerlib.auto.NamedCommands.registerCommand("shootAmp", pathPlanner.shootCommand(self.shooter, shooter.Shooter.ampscale))
+        pathplannerlib.auto.NamedCommands.registerCommand("targetSpeaker", pathPlanner.lineAprilCommand(self.driveTrain, self.line_up_to_target, self.kSubwoofertags))
+        pathplannerlib.auto.NamedCommands.registerCommand("targetAmp", pathPlanner.lineAprilCommand(self.driveTrain, self.line_up_to_target, self.kAmptags))
+        pathplannerlib.auto.NamedCommands.registerCommand("targetClosest", pathPlanner.lineAprilCommand(self.driveTrain, self.line_up_to_target, self.kAlltags))
+        pathplannerlib.auto.NamedCommands.registerCommand("targetNote", pathPlanner.lineNoteCommand(self.driveTrain, self.noteLineup))
         # TODO add note and april tag commands
         #pathplannerlib.auto.NamedCommands.registerCommand("lineUpNote", pathPlanner.)
 
@@ -287,7 +291,7 @@ class MyRobot(wpilib.TimedRobot):
         rotate = self.controls.rotate() * self.getInputSpeed(self.driveTrain.maxRotate)
         pose = wpimath.geometry.Pose2d(forward, horizontal, rotate)
         fieldRelative = True
-
+        
         # Overwrite movement from camera if we say so
         if self.controls.note_pickup():
             pose = self.noteLineup()
@@ -308,12 +312,14 @@ class MyRobot(wpilib.TimedRobot):
             pose = self.line_up_to_target(self.kAlltags)
             fieldRelative = False
 
+
         self.driveTrain.Drive(pose, fieldRelative)
 
         self.climber.set(phoenix5.TalonFXControlMode.PercentOutput, self.controls.climber())
 
         if self.timer.hasElapsed(0.5):
             self.timer.reset()
+
 
     def MoveToPose2d(self, pose: wpimath.geometry.Pose2d):
         trajectory = pose.relativeTo(self.lastOdometryPose)

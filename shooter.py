@@ -3,8 +3,8 @@ from wpimath.controller import SimpleMotorFeedforwardMeters
 import SparkMotor
 
 class Shooter:
-    speakerscale = 0.8#0.62
-    ampscale = 0.5
+    speakerscale = 0.8#0.8#0.62
+    ampscale = 0.3
 
     def __init__(self, topId, bottomId, middleId, noteSensorBottom, noteSensorTop, intakeScoop):
         self.kMaxRpm = 5600.0
@@ -30,6 +30,8 @@ class Shooter:
         if reverseOverride:
             self.intakeScoopSpark._Motor_Pid_.setReference(-self.kMaxRpm, rev.CANSparkMax.ControlType.kVelocity)
             self.middleRampSpark._Motor_Pid_.setReference(-self.kMaxRpm/2, rev.CANSparkMax.ControlType.kVelocity)
+            self.bottomMotorspark._Motor_Pid_.setReference(-self.kMaxRpm/6, rev.CANSparkMax.ControlType.kVelocity)
+            self.topspark._Motor_Pid_.setReference(self.kMaxRpm/6, rev.CANSparkMax.ControlType.kVelocity)
             return
 
         if override:

@@ -1,7 +1,7 @@
 {
   "Docking": {
     "Data": [
-      "DockNode  ID=0x00000001 Pos=-1,714 Size=744,278 Selected=0x6AE6D891"
+      "DockNode  ID=0x00000001 Pos=-1,718 Size=744,278 Selected=0x6AE6D891"
     ]
   },
   "MainWindow": {
@@ -48,12 +48,12 @@
     "###Joysticks": {
       "Collapsed": "0",
       "DockId": "0x00000001,0",
-      "Pos": "-1,714",
+      "Pos": "-1,718",
       "Size": "744,278"
     },
     "###NetworkTables": {
       "Collapsed": "0",
-      "Pos": "439,175",
+      "Pos": "473,123",
       "Size": "937,627"
     },
     "###NetworkTables Info": {
@@ -79,7 +79,7 @@
     "###System Joysticks": {
       "Collapsed": "0",
       "DockId": "0x00000001,1",
-      "Pos": "-1,714",
+      "Pos": "-1,718",
       "Size": "744,278"
     },
     "###Timing": {

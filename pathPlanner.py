@@ -3,6 +3,7 @@ import shooter
 import wpilib
 import drive_train
 import wpimath.geometry
+import types
 
 
 
@@ -28,26 +29,37 @@ class shootCommand(pathplannerlib.auto.Command):
     
 # TODO finish
 class lineAprilCommand(pathplannerlib.auto.Command):
-    def __init__(self, driveTrain: drive_train.DriveTrain, cameraValues):
+    def __init__(self, driveTrain: drive_train.DriveTrain, lineUpToTarget: types.FunctionType, tags):
         self.driveTrain = driveTrain
-        self.cameraValues = cameraValues
+        self.lineUpToTarget = lineUpToTarget
+        self.tags = tags
+        self.isDone = False
     def execute(self):
         return
     def end(self):
-        pose = wpimath.geometry.Pose2d(0, 0, 0)
-        self.driveTrain.Drive(pose, False)
+        #pose = wpimath.geometry.Pose2d(0, 0, 0)
+        pose = self.lineUpToTarget(self.tags)
+        while abs(pose.x()) >= 0.1:
+            self.driveTrain.Drive(pose, False)
+            pose = self.lineUpToTarget(self.tags)
+        self.isDone = True
     def isFinished(self):
-        return True
+        return self.isDone
     
 # TODO finish
 class lineNoteCommand(pathplannerlib.auto.Command):
-    def __init__(self, driveTrain: drive_train.DriveTrain, cameraValues):
+    def __init__(self, driveTrain: drive_train.DriveTrain, lineUpToTarget: types.FunctionType):
         self.driveTrain = driveTrain
-        self.cameraValues = cameraValues
+        self.lineUpToTarget = lineUpToTarget
+        self.isDone = False
     def execute(self):
         return
     def end(self):
-        pose = wpimath.geometry.Pose2d(0, 0, 0)
-        self.driveTrain.Drive(pose, False)
+        #pose = wpimath.geometry.Pose2d(0, 0, 0)
+        pose = self.lineUpToTarget()
+        while abs(pose.x()) >= 0.1:
+            self.driveTrain.Drive(pose, False)
+            pose = self.lineUpToTarget()
+        self.isDone = True
     def isFinished(self):
-        return True
+        return self.isDone

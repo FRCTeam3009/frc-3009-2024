@@ -112,7 +112,7 @@ class DriveTrain():
         self.odometry.resetPosition(rotate, self.getSwerveModulePositions(), pose)
 
     def GetRotation(self):
-        return self.gyro.getAngle(wpilib.ADIS16470_IMU.IMUAxis.kPitch)
+        return self.gyro.getAngle(wpilib.ADIS16470_IMU.IMUAxis.kPitch) * -1
     
     def UpdateMaxSpeed(self, speed):
         self.maxSpeed = speed

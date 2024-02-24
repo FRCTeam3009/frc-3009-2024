@@ -41,14 +41,14 @@ class Controls(object):
         return value
     
     def reset_gyro(self):
-        value=self.driverController.getXButton()
+        value=self.driverController.getBButton()
         return value
     
     def reset_goal(self):
         return self.driverController.getBackButton()
     
     def climber(self):
-        return self.shooterController.getLeftX()
+        return self.shooterController.getLeftY()
     
     def target_amp(self):
         return self.driverController.getPOV() == 90
@@ -63,10 +63,16 @@ class Controls(object):
         return self.driverController.getPOV() == 180
 
     def turbo(self):
-        return self.driverController.getRightBumper()
+        if self.driverController.getRightTriggerAxis() > 0.5:
+            return 1.0
+        else:
+            return 0.0
     
     def slow(self):
-        return self.driverController.getLeftBumper()
+        if self.driverController.getLeftTriggerAxis() > 0.5:
+            return 1.0
+        else:
+            return 0.0
     
     def push_trap(self):
         return self.driverController.getYButtonPressed()
