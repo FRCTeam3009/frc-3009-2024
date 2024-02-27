@@ -2,19 +2,31 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 1.0212487186743262,
-      "y": 1.979131376237074
+      "x": 1.36086297850199,
+      "y": 5.515804013063089
     },
-    "rotation": 180.0
+    "rotation": 0
   },
   "command": {
     "type": "sequential",
     "data": {
       "commands": [
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "rightSpeaker1"
+            "name": "shootSpeaker"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "targetNote"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "targetSpeaker"
           }
         },
         {
@@ -24,15 +36,15 @@
           }
         },
         {
-          "type": "wait",
+          "type": "named",
           "data": {
-            "waitTime": 5.0
+            "name": "targetStage"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "rightSpeaker2"
+            "pathName": "speaker start"
           }
         }
       ]
