@@ -27,7 +27,6 @@ class shootCommand(pathplannerlib.auto.Command):
                 return True
         return False
     
-# TODO finish
 class lineAprilCommand(pathplannerlib.auto.Command):
     def __init__(self, driveTrain: drive_train.DriveTrain, lineUpToTarget: types.FunctionType, tags):
         self.driveTrain = driveTrain
@@ -35,16 +34,14 @@ class lineAprilCommand(pathplannerlib.auto.Command):
         self.tags = tags
         self.isDone = False
     def execute(self):
-        return
+        self.pose = self.lineUpToTarget(self.tags)
+        self.driveTrain.Drive(self.pose, False)
     def end(self):
         #pose = wpimath.geometry.Pose2d(0, 0, 0)
-        pose = self.lineUpToTarget(self.tags)
-        while abs(pose.x()) >= 0.1:
-            self.driveTrain.Drive(pose, False)
-            pose = self.lineUpToTarget(self.tags)
-        self.isDone = True
+        return
     def isFinished(self):
-        return self.isDone
+        if abs(self.pose.x()) < 0.1:
+            return True
     
 # TODO finish
 class lineNoteCommand(pathplannerlib.auto.Command):
@@ -53,13 +50,11 @@ class lineNoteCommand(pathplannerlib.auto.Command):
         self.lineUpToTarget = lineUpToTarget
         self.isDone = False
     def execute(self):
-        return
+        self.pose = self.lineUpToTarget()
+        self.driveTrain.Drive(self.pose, False)
     def end(self):
         #pose = wpimath.geometry.Pose2d(0, 0, 0)
-        pose = self.lineUpToTarget()
-        while abs(pose.x()) >= 0.1:
-            self.driveTrain.Drive(pose, False)
-            pose = self.lineUpToTarget()
-        self.isDone = True
+        return
     def isFinished(self):
-        return self.isDone
+        if abs(self.pose.x()) < 0.1:
+            return True
