@@ -48,7 +48,7 @@ class Controls(object):
         return self.driverController.getBackButton()
     
     def climber(self):
-        return self.shooterController.getLeftY()
+        return self.shooterController.getLeftY() * -1
     
     def target_amp(self):
         return self.driverController.getPOV() == 90
