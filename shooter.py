@@ -38,10 +38,7 @@ class Shooter:
             seen = not seen
         if not seen and not self.isLaunching:
             # We're looking for notes to intake
-            self.intakeScoopSpark._Motor_Pid_.setReference(self.kMaxRpm, rev.CANSparkMax.ControlType.kVelocity)
-            self.middleRampSpark._Motor_Pid_.setReference(self.kMaxRpm/2, rev.CANSparkMax.ControlType.kVelocity)
-            self.bottomMotorspark._Motor_Pid_.setReference(0, rev.CANSparkMax.ControlType.kVelocity)
-            self.topspark._Motor_Pid_.setReference(0, rev.CANSparkMax.ControlType.kVelocity)
+            self.intakeOn()
             self.wasLookingForNote = True
             return
         elif self.wasLookingForNote is True:
@@ -83,4 +80,8 @@ class Shooter:
         self.needsreset=False
         self.isLaunching = False
 
-           
+    def intakeOn(self):       
+        self.intakeScoopSpark._Motor_Pid_.setReference(self.kMaxRpm, rev.CANSparkMax.ControlType.kVelocity)
+        self.middleRampSpark._Motor_Pid_.setReference(self.kMaxRpm/2, rev.CANSparkMax.ControlType.kVelocity)
+        self.bottomMotorspark._Motor_Pid_.setReference(0, rev.CANSparkMax.ControlType.kVelocity)
+        self.topspark._Motor_Pid_.setReference(0, rev.CANSparkMax.ControlType.kVelocity)

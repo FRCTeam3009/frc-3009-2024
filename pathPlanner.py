@@ -43,18 +43,22 @@ class lineAprilCommand(pathplannerlib.auto.Command):
         if abs(self.pose.x()) < 0.1:
             return True
     
-# TODO finish
 class lineNoteCommand(pathplannerlib.auto.Command):
-    def __init__(self, driveTrain: drive_train.DriveTrain, lineUpToTarget: types.FunctionType):
+    def __init__(self, driveTrain: drive_train.DriveTrain, lineUpToTarget: types.FunctionType, shooter: shooter.Shooter):
         self.driveTrain = driveTrain
         self.lineUpToTarget = lineUpToTarget
         self.isDone = False
+        self.shooter = shooter
     def execute(self):
         self.pose = self.lineUpToTarget()
         self.driveTrain.Drive(self.pose, False)
+        self.shooter.fire(0, False, False)
     def end(self):
-        #pose = wpimath.geometry.Pose2d(0, 0, 0)
-        return
+        pose = wpimath.geometry.Pose2d(0, 0, 0)
+        self.shooter.stop()
+        self.driveTrain.Drive(pose, False)
     def isFinished(self):
-        if abs(self.pose.x()) < 0.1:
+        if self.shooter.hasNote(False):
             return True
+        else:
+            return False
