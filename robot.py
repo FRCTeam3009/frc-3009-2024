@@ -205,6 +205,8 @@ class MyRobot(wpilib.TimedRobot):
         self.smartdashboard.putNumber("note sensor bottom", self.noteSensorBottom.get())
         self.smartdashboard.putNumber("note sensor front", self.noteSensorFront.get())
 
+        self.smartdashboard.putBoolean("hasNote", self.shooter.hasNote())
+
         constants.ServoOpen = self.smartdashboard.getNumber("servo open", constants.ServoOpen)
         constants.ServoClosed = self.smartdashboard.getNumber("servo closed", constants.ServoClosed)
 

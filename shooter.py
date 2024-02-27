@@ -4,7 +4,7 @@ import SparkMotor
 
 class Shooter:
     speakerscale = 0.8#0.8#0.62
-    ampscale = 0.3
+    ampscale = 0.35
 
     def __init__(self, topId, bottomId, middleId, noteSensorBottom, noteSensorTop, intakeScoop):
         self.kMaxRpm = 5600.0
