@@ -109,3 +109,10 @@ class SwerveModule(object):
         distance = self.get_drive_position()
         rotation = Rotation2d(self.get_angle_absolute())
         return SwerveModulePosition(distance, rotation)
+    
+    def simUpdate(self, period):
+        v = self._drive_motor_encoder.getVelocity() * period
+        p = self._drive_motor_encoder.getPosition()
+        update = v + p
+        update *= self._drive_motor_encoder.getPositionConversionFactor()
+        self._drive_motor_encoder.setPosition(update)

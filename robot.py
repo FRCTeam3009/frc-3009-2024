@@ -167,8 +167,6 @@ class MyRobot(wpilib.TimedRobot):
         pathplannerlib.auto.NamedCommands.registerCommand("targetAmp", pathPlanner.lineAprilCommand(self.driveTrain, self.line_up_to_target, self.kAmptags))
         pathplannerlib.auto.NamedCommands.registerCommand("targetClosest", pathPlanner.lineAprilCommand(self.driveTrain, self.line_up_to_target, self.kAlltags))
         pathplannerlib.auto.NamedCommands.registerCommand("targetNote", pathPlanner.lineNoteCommand(self.driveTrain, self.noteLineup, self.shooter))
-        # TODO add note and april tag commands
-        #pathplannerlib.auto.NamedCommands.registerCommand("lineUpNote", pathPlanner.)
 
         self.txATag=0
         self.tyATag=0
@@ -183,9 +181,6 @@ class MyRobot(wpilib.TimedRobot):
     def robotPeriodic(self):
 
         commands2.CommandScheduler.getInstance().run()
-
-        #self.ledStrips.solid(0, 250, 0)
-        self.ledStrips.gbRotate()
 
         swerveModulePositions = self.driveTrain.getSwerveModulePositions()
         rotation = wpimath.geometry.Rotation2d.fromDegrees(self.GetRotation())
@@ -239,14 +234,7 @@ class MyRobot(wpilib.TimedRobot):
         self.timer.reset()
         self.timer.start()
 
-        self.driveTrain.UpdateMaxSpeed(0.1)
-
         self.trapServo.set(constants.ServoClosed)
-
-        # TODO testing
-        testRotate = wpimath.geometry.Rotation2d.fromDegrees(-62.02)
-        testPose = wpimath.geometry.Pose2d(15.39, 2.01, testRotate)
-        self.driveTrain.resetPosition(testPose)
 
         self.driveTrain.AutoInit()
         self.automode = PathPlannerAuto("ShortTest")
@@ -254,8 +242,7 @@ class MyRobot(wpilib.TimedRobot):
 
     def autonomousPeriodic(self):
         """This function is called periodically during autonomous."""
-        # This function is empty because we're using the command scheduler to run our autonomous
-        self.shooter.stop_motors()
+        # This function is fairly empty because we're using the command scheduler to run our autonomous
         self.climber.set(phoenix5.TalonFXControlMode.PercentOutput, 0)
 
     def teleopInit(self):
@@ -385,13 +372,10 @@ class MyRobot(wpilib.TimedRobot):
         testAngle = 180
         self.driveTrain.gyroSim.setGyroAngleY(testAngle)
         self.driveTrain.gyro.setGyroAngleY(testAngle)
-        rotate = wpimath.geometry.Rotation2d.fromDegrees(testAngle)
-        current = self.driveTrain.odometry.getPose()
-        self.driveTrain.odometry.resetPosition(rotate, self.driveTrain.getSwerveModulePositions(), current)
+        self.driveTrain.simUpdate()
 
 if __name__ == "__main__":
     wpilib.run(MyRobot)
-
     
 def GetCanId(id):
     global TestCanId

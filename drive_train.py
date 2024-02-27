@@ -117,7 +117,12 @@ class DriveTrain():
     def UpdateMaxSpeed(self, speed):
         self.maxSpeed = speed
         self.maxRotate = self.maxSpeed / self._chassis._turn_meters_per_radian
-
+    
+    def simUpdate(self):
+        self.fl.simUpdate(self.period)
+        self.fr.simUpdate(self.period)
+        self.rl.simUpdate(self.period)
+        self.rr.simUpdate(self.period)
 
 def capValue(value, cap):
     if value > cap:
