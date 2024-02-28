@@ -2,31 +2,19 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 1.3725738150477713,
-      "y": 7.249007821838753
+      "x": 15.132806756341045,
+      "y": 5.527514849608872
     },
-    "rotation": -90.0
+    "rotation": -179.5659493678606
   },
   "command": {
     "type": "sequential",
     "data": {
       "commands": [
         {
-          "type": "path",
-          "data": {
-            "pathName": "Amp start"
-          }
-        },
-        {
           "type": "named",
           "data": {
-            "name": "shootAmp"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Rotate"
+            "name": "shootSpeaker"
           }
         },
         {
@@ -36,15 +24,21 @@
           }
         },
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "note to speaker"
+            "name": "targetSpeaker"
           }
         },
         {
           "type": "named",
           "data": {
             "name": "shootSpeaker"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "0"
           }
         }
       ]

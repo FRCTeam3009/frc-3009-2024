@@ -497,7 +497,7 @@
             "content": {
               "_type": "Boolean Box",
               "_source0": "network_table:///SmartDashboard/hasNote",
-              "_title": "SmartDashboard/hasNote",
+              "_title": "/SmartDashboard/hasNote",
               "_glyph": 148,
               "_showGlyph": false,
               "Colors/Color when true": "#0000FFFF",

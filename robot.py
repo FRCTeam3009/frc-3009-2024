@@ -69,8 +69,8 @@ class MyRobot(wpilib.TimedRobot):
         self.smartdashboard.putNumber("servo open", constants.ServoOpen)
         self.smartdashboard.putNumber("servo closed", constants.ServoClosed)
 
-        self.NoteCam = self.nt.getTable("NoteCam")
-        self.ATagCam = self.nt.getTable("ATagCam")
+        self.NoteCam = self.nt.getTable("limelight-front")
+        self.ATagCam = self.nt.getTable("limelight-back")
 
         self.trapServo = wpilib.Servo(constants.Servo)
         self.trapServo.set(constants.ServoClosed)
@@ -214,13 +214,13 @@ class MyRobot(wpilib.TimedRobot):
 
         ATagCamTargetSeen = self.ATagCam.getNumber("tv",0)
         NoteCamTargetSeen = self.NoteCam.getNumber("tv",0)
-        if NoteCamTargetSeen > 0:
-            self.txATag=self.ATagCam.getNumber("tx",0)
-            self.tyATag=self.ATagCam.getNumber("ty",0)
+        self.txNote=self.NoteCam.getNumber("tx",0)
+        self.tyNote=self.NoteCam.getNumber("ty",0)
+
+        self.txATag=self.ATagCam.getNumber("tx",0)
+        self.tyATag=self.ATagCam.getNumber("ty",0)
 
         if ATagCamTargetSeen > 0:
-            self.txNote=self.NoteCam.getNumber("tx",0)
-            self.tyNote=self.NoteCam.getNumber("ty",0)
             self.botpose=self.ATagCam.getEntry("botpose").getDoubleArray([0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
             if self.startPoseCalibrating:
                 self.startPoselist.append(self.botpose)
@@ -301,6 +301,9 @@ class MyRobot(wpilib.TimedRobot):
             pose = self.line_up_to_target(self.kAlltags)
             fieldRelative = False
 
+        self.smartdashboard.putNumber("DriveX", pose.X())
+        self.smartdashboard.putNumber("DriveY", pose.Y())
+        self.smartdashboard.putNumber("DriveR", pose.rotation().degrees())
 
         self.driveTrain.Drive(pose, fieldRelative)
 
@@ -364,11 +367,12 @@ class MyRobot(wpilib.TimedRobot):
 
     def noteLineup(self):
         goalX = math.tan(self.tyNote + self.robotToNoteCamera.rotation().y_degrees)*self.robotToNoteCamera.Z()
+        goalX = 0.0 # TODO testing rotations only so we don't kill anyone.
         goalY = 0.0
-        goalRotation = self.txNote
-        rotation = wpimath.geometry.Rotation2d(goalRotation)
+        goalRotation = -self.txNote * 0.01 # TODO this is really slow to debug tracking notes. 0.1 worked ok.
+        rotation = wpimath.geometry.Rotation2d.fromDegrees(goalRotation)
         goal = wpimath.geometry.Pose2d(goalX, goalY, rotation)
-        return self.MoveToPose2d(goal)
+        return goal
     
     def _simulationPeriodic(self):
         testAngle = 180

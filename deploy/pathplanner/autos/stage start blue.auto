@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 1.36086297850199,
-      "y": 5.515804013063089
+      "x": 0.7050561319382253,
+      "y": 4.356431195030721
     },
-    "rotation": 0
+    "rotation": -59.5742161980387
   },
   "command": {
     "type": "sequential",
@@ -18,15 +18,21 @@
           }
         },
         {
+          "type": "path",
+          "data": {
+            "pathName": "6"
+          }
+        },
+        {
           "type": "named",
           "data": {
             "name": "targetNote"
           }
         },
         {
-          "type": "named",
+          "type": "path",
           "data": {
-            "name": "targetSpeaker"
+            "pathName": "7"
           }
         },
         {
@@ -36,15 +42,9 @@
           }
         },
         {
-          "type": "named",
-          "data": {
-            "name": "targetStage"
-          }
-        },
-        {
           "type": "path",
           "data": {
-            "pathName": "speaker start"
+            "pathName": "8"
           }
         }
       ]
