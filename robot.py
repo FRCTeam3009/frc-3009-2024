@@ -28,12 +28,6 @@ import led
 import constants
 import pathPlanner
 
-# TODO ===FIRST===
-# TODO pathplanner
-
-# TODO ===Last===
-# TODO teach the team how the robot works so they can explain it to judges
-
 TestCanId = 0
 
 class MyRobot(wpilib.TimedRobot):
@@ -54,8 +48,8 @@ class MyRobot(wpilib.TimedRobot):
         self.kAlltags=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
         self.kDefaultScoopScale = 0.5
         self.kDefaultMiddleRampScale = 1.0
-        self.kSubwooferDistance = 36.17 # inches
-        self.kSubwooferStopDistance = self.kSubwooferDistance + 11.0
+        self.kSubwooferDistance = wpimath.units.inchesToMeters(36.17)
+        self.kSubwooferStopDistance = wpimath.units.inchesToMeters(self.kSubwooferDistance + 11.0)
 
         self.lastOdometryPose = wpimath.geometry.Pose2d()
 
@@ -177,6 +171,11 @@ class MyRobot(wpilib.TimedRobot):
         self.startPose = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         self.startPoselist = []
         self.startPoseCalibrating = True
+
+        self.autoName = ""
+
+        self.selectAuto()
+
         
 
     def robotPeriodic(self):
@@ -207,7 +206,7 @@ class MyRobot(wpilib.TimedRobot):
         self.smartdashboard.putNumber("note sensor top", self.noteSensorTop.get())
         self.smartdashboard.putNumber("note sensor bottom", self.noteSensorBottom.get())
         self.smartdashboard.putNumber("note sensor front", self.noteSensorFront.get())
-
+        
         self.smartdashboard.putBoolean("hasNote", self.shooter.hasNote())
 
         constants.ServoOpen = self.smartdashboard.getNumber("servo open", constants.ServoOpen)
@@ -239,25 +238,34 @@ class MyRobot(wpilib.TimedRobot):
         self.timer.reset()
         self.timer.start()
 
+        #autoMode = self.autoChooser.getSelected()
+        autoMode= "WCSMiddleBlue"
+
         self.trapServo.set(constants.ServoClosed)
 
-        autoName = "WCS"
-        autoColor = "Red"
+        '''autoName = "WCS"
+        autoColor = "Red"'''
 
         self.driveTrain.AutoInit()
-        if self.autoToggle.get():
+        '''if self.autoToggle.get():
             self.automode = PathPlannerAuto(autoName + "Right" + autoColor)
         else:
-            self.automode = PathPlannerAuto(autoName + "Left" + autoColor)
+            self.automode = PathPlannerAuto(autoName + "Left" + autoColor)'''
 
-        #TODO: Remove when switch works
-        self.automode = PathPlannerAuto(autoName + "Left" + autoColor)
+        #TODO: Figure out if we want to use this or the switch
+        self.automode = PathPlannerAuto(self.autoName)
         self.automode.schedule()
 
     def autonomousPeriodic(self):
         """This function is called periodically during autonomous."""
         # This function is fairly empty because we're using the command scheduler to run our autonomous
         self.climber.set(phoenix5.TalonFXControlMode.PercentOutput, 0)
+
+    def selectAuto(self):
+        autoMode = self.smartdashboard.getNumber("autoMode", 0)
+        if not autoMode in pathPlanner.autoMap:
+            autoMode = 0
+        self.autoName = pathPlanner.autoMap[autoMode]
 
     def teleopInit(self):
         """This function is run once each time the robot enters teleop mode."""
@@ -289,9 +297,9 @@ class MyRobot(wpilib.TimedRobot):
                 self.trapServo.set(constants.ServoOpen)
 
         
-        forward = self.controls.forward() * self.getInputSpeed(self.driveTrain.maxSpeed)
-        horizontal = self.controls.horizontal() * self.getInputSpeed(self.driveTrain.maxSpeed)
-        rotate = self.controls.rotate() * self.getInputSpeed(self.driveTrain.maxRotate)
+        forward = self.controls.forward() * self.getInputSpeed(1)
+        horizontal = self.controls.horizontal() * self.getInputSpeed(1)
+        rotate = self.controls.rotate() * self.getInputSpeed(1)
         pose = wpimath.geometry.Pose2d(forward, horizontal, rotate)
         fieldRelative = True
         
@@ -335,9 +343,9 @@ class MyRobot(wpilib.TimedRobot):
         self.smartdashboard.putNumber("trajectoryY", trajectory.Y())
         self.smartdashboard.putNumber("trajectoryR", rotation)
 
-        rotate = rotation * self.driveTrain.maxRotate
-        forward = trajectory.X() * self.driveTrain.maxSpeed
-        horizontal = trajectory.Y() * self.driveTrain.maxSpeed
+        rotate = rotation
+        forward = trajectory.X()
+        horizontal = trajectory.Y()
 
         if abs(forward) < 0.01:
             forward = 0.0
@@ -367,11 +375,9 @@ class MyRobot(wpilib.TimedRobot):
             '''
             pid = 0.1
             fwd = self.tyATag * pid
-            fwd *= self.driveTrain.maxSpeed
 
             rotpid = 0.02
             rot = self.txATag * rotpid
-            rot *= self.driveTrain.maxRotate
             rot *= -1
 
             if tid[0] in self.kSubwoofertags:
@@ -404,11 +410,9 @@ class MyRobot(wpilib.TimedRobot):
         if abs(self.tyNote) > 0.001:
             pid = 0.1
             fwd = self.tyNote * pid
-            fwd *= self.driveTrain.maxSpeed
 
             rotpid = 0.02
             rot = self.txNote * rotpid
-            rot *= self.driveTrain.maxRotate
             rot *= -1
 
             return wpimath.geometry.Pose2d(fwd,0,rot)            

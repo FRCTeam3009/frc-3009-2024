@@ -5,8 +5,16 @@ import drive_train
 import wpimath.geometry
 import types
 
-
-
+autoMap = {
+    0 : "WCSLeftBlue",
+    1 : "WCSMiddleBlue",
+    2 : "WCSRightBlue",
+    3 : "WCSAmpBlue",
+    4 : "WCSRightRed",
+    5 : "WCSMiddleRed",
+    6 : "WCSLeftRed",
+    7 : "WCSAmpRed",
+}
 
 class shootCommand(pathplannerlib.auto.Command):
     def __init__(self, shooter: shooter.Shooter, scale):

@@ -96,12 +96,19 @@
   "NTProvider": {
     "types": {
       "/FMSInfo": "FMSInfo",
-      "/LiveWindow/Ungrouped/MecanumDrive[1]": "MecanumDrive"
+      "/LiveWindow/Ungrouped/MecanumDrive[1]": "MecanumDrive",
+      "/SmartDashboard/Auto choices": "String Chooser"
     }
   },
   "NetworkTables": {
     "transitory": {
       "SmartDashboard": {
+        "Auto choices": {
+          "open": true,
+          "string[]##v_/SmartDashboard/Auto choices/options": {
+            "open": true
+          }
+        },
         "double[]##v_/SmartDashboard/startpose": {
           "open": true
         },
