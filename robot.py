@@ -111,6 +111,7 @@ class MyRobot(wpilib.TimedRobot):
         self.noteSensorBottom = wpilib.DigitalInput(constants.NoteSensorBottom)
         self.noteSensorTop = wpilib.DigitalInput(constants.NoteSensorTop)
         self.noteSensorFront = wpilib.DigitalInput(constants.NoteSensorFront)
+        self.autoToggle = wpilib.DigitalInput(constants.autoSwitch)
 
         self.intakeScoop = rev.CANSparkMax(GetCanId(constants.Scoop), rev._rev.CANSparkLowLevel.MotorType.kBrushless)
         self.intakeScoop.setInverted(True)
@@ -189,6 +190,8 @@ class MyRobot(wpilib.TimedRobot):
 
         self.lastOdometryPose = self.driveTrain.odometry.update(rotation, swerveModulePositions)
         
+        self.smartdashboard.putNumber("autoMode", self.autoToggle.get())
+
         self.smartdashboard.putNumber("odometryX", self.lastOdometryPose.X())
         self.smartdashboard.putNumber("odometryY", self.lastOdometryPose.Y())
         self.smartdashboard.putNumber("rotation", self.lastOdometryPose.rotation().degrees())
@@ -238,8 +241,17 @@ class MyRobot(wpilib.TimedRobot):
 
         self.trapServo.set(constants.ServoClosed)
 
+        autoName = "WCS"
+        autoColor = "Red"
+
         self.driveTrain.AutoInit()
-        self.automode = PathPlannerAuto("ShortTest")
+        if self.autoToggle.get():
+            self.automode = PathPlannerAuto(autoName + "Right" + autoColor)
+        else:
+            self.automode = PathPlannerAuto(autoName + "Left" + autoColor)
+
+        #TODO: Remove when switch works
+        self.automode = PathPlannerAuto(autoName + "Left" + autoColor)
         self.automode.schedule()
 
     def autonomousPeriodic(self):
@@ -260,11 +272,13 @@ class MyRobot(wpilib.TimedRobot):
         """This function is called periodically during operator control."""
         if self.controls.reset_gyro():
             self.driveTrain.gyro.reset()
-        
+
         if self.controls.shootspeaker():
             self.shooter.fire(shooter.Shooter.speakerscale, self.controls.override(), self.controls.reverseOverride()) 
         elif self.controls.shootamp():
             self.shooter.fire(shooter.Shooter.ampscale, self.controls.override(), self.controls.reverseOverride())
+        elif self.controls.shootTrap():
+            self.shooter.fire(shooter.Shooter.trapscale, self.controls.override(), self.controls.reverseOverride())
         else: 
             self.shooter.stop()
         
@@ -342,6 +356,7 @@ class MyRobot(wpilib.TimedRobot):
         tid = self.ATagCam.getEntry("tid").getDoubleArray(None)
         tagFound = tid is not None and len(tid) > 0
         if tagFound and tid[0] in tag_list:
+            '''
             r = -self.txATag
             verticalAngle = self.tyATag - self.robotToAprilCamera.rotation().y_degrees
             x = -math.tan(verticalAngle) * self.robotToAprilCamera.Z()
@@ -349,7 +364,19 @@ class MyRobot(wpilib.TimedRobot):
             if tid[0] in self.kSubwoofertags:
                 x = x - 1.2
             return wpimath.geometry.Pose2d(x,0,r)
-            
+            '''
+            pid = 0.1
+            fwd = self.tyATag * pid
+            fwd *= self.driveTrain.maxSpeed
+
+            rotpid = 0.02
+            rot = self.txATag * rotpid
+            rot *= self.driveTrain.maxRotate
+            rot *= -1
+
+            if tid[0] in self.kSubwoofertags:
+                fwd = fwd - 1.2
+            return wpimath.geometry.Pose2d(fwd,0,rot)            
         return wpimath.geometry.Pose2d()
     
 
@@ -366,13 +393,26 @@ class MyRobot(wpilib.TimedRobot):
         commands2.CommandScheduler.getInstance().cancelAll()
 
     def noteLineup(self):
-        goalX = math.tan(self.tyNote + self.robotToNoteCamera.rotation().y_degrees)*self.robotToNoteCamera.Z()
+        '''goalX = math.tan(self.tyNote + self.robotToNoteCamera.rotation().y_degrees)*self.robotToNoteCamera.Z()
         goalX = 0.0 # TODO testing rotations only so we don't kill anyone.
         goalY = 0.0
         goalRotation = -self.txNote * 0.01 # TODO this is really slow to debug tracking notes. 0.1 worked ok.
         rotation = wpimath.geometry.Rotation2d.fromDegrees(goalRotation)
         goal = wpimath.geometry.Pose2d(goalX, goalY, rotation)
-        return goal
+        return goal'''
+
+        if abs(self.tyNote) > 0.001:
+            pid = 0.1
+            fwd = self.tyNote * pid
+            fwd *= self.driveTrain.maxSpeed
+
+            rotpid = 0.02
+            rot = self.txNote * rotpid
+            rot *= self.driveTrain.maxRotate
+            rot *= -1
+
+            return wpimath.geometry.Pose2d(fwd,0,rot)            
+        return wpimath.geometry.Pose2d()
     
     def _simulationPeriodic(self):
         testAngle = 180

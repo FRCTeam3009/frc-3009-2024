@@ -2,19 +2,25 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 15.612951054718087,
-      "y": 2.41243232843099
+      "x": 15.870589458725279,
+      "y": 6.780574360007493
     },
-    "rotation": -179.35625428582463
+    "rotation": 120.96375653207352
   },
   "command": {
     "type": "sequential",
     "data": {
       "commands": [
         {
+          "type": "named",
+          "data": {
+            "name": "shootSpeaker"
+          }
+        },
+        {
           "type": "path",
           "data": {
-            "pathName": "(RED) Move backwards"
+            "pathName": "5"
           }
         }
       ]

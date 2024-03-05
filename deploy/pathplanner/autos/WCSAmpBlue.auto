@@ -1,0 +1,37 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 1.290597959227301,
+      "y": 7.22558614874719
+    },
+    "rotation": -90.0
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Amp start"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "shootAmp"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "12"
+          }
+        }
+      ]
+    }
+  },
+  "folder": null,
+  "choreoAuto": false
+}

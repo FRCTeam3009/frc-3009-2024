@@ -82,3 +82,6 @@ class Controls(object):
 
     def reverseOverride(self):
         return self.shooterController.getXButton()
+
+    def shootTrap(self):
+        return self.shooterController.getBButton()

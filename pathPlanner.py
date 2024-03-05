@@ -13,17 +13,32 @@ class shootCommand(pathplannerlib.auto.Command):
         self.shooter = shooter
         self.scale = scale
         self.timer = wpilib.Timer()
+        self.sensorCount = 0
     def execute(self):
         self.shooter.fire(self.scale, False, False)
 
-    def end(self):
-        self.shooter.stop()
+    def end(self, foo):
+        #self.shooter.stop()
+        pass
     def isFinished(self):
-        if self.shooter.hasNote() is False:
-            self.timer.start()
-            if self.timer.hasElapsed(0.5):
+        self.timer.start()
+        if self.timer.hasElapsed(5.0):
+            self.timer.stop()
+            self.timer.reset()
+            self.shooter.stop()
+            #self.shooter.fire(self.scale, False, False)
+            return True
+        elif self.shooter.hasNote() is False:
+            self.sensorCount += 1
+            if self.timer.hasElapsed(1.0):
+                self.shooter.stop()
+                self.shooter.fire(self.scale, False, False)
+        if self.sensorCount > 10:
+            if self.timer.hasElapsed(4.0):
                 self.timer.stop()
                 self.timer.reset()
+                self.shooter.stop()
+                self.shooter.fire(self.scale, False, False)
                 return True
         return False
     

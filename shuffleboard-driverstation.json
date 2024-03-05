@@ -376,6 +376,58 @@
               "Colors/Color when true": "#7CFC00FF",
               "Colors/Color when false": "#8B0000FF"
             }
+          },
+          "8,2": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Text View",
+              "_source0": "network_table:///SmartDashboard/DriveX",
+              "_title": "DriveX",
+              "_glyph": 148,
+              "_showGlyph": false
+            }
+          },
+          "9,2": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Text View",
+              "_source0": "network_table:///SmartDashboard/DriveY",
+              "_title": "DriveY",
+              "_glyph": 148,
+              "_showGlyph": false
+            }
+          },
+          "0,3": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Text View",
+              "_source0": "network_table:///SmartDashboard/DriveR",
+              "_title": "DriveR",
+              "_glyph": 148,
+              "_showGlyph": false
+            }
+          },
+          "1,3": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Text View",
+              "_source0": "network_table:///SmartDashboard/autoMode",
+              "_title": "autoMode",
+              "_glyph": 148,
+              "_showGlyph": false
+            }
           }
         }
       }
@@ -393,8 +445,8 @@
         "tiles": {
           "0,0": {
             "size": [
-              3,
-              2
+              5,
+              4
             ],
             "content": {
               "_type": "Camera Stream",
@@ -412,10 +464,10 @@
               "imageHeight": -1
             }
           },
-          "3,0": {
+          "6,0": {
             "size": [
-              3,
-              2
+              4,
+              4
             ],
             "content": {
               "_type": "Camera Stream",

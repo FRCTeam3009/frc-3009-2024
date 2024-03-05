@@ -3,8 +3,9 @@ from wpimath.controller import SimpleMotorFeedforwardMeters
 import SparkMotor
 
 class Shooter:
-    speakerscale = 0.8#0.8#0.62
-    ampscale = 0.35
+    speakerscale = 0.78#0.8#0.62
+    ampscale = 0.30
+    trapscale = 0.45
 
     def __init__(self, topId, bottomId, middleId, noteSensorBottom, noteSensorTop, intakeScoop):
         self.kMaxRpm = 5600.0
@@ -21,6 +22,7 @@ class Shooter:
         self.wasLookingForNote = False
         self.needsreset = False
         self.isLaunching = False
+        self.scoopScale = 0.6
 
     def hasNote(self):
          return (self.noteSensorBottom.get() or self.noteSensorTop.get())
@@ -82,6 +84,6 @@ class Shooter:
 
     def intakeOn(self):       
         self.intakeScoopSpark._Motor_Pid_.setReference(self.kMaxRpm, rev.CANSparkMax.ControlType.kVelocity)
-        self.middleRampSpark._Motor_Pid_.setReference(self.kMaxRpm/2, rev.CANSparkMax.ControlType.kVelocity)
+        self.middleRampSpark._Motor_Pid_.setReference(self.kMaxRpm * self.scoopScale, rev.CANSparkMax.ControlType.kVelocity)
         self.bottomMotorspark._Motor_Pid_.setReference(0, rev.CANSparkMax.ControlType.kVelocity)
         self.topspark._Motor_Pid_.setReference(0, rev.CANSparkMax.ControlType.kVelocity)

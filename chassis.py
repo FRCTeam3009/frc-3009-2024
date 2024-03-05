@@ -5,10 +5,10 @@ class Chassis(object):
         inches_in_meter = 39.37
 
         # Robot base
-        self._wheel_base_width = 24.25 # inches
-        self._wheel_base_length = 20.25 # inches
+        self._wheel_base_width = 24.25 / inches_in_meter
+        self._wheel_base_length = 20.25 / inches_in_meter
         self._turn_diameter = math.sqrt(self._wheel_base_length**2 + self._wheel_base_width**2) # Pythagorean a^2 + b^2 = c^2
-        self._turn_circumference = math.pi * self._turn_diameter / inches_in_meter
+        self._turn_circumference = math.pi * self._turn_diameter
 
         # Swerve Wheels
         self._motor_max_rpm = 5600
