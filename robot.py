@@ -172,12 +172,6 @@ class MyRobot(wpilib.TimedRobot):
         self.startPoselist = []
         self.startPoseCalibrating = True
 
-        self.autoName = ""
-
-        self.selectAuto()
-
-        
-
     def robotPeriodic(self):
 
         commands2.CommandScheduler.getInstance().run()
@@ -208,6 +202,7 @@ class MyRobot(wpilib.TimedRobot):
         self.smartdashboard.putNumber("note sensor front", self.noteSensorFront.get())
         
         self.smartdashboard.putBoolean("hasNote", self.shooter.hasNote())
+        self.smartdashboard.putNumber("autoMode", 0)
 
         constants.ServoOpen = self.smartdashboard.getNumber("servo open", constants.ServoOpen)
         constants.ServoClosed = self.smartdashboard.getNumber("servo closed", constants.ServoClosed)
@@ -238,22 +233,12 @@ class MyRobot(wpilib.TimedRobot):
         self.timer.reset()
         self.timer.start()
 
-        #autoMode = self.autoChooser.getSelected()
-        autoMode= "WCSMiddleBlue"
-
         self.trapServo.set(constants.ServoClosed)
 
-        '''autoName = "WCS"
-        autoColor = "Red"'''
-
         self.driveTrain.AutoInit()
-        '''if self.autoToggle.get():
-            self.automode = PathPlannerAuto(autoName + "Right" + autoColor)
-        else:
-            self.automode = PathPlannerAuto(autoName + "Left" + autoColor)'''
 
-        #TODO: Figure out if we want to use this or the switch
-        self.automode = PathPlannerAuto(self.autoName)
+        autoname = self.selectAuto()
+        self.automode = PathPlannerAuto(autoname)
         self.automode.schedule()
 
     def autonomousPeriodic(self):
@@ -265,7 +250,7 @@ class MyRobot(wpilib.TimedRobot):
         autoMode = self.smartdashboard.getNumber("autoMode", 0)
         if not autoMode in pathPlanner.autoMap:
             autoMode = 0
-        self.autoName = pathPlanner.autoMap[autoMode]
+        return pathPlanner.autoMap[autoMode]
 
     def teleopInit(self):
         """This function is run once each time the robot enters teleop mode."""
