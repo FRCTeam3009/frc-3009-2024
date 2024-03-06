@@ -307,6 +307,9 @@ class MyRobot(wpilib.TimedRobot):
         elif self.controls.target_closest():
             pose = self.line_up_to_target(self.kAlltags)
             fieldRelative = False
+        
+        if self.controls.robotView():
+            fieldRelative = False
 
         self.smartdashboard.putNumber("DriveX", pose.X())
         self.smartdashboard.putNumber("DriveY", pose.Y())

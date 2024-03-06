@@ -5,6 +5,7 @@ class Controls(object):
     def __init__(self, port0, port1):
         self.driverController = wpilib.XboxController(port0)
         self.shooterController = wpilib.XboxController(port1)
+        self.isRobotRelative = False
 
     def forward(self):
         y = self.driverController.getLeftY()
@@ -85,3 +86,8 @@ class Controls(object):
 
     def shootTrap(self):
         return self.shooterController.getBButton()
+    
+    def robotView(self):
+        if self.driverController.getLeftBumper():
+            self.isRobotRelative = not self.isRobotRelative
+        return self.isRobotRelative
