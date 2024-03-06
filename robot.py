@@ -172,6 +172,8 @@ class MyRobot(wpilib.TimedRobot):
         self.startPoselist = []
         self.startPoseCalibrating = True
 
+        self.testAngle = 0
+
     def robotPeriodic(self):
 
         commands2.CommandScheduler.getInstance().run()
@@ -203,6 +205,8 @@ class MyRobot(wpilib.TimedRobot):
         
         self.smartdashboard.putBoolean("hasNote", self.shooter.hasNote())
         self.smartdashboard.putNumber("autoMode", 0)
+
+        self.driveTrain.publishDashboardStates(self.smartdashboard)
 
         constants.ServoOpen = self.smartdashboard.getNumber("servo open", constants.ServoOpen)
         constants.ServoClosed = self.smartdashboard.getNumber("servo closed", constants.ServoClosed)
@@ -407,9 +411,9 @@ class MyRobot(wpilib.TimedRobot):
         return wpimath.geometry.Pose2d()
     
     def _simulationPeriodic(self):
-        testAngle = 180
-        self.driveTrain.gyroSim.setGyroAngleY(testAngle)
-        self.driveTrain.gyro.setGyroAngleY(testAngle)
+        self.testAngle += self.controls.rotate() * self.driveTrain.maxRotate
+        self.driveTrain.gyroSim.setGyroAngleY(self.testAngle)
+        self.driveTrain.gyro.setGyroAngleY(self.testAngle)
         self.driveTrain.simUpdate()
 
 if __name__ == "__main__":

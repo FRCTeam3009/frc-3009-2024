@@ -109,10 +109,16 @@
             "open": true
           }
         },
+        "double[]##v_/SmartDashboard/measuredStates": {
+          "open": true
+        },
         "double[]##v_/SmartDashboard/startpose": {
           "open": true
         },
-        "open": true
+        "open": true,
+        "swerve": {
+          "open": true
+        }
       },
       "photonvision": {
         "limelight1": {

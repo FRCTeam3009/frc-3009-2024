@@ -31,7 +31,7 @@ class shootCommand(pathplannerlib.auto.Command):
     def execute(self):
         self.shooter.fire(self.scale, False, False)
 
-    def end(self, foo):
+    def end(self, interrupted):
         #self.shooter.stop()
         pass
     def isFinished(self):
@@ -65,7 +65,7 @@ class lineAprilCommand(pathplannerlib.auto.Command):
     def execute(self):
         self.pose = self.lineUpToTarget(self.tags)
         self.driveTrain.Drive(self.pose, False)
-    def end(self):
+    def end(self, interrupted):
         #pose = wpimath.geometry.Pose2d(0, 0, 0)
         return
     def isFinished(self):
@@ -82,7 +82,7 @@ class lineNoteCommand(pathplannerlib.auto.Command):
         self.pose = self.lineUpToTarget()
         self.driveTrain.Drive(self.pose, False)
         self.shooter.fire(0, False, False)
-    def end(self):
+    def end(self, interrupted):
         pose = wpimath.geometry.Pose2d(0, 0, 0)
         self.shooter.stop()
         self.driveTrain.Drive(pose, False)

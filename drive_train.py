@@ -10,6 +10,8 @@ from swerve_drive_params import SwerveDriveParams
 import chassis
 import wpilib
 import wpilib.simulation
+import ntcore
+import constants
 
 class DriveTrain():
     def __init__(self, chassis : chassis.Chassis, fl : SwerveDriveParams, fr : SwerveDriveParams, rl : SwerveDriveParams, rr : SwerveDriveParams, period):
@@ -20,7 +22,7 @@ class DriveTrain():
         self.rl = swerve_module.SwerveModule(rl, self._chassis)
         self.rr = swerve_module.SwerveModule(rr, self._chassis)
         self.period = period 
-        self.maxSpeed = 4.0 # meters per second
+        self.maxSpeed = 4.0 # meters per second, overridden with UpdateMaxSpeed()
         self.maxRotate = self.maxSpeed / self._chassis._turn_meters_per_radian # radians per second4
         self.gyro = wpilib.ADIS16470_IMU()
         self.gyroSim = wpilib.simulation.ADIS16470_IMUSim(self.gyro)
@@ -123,6 +125,22 @@ class DriveTrain():
         self.fr.simUpdate(self.period)
         self.rl.simUpdate(self.period)
         self.rr.simUpdate(self.period)
+
+    def publishDashboardStates(self, smartdashboard: ntcore.NetworkTable):
+        measuredStates = [
+            self.fl.get_angle_position(),
+            self.fl.get_drive_position(),
+            self.fr.get_angle_position(),
+            self.fr.get_drive_position(),
+            self.rl.get_angle_position(),
+            self.rl.get_drive_position(),
+            self.rr.get_angle_position(),
+            self.rr.get_drive_position(),
+        ]
+         
+        smartdashboard.putNumberArray("swerve/measuredStates", measuredStates)
+        smartdashboard.putNumber("swerve/robotRotation", self.GetRotation())
+
 
 def capValue(value, cap):
     if value > cap:
