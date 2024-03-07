@@ -140,8 +140,6 @@ class MyRobot(wpilib.TimedRobot):
             cameraHeightConversion,
             robotToAprilCameraRotation)
         
-
-        self.limelight1 = photonCamera.PhotonCamera("limelight1")
         self.k_maxmisses = 5
         self.target = {}
         for i in range(1,16):
@@ -171,8 +169,6 @@ class MyRobot(wpilib.TimedRobot):
         self.startPose = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         self.startPoselist = []
         self.startPoseCalibrating = True
-
-        self.testAngle = 0
 
     def robotPeriodic(self):
 
@@ -410,11 +406,11 @@ class MyRobot(wpilib.TimedRobot):
             return wpimath.geometry.Pose2d(fwd,0,rot)            
         return wpimath.geometry.Pose2d()
     
+    def _simulationInit(self):
+        self.driveTrain.SimInit()
+    
     def _simulationPeriodic(self):
-        self.testAngle += self.controls.rotate() * self.driveTrain.maxRotate
-        self.driveTrain.gyroSim.setGyroAngleY(self.testAngle)
-        self.driveTrain.gyro.setGyroAngleY(self.testAngle)
-        self.driveTrain.simUpdate()
+        self.driveTrain.SimUpdate(self.controls.rotate())
 
 if __name__ == "__main__":
     wpilib.run(MyRobot)

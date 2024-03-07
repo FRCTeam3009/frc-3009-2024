@@ -25,7 +25,6 @@ class DriveTrain():
         self.maxSpeed = 4.0 # meters per second, overridden with UpdateMaxSpeed()
         self.maxRotate = self.maxSpeed / self._chassis._turn_meters_per_radian # radians per second4
         self.gyro = wpilib.ADIS16470_IMU()
-        self.gyroSim = wpilib.simulation.ADIS16470_IMUSim(self.gyro)
 
         self.fl.reset_encoders()
         self.fr.reset_encoders()
@@ -44,6 +43,8 @@ class DriveTrain():
 
         zeroRotate = wpimath.geometry.Rotation2d()
         self.odometry = SwerveDrive4Odometry(self._drive_kinematics, zeroRotate, self.getSwerveModulePositions())
+
+        self.simAngle = 0
 
     def AutoInit(self):
         driveP = self.fl._drive_pid_controller.getP()
@@ -119,27 +120,49 @@ class DriveTrain():
     def UpdateMaxSpeed(self, speed):
         self.maxSpeed = speed
         self.maxRotate = self.maxSpeed / self._chassis._turn_meters_per_radian
+
+    def SimInit(self):
+        self.simulation = True
+        self.simAngle = 0
+        self.gyroSim = wpilib.simulation.ADIS16470_IMUSim(self.gyro)
+        self.fl._drive_motor.setInverted(False)
+        self.rl._drive_motor.setInverted(False)
+        self.fl.simInit()
+        self.fr.simInit()
+        self.rl.simInit()
+        self.rr.simInit()
     
-    def simUpdate(self):
+    def SimUpdate(self, rotate):
+        self.simAngle += rotate * self.maxRotate
+        self.gyroSim.setGyroAngleY(self.simAngle)
+        self.gyro.setGyroAngleY(self.simAngle)
         self.fl.simUpdate(self.period)
         self.fr.simUpdate(self.period)
         self.rl.simUpdate(self.period)
         self.rr.simUpdate(self.period)
 
     def publishDashboardStates(self, smartdashboard: ntcore.NetworkTable):
+        flAngle = self.fl.get_angle_position()
+        frAngle = self.fr.get_angle_position()
+        rlAngle = self.rl.get_angle_position()
+        rrAngle = self.rr.get_angle_position()
+
         measuredStates = [
-            self.fl.get_angle_position(),
+            flAngle,
             self.fl.get_drive_position(),
-            self.fr.get_angle_position(),
+            frAngle,
             self.fr.get_drive_position(),
-            self.rl.get_angle_position(),
+            rlAngle,
             self.rl.get_drive_position(),
-            self.rr.get_angle_position(),
+            rrAngle,
             self.rr.get_drive_position(),
         ]
          
         smartdashboard.putNumberArray("swerve/measuredStates", measuredStates)
-        smartdashboard.putNumber("swerve/robotRotation", self.GetRotation())
+        rotation = self.GetRotation()
+        if self.simulation:
+            rotation = self.simAngle
+        smartdashboard.putNumber("gyro/rotation", rotation)
 
 
 def capValue(value, cap):

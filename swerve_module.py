@@ -63,6 +63,9 @@ class SwerveModule(object):
         self.timer = wpilib.Timer()
         self.timer.start()
 
+        self.simulation = False
+        self.simAngle = 0
+
     def get_drive_position(self):
         return self._drive_motor_encoder.getPosition()
     
@@ -76,8 +79,10 @@ class SwerveModule(object):
         return self._angle_motor_encoder.getVelocity()
     
     def get_angle_absolute(self):
-        pos = self._encoder.get_absolute_position()
-        rotations = pos.value_as_double
+        posStatus = self._encoder.get_absolute_position()
+        rotations = posStatus.value_as_double
+        if self.simulation:
+            rotations = self.get_angle_position()
         rads = wpimath.units.rotationsToRadians(rotations)
         return rads
     
@@ -94,7 +99,8 @@ class SwerveModule(object):
             self.stop()
             return
 
-        swerve_module_state_ = SwerveModuleState.optimize(swerve_module_state_, self.get_swerve_state().angle)        
+        swerve_module_state_ = SwerveModuleState.optimize(swerve_module_state_, self.get_swerve_state().angle)
+        self.simAngle = swerve_module_state_.angle.radians()        
         self._angle_pid_controller.setReference(swerve_module_state_.angle.radians(), rev.CANSparkMax.ControlType.kPosition)
 
         self.speedRPM = swerve_module_state_.speed * 60 / self._chassis._driveMotorConversionFactor
@@ -110,9 +116,14 @@ class SwerveModule(object):
         rotation = Rotation2d(self.get_angle_absolute())
         return SwerveModulePosition(distance, rotation)
     
+    def simInit(self):
+        self.simulation = True
+    
     def simUpdate(self, period):
         v = self._drive_motor_encoder.getVelocity() * period
         p = self._drive_motor_encoder.getPosition()
         update = v + p
         update *= self._drive_motor_encoder.getPositionConversionFactor()
         self._drive_motor_encoder.setPosition(update)
+
+        self._angle_motor_encoder.setPosition(self.simAngle)
