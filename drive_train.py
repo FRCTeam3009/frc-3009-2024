@@ -31,8 +31,8 @@ class DriveTrain():
         self.rl.reset_encoders()
         self.rr.reset_encoders()
 
-        self.fl._drive_motor.setInverted(True)
-        self.rl._drive_motor.setInverted(True)
+        self.fl._drive_module.setInverted(True)
+        self.rl._drive_module.setInverted(True)
 
         self._drive_kinematics = SwerveDrive4Kinematics(
             Translation2d( self._chassis._wheel_base_width / 2.0, self._chassis._wheel_base_length / 2.0),
@@ -47,13 +47,13 @@ class DriveTrain():
         self.simAngle = 0
 
     def AutoInit(self):
-        driveP = self.fl._drive_pid_controller.getP()
-        driveI = self.fl._drive_pid_controller.getI()
-        driveD = self.fl._drive_pid_controller.getD()
+        driveP = self.fl._drive_module.getP()
+        driveI = self.fl._drive_module.getI()
+        driveD = self.fl._drive_module.getD()
 
-        angleP = self.fl._drive_pid_controller.getP()
-        angleI = self.fl._drive_pid_controller.getI()
-        angleD = self.fl._drive_pid_controller.getD()
+        angleP = self.fl._drive_module.getP()
+        angleI = self.fl._drive_module.getI()
+        angleD = self.fl._drive_module.getD()
 
         if not pathplannerlib.auto.AutoBuilder.isConfigured():
             pathplannerlib.auto.AutoBuilder.configureHolonomic(
@@ -125,8 +125,8 @@ class DriveTrain():
         self.simulation = True
         self.simAngle = 0
         self.gyroSim = wpilib.simulation.ADIS16470_IMUSim(self.gyro)
-        self.fl._drive_motor.setInverted(False)
-        self.rl._drive_motor.setInverted(False)
+        self.fl._drive_module.setInverted(False)
+        self.rl._drive_module.setInverted(False)
         self.fl.simInit()
         self.fr.simInit()
         self.rl.simInit()
