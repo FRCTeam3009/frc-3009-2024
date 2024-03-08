@@ -88,6 +88,6 @@ class Controls(object):
         return self.shooterController.getBButton()
     
     def robotView(self):
-        if self.driverController.getLeftBumper():
+        if self.driverController.getLeftBumperPressed():
             self.isRobotRelative = not self.isRobotRelative
         return self.isRobotRelative

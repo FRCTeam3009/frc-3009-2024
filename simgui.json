@@ -115,6 +115,18 @@
         "double[]##v_/SmartDashboard/startpose": {
           "open": true
         },
+        "field": {
+          "open": true,
+          "robot": {
+            "double[]##v_/SmartDashboard/field/robot/pose": {
+              "open": true
+            },
+            "open": true
+          }
+        },
+        "gyro": {
+          "open": true
+        },
         "open": true,
         "swerve": {
           "double[]##v_/SmartDashboard/swerve/measuredStates": {

@@ -177,12 +177,9 @@ class MyRobot(wpilib.TimedRobot):
 
         commands2.CommandScheduler.getInstance().run()
 
-        swerveModulePositions = self.driveTrain.getSwerveModulePositions()
-        rotation = wpimath.geometry.Rotation2d.fromDegrees(self.GetRotation())
-
         self.automode = None
 
-        self.lastOdometryPose = self.driveTrain.odometry.update(rotation, swerveModulePositions)
+        self.lastOdometryPose = self.driveTrain.Update()
         
         self.smartdashboard.putNumber("autoMode", self.autoToggle.get())
 
@@ -353,9 +350,6 @@ class MyRobot(wpilib.TimedRobot):
 
         output = wpimath.geometry.Pose2d(forward, horizontal, rotate)
         return output
-    
-    def GetRotation(self):
-        return self.driveTrain.GetRotation()
     
     def line_up_to_target(self, tag_list):
         tid = self.ATagCam.getEntry("tid").getDoubleArray(None)

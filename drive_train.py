@@ -11,10 +11,10 @@ import chassis
 import wpilib
 import wpilib.simulation
 import ntcore
-import constants
+import wpimath.units
 
 class DriveTrain():
-    def __init__(self, chassis : chassis.Chassis, fl : SwerveDriveParams, fr : SwerveDriveParams, rl : SwerveDriveParams, rr : SwerveDriveParams, period):
+    def __init__(self, chassis : chassis.Chassis, fl : SwerveDriveParams, fr : SwerveDriveParams, rl : SwerveDriveParams, rr : SwerveDriveParams, period : wpimath.units.seconds):
         self._chassis = chassis
 
         self.fl = swerve_module.SwerveModule(fl, self._chassis)
@@ -44,7 +44,7 @@ class DriveTrain():
         zeroRotate = wpimath.geometry.Rotation2d()
         self.odometry = SwerveDrive4Odometry(self._drive_kinematics, zeroRotate, self.getSwerveModulePositions())
 
-        self.simAngle = 0
+        self.simAngle = wpimath.units.radians(0)
 
         self.simulation = False
 
@@ -74,7 +74,7 @@ class DriveTrain():
                 None # Reference to this subsystem to set requirements
             )
 
-    def Drive(self, pose: wpimath.geometry.Pose2d, fieldRelative):
+    def Drive(self, pose: wpimath.geometry.Pose2d, fieldRelative : bool):
          # Cap the speeds
         forward = capValue(pose.X(), self.maxSpeed)
         horizontal = capValue(pose.Y(), self.maxSpeed)
@@ -123,9 +123,14 @@ class DriveTrain():
         self.maxSpeed = speed
         self.maxRotate = self.maxSpeed / self._chassis._turn_meters_per_radian
 
+    def Update(self):
+        swerveModulePositions = self.getSwerveModulePositions()
+        rotation = wpimath.geometry.Rotation2d.fromDegrees(self.GetRotation())
+        return self.odometry.update(rotation, swerveModulePositions)
+
     def SimInit(self):
         self.simulation = True
-        self.simAngle = 0
+        self.simAngle = wpimath.units.radians(0)
         self.gyroSim = wpilib.simulation.ADIS16470_IMUSim(self.gyro)
         self.fl._drive_module.setInverted(False)
         self.rl._drive_module.setInverted(False)
@@ -135,29 +140,27 @@ class DriveTrain():
         self.rr.simInit()
     
     def SimUpdate(self, rotate):
-        self.simAngle += rotate * self.maxRotate
-        self.gyroSim.setGyroAngleY(self.simAngle)
-        self.gyro.setGyroAngleY(self.simAngle)
+        self.simAngle += wpimath.units.radians(rotate * self.maxRotate * 0.5)
+        degrees = wpimath.units.radiansToDegrees(self.simAngle)
+        self.gyroSim.setGyroAngleY(degrees)
+        self.gyro.setGyroAngleY(degrees)
         self.fl.simUpdate(self.period)
         self.fr.simUpdate(self.period)
         self.rl.simUpdate(self.period)
         self.rr.simUpdate(self.period)
 
     def publishDashboardStates(self, smartdashboard: ntcore.NetworkTable):
-        flAngle = self.fl.get_angle_position()
-        frAngle = self.fr.get_angle_position()
-        rlAngle = self.rl.get_angle_position()
-        rrAngle = self.rr.get_angle_position()
+        pose = self.odometry.getPose()
 
         measuredStates = [
-            flAngle,
-            self.fl.get_drive_position(),
-            frAngle,
-            self.fr.get_drive_position(),
-            rlAngle,
-            self.rl.get_drive_position(),
-            rrAngle,
-            self.rr.get_drive_position(),
+            self.fl.get_angle_position(),
+            self.fl.get_drive_velocity(),
+            self.fr.get_angle_position(),
+            self.fr.get_drive_velocity(),
+            self.rl.get_angle_position(),
+            self.rl.get_drive_velocity(),
+            self.rr.get_angle_position(),
+            self.rr.get_drive_velocity(),
         ]
          
         smartdashboard.putNumberArray("swerve/measuredStates", measuredStates)
@@ -165,6 +168,11 @@ class DriveTrain():
         if self.simulation:
             rotation = self.simAngle
         smartdashboard.putNumber("gyro/rotation", rotation)
+
+        smartdashboard.putNumberArray("field/robot/pose", [pose.X(), pose.Y(), 0.0])
+        smartdashboard.putNumber("field/robot/rotation", rotation)
+        smartdashboard.putNumber("field/robot/width", self._chassis._wheel_base_width)
+        smartdashboard.putNumber("field/robot/length", self._chassis._wheel_base_length)
 
 
 def capValue(value, cap):

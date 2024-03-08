@@ -45,12 +45,21 @@ class SwerveModule(object):
 
         self.simulation = False
         self.simAngle = 0
+        self.simPosition = 0
+        self.simRPM = 0
 
     def get_drive_position(self):
+        if self.simulation:
+            return self.simPosition
+
         return self._drive_module.getPosition()
     
     def get_angle_position(self):
+        if self.simulation:
+            return wpimath.units.radiansToRotations(self.simAngle)
+
         return self._angle_module.getPosition()
+
     
     def get_drive_velocity(self):
         return self._drive_module.getVelocity()
@@ -88,9 +97,13 @@ class SwerveModule(object):
         #self._drive_module.setReference(self.speedRPM, rev.CANSparkMax.ControlType.kVelocity, arbFF = self.driveFF)
         self._drive_module.setReference(self.speedRPM, self.driveFF)
 
+        self.simAngle = swerve_module_state_.angle.radians()
+        self.simRPM = self.speedRPM
+
     def stop(self):
         self._drive_module.set(0)
         self._angle_module.set(0)
+        self.simRPM = 0
 
     def getSwerveModulePosition(self):
         distance = self.get_drive_position()

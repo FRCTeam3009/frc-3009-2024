@@ -1,24 +1,103 @@
 <dashboard-tab
     tab-name="TeleOperated"
     slot="tab"
-    selected=""
     source-provider="NetworkTables"
-><frc-swerve-drivebase
+><frc-gyro
         source-provider="NetworkTables"
-        style="transform: translate(255.2px, 111.2px);"
+        style="transform: translate(737.6px, 544.8px); width: 164px; height: 159.2px;"
+        source-key="/SmartDashboard/gyro/rotation"
+        hide-label=""
+        counter-clockwise=""
+        from-radians=""
+    ></frc-gyro><frc-boolean-box
+        source-provider="NetworkTables"
+        style="transform: translate(724.8px, 2.4px); width: 185.588px; height: 159.988px;"
+        true-color="#0000ff"
+        label="Note"
+        source-key="/SmartDashboard/hasNote"
+    ></frc-boolean-box><frc-swerve-drivebase
+        source-provider="NetworkTables"
+        style="transform: translate(668px, 165.6px);"
         source-key="/SmartDashboard/swerve"
         wheellocations="[2.5,2,2.5,-2,-2.5,2,-2.5,-2]"
         measuredstates="[0,0,0,0,0,0,0,0]"
         desiredstates="[0,0,0,0,0,0,0,0]"
         sizeleftright="4"
         sizefrontback="5"
-    ></frc-swerve-drivebase><frc-gyro
+    ></frc-swerve-drivebase><frc-camera-wrapper
         source-provider="NetworkTables"
-        style="transform: translate(651.2px, 36.8px);"
-        source-key="/SmartDashboard/gyro/rotation"
-        counter-clockwise=""
-    ></frc-gyro></dashboard-tab><dashboard-tab
+        style="width: 578.35px; height: 353.6px; transform: translate(0px, 360.788px);"
+        streams="[]"
+        background-color="black"
+        wait-image="./no-camera-stream.jpg"
+        crosshair-color="white"
+    ></frc-camera-wrapper><frc-camera-wrapper
+        source-provider="NetworkTables"
+        style="width: 578.4px; height: 360.775px; transform: translate(0px, 0.0125007px);"
+        streams="[]"
+        background-color="black"
+        wait-image="./no-camera-stream.jpg"
+        crosshair-color="white"
+    ></frc-camera-wrapper><frc-camera-wrapper
+        source-provider="NetworkTables"
+        style="transform: translate(1042.01px, 0.787498px); width: 493.988px; height: 313.575px;"
+        streams="[]"
+        background-color="black"
+        wait-image="./no-camera-stream.jpg"
+        crosshair-color="white"
+    ></frc-camera-wrapper></dashboard-tab><dashboard-tab
     slot="tab"
     tab-name="Autonomous"
     source-provider="NetworkTables"
-></dashboard-tab>
+    selected=""
+><vaadin-combo-box
+        items="[&quot;Item 1&quot;,&quot;Item 2&quot;]"
+        value="Item 1"
+        source-provider="NetworkTables"
+        has-label=""
+        style="width: 295.2px; height: 275.4px; transform: translate(0px, 0px);"
+        has-value=""
+        label="Autonomous mode"
+        placeholder=""
+    ><input
+            slot="input"
+            value="Item 1"
+            id="vaadin-combo-box-2"
+            autocomplete="off"
+            autocapitalize="off"
+            role="combobox"
+            aria-autocomplete="list"
+            aria-expanded="false"
+            spellcheck="false"
+            autocorrect="off"
+            aria-labelledby="label-vaadin-combo-box-1102"
+            aria-describedby=""
+            tabindex="0"
+            aria-activedescendant="vaadin-combo-box-item-0"
+        ><label
+            slot="label"
+            id="label-vaadin-combo-box-1102"
+            for="vaadin-combo-box-2"
+        >Autonomous mode</label>
+        <div
+            slot="error-message"
+            id="error-message-vaadin-combo-box-849"
+            hidden=""
+        ></div>
+    </vaadin-combo-box><frc-field-wrapper
+        source-key="/SmartDashboard/field"
+        source-provider="NetworkTables"
+        style="transform: translate(328.788px, 0px); width: 637.212px; height: 260.8px;"
+        game="Crescendo"
+        grid-size="1"
+    >
+        <frc-field-robot
+            source-provider="NetworkTables"
+            source-key="/SmartDashboard/field/robot"
+            pose="[0,0,0]"
+            rotation="90"
+        ></frc-field-robot></frc-field-wrapper><frc-gyro
+        source-provider="NetworkTables"
+        style="transform: translate(500.8px, 262.4px);"
+        source-key="/SmartDashboard/rotation"
+    ></frc-gyro></dashboard-tab>
