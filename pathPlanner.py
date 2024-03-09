@@ -5,6 +5,8 @@ import drive_train
 import wpimath.geometry
 import types
 
+DefaultAutonomousMode = "WCSLeftBlue"
+
 autoMap = {
     0 : "WCSLeftBlue",
     1 : "WCSMiddleBlue",

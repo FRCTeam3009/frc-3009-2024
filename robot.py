@@ -185,7 +185,7 @@ class MyRobot(wpilib.TimedRobot):
 
         self.smartdashboard.putNumber("odometryX", self.lastOdometryPose.X())
         self.smartdashboard.putNumber("odometryY", self.lastOdometryPose.Y())
-        self.smartdashboard.putNumber("rotation", self.lastOdometryPose.rotation().degrees())
+        self.smartdashboard.putNumber("odometryR", self.lastOdometryPose.rotation().degrees())
 
         self.smartdashboard.putNumber("FL_Velocity", self.driveTrain.fl.get_drive_velocity())
         self.smartdashboard.putNumber("FR_Velocity", self.driveTrain.fr.get_drive_velocity())
@@ -203,6 +203,7 @@ class MyRobot(wpilib.TimedRobot):
         self.smartdashboard.putNumber("autoMode", 0)
 
         self.driveTrain.publishDashboardStates(self.smartdashboard)
+        self.autonomousDropdown(self.smartdashboard)
 
         constants.ServoOpen = self.smartdashboard.getNumber("servo open", constants.ServoOpen)
         constants.ServoClosed = self.smartdashboard.getNumber("servo closed", constants.ServoClosed)
@@ -247,7 +248,7 @@ class MyRobot(wpilib.TimedRobot):
         self.climber.set(phoenix5.TalonFXControlMode.PercentOutput, 0)
 
     def selectAuto(self):
-        autoMode = self.smartdashboard.getNumber("autoMode", 0)
+        autoMode = self.smartdashboard.getString("autonomousmode/value", pathPlanner.DefaultAutonomousMode)
         if not autoMode in pathPlanner.autoMap:
             autoMode = 0
         return pathPlanner.autoMap[autoMode]
@@ -408,6 +409,12 @@ class MyRobot(wpilib.TimedRobot):
 
             return wpimath.geometry.Pose2d(fwd,0,rot)            
         return wpimath.geometry.Pose2d()
+    
+    def autonomousDropdown(self, smartdashboard: ntcore.NetworkTable):
+        autonames = []
+        for id, name in pathPlanner.autoMap.items():
+            autonames.append(name)
+        smartdashboard.putStringArray("autonomousmode/items", autonames)
     
     def _simulationInit(self):
         self.driveTrain.SimInit()

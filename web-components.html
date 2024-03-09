@@ -2,54 +2,40 @@
     tab-name="TeleOperated"
     slot="tab"
     source-provider="NetworkTables"
-><frc-gyro
+    selected=""
+><frc-boolean-box
         source-provider="NetworkTables"
-        style="transform: translate(737.6px, 544.8px); width: 164px; height: 159.2px;"
-        source-key="/SmartDashboard/gyro/rotation"
-        hide-label=""
-        counter-clockwise=""
-        from-radians=""
-    ></frc-gyro><frc-boolean-box
-        source-provider="NetworkTables"
-        style="transform: translate(724.8px, 2.4px); width: 185.588px; height: 159.988px;"
-        true-color="#0000ff"
-        label="Note"
+        style="transform: translate(1039.99px, 473.588px); width: 169.55px; height: 240.812px;"
+        label="Note Loaded"
         source-key="/SmartDashboard/hasNote"
-    ></frc-boolean-box><frc-swerve-drivebase
+    ></frc-boolean-box><frc-camera-wrapper
         source-provider="NetworkTables"
-        style="transform: translate(668px, 165.6px);"
-        source-key="/SmartDashboard/swerve"
-        wheellocations="[2.5,2,2.5,-2,-2.5,2,-2.5,-2]"
-        measuredstates="[0,0,0,0,0,0,0,0]"
-        desiredstates="[0,0,0,0,0,0,0,0]"
-        sizeleftright="4"
-        sizefrontback="5"
-    ></frc-swerve-drivebase><frc-camera-wrapper
-        source-provider="NetworkTables"
-        style="width: 578.35px; height: 353.6px; transform: translate(0px, 360.788px);"
+        style="width: 325.538px; height: 235.2px; transform: translate(1210.46px, 473.588px);"
         streams="[]"
         background-color="black"
         wait-image="./no-camera-stream.jpg"
         crosshair-color="white"
+        source-key="/CameraPublisher/limelight"
     ></frc-camera-wrapper><frc-camera-wrapper
         source-provider="NetworkTables"
-        style="width: 578.4px; height: 360.775px; transform: translate(0px, 0.0125007px);"
+        style="width: 698.388px; height: 475.15px; transform: translate(837.613px, 0px);"
         streams="[]"
         background-color="black"
         wait-image="./no-camera-stream.jpg"
         crosshair-color="white"
+        source-key="/CameraPublisher/limelight-front"
     ></frc-camera-wrapper><frc-camera-wrapper
         source-provider="NetworkTables"
-        style="transform: translate(1042.01px, 0.787498px); width: 493.988px; height: 313.575px;"
+        style="transform: translate(0px, 0.0125007px); width: 836.375px; height: 650.375px;"
         streams="[]"
         background-color="black"
         wait-image="./no-camera-stream.jpg"
         crosshair-color="white"
+        source-key="/CameraPublisher/limelight-back"
     ></frc-camera-wrapper></dashboard-tab><dashboard-tab
     slot="tab"
     tab-name="Autonomous"
     source-provider="NetworkTables"
-    selected=""
 ><vaadin-combo-box
         items="[&quot;Item 1&quot;,&quot;Item 2&quot;]"
         value="Item 1"
@@ -58,7 +44,6 @@
         style="width: 295.2px; height: 275.4px; transform: translate(0px, 0px);"
         has-value=""
         label="Autonomous mode"
-        placeholder=""
     ><input
             slot="input"
             value="Item 1"
@@ -87,7 +72,7 @@
     </vaadin-combo-box><frc-field-wrapper
         source-key="/SmartDashboard/field"
         source-provider="NetworkTables"
-        style="transform: translate(328.788px, 0px); width: 637.212px; height: 260.8px;"
+        style="transform: translate(328.788px, 0px); width: 637.213px; height: 268.8px;"
         game="Crescendo"
         grid-size="1"
     >
@@ -98,6 +83,15 @@
             rotation="90"
         ></frc-field-robot></frc-field-wrapper><frc-gyro
         source-provider="NetworkTables"
-        style="transform: translate(500.8px, 262.4px);"
-        source-key="/SmartDashboard/rotation"
-    ></frc-gyro></dashboard-tab>
+        style="transform: translate(722.4px, 289.6px);"
+        source-key="/SmartDashboard/gyro/rotation"
+    ></frc-gyro><frc-swerve-drivebase
+        source-provider="NetworkTables"
+        style="transform: translate(1117.6px, 108px);"
+        source-key="/SmartDashboard/swerve"
+        wheellocations="[2.5,2,2.5,-2,-2.5,2,-2.5,-2]"
+        measuredstates="[0,0,0,0,0,0,0,0]"
+        desiredstates="[0,0,0,0,0,0,0,0]"
+        sizeleftright="4"
+        sizefrontback="5"
+    ></frc-swerve-drivebase></dashboard-tab>
