@@ -69,6 +69,9 @@ class MyRobot(wpilib.TimedRobot):
         self.trapServo = wpilib.Servo(constants.Servo)
         self.trapServo.set(constants.ServoClosed)
 
+        self.pitchServo = wpilib.Servo(constants.pitchServo)
+        self.pitchServo.set(constants.speakerAngle)
+
         p_value = 6e-5
         i_value = 1e-6
         d_value = 0
@@ -267,11 +270,17 @@ class MyRobot(wpilib.TimedRobot):
             self.driveTrain.gyro.reset()
 
         if self.controls.shootspeaker():
-            self.shooter.fire(shooter.Shooter.speakerscale, self.controls.override(), self.controls.reverseOverride()) 
+            self.pitchServo.set(constants.speakerAngle)
+            if self.pitchServo.getPosition() < constants.speakerLimit:
+                self.shooter.fire(shooter.Shooter.speakerscale, self.controls.override(), self.controls.reverseOverride()) 
         elif self.controls.shootamp():
-            self.shooter.fire(shooter.Shooter.ampscale, self.controls.override(), self.controls.reverseOverride())
+            self.pitchServo.set(constants.ampAngle)
+            if self.pitchServo.get() > constants.ampLimit:
+                self.shooter.fire(shooter.Shooter.ampscale, self.controls.override(), self.controls.reverseOverride())
         elif self.controls.shootTrap():
-            self.shooter.fire(shooter.Shooter.trapscale, self.controls.override(), self.controls.reverseOverride())
+            self.pitchServo.set(constants.ampAngle)
+            if self.pitchServo.get() > constants.ampLimit:
+                self.shooter.fire(shooter.Shooter.trapscale, self.controls.override(), self.controls.reverseOverride())
         else: 
             self.shooter.stop()
         
@@ -396,10 +405,10 @@ class MyRobot(wpilib.TimedRobot):
         return goal'''
 
         if abs(self.tyNote) > 0.001:
-            pid = 0.1
-            fwd = self.tyNote * pid
+            pid = 0.05
+            fwd = pid
 
-            rotpid = 0.02
+            rotpid = 0.002
             rot = self.txNote * rotpid
             rot *= -1
 

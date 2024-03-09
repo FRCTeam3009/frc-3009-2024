@@ -37,10 +37,16 @@ Middle = 18
 
 Climber = 35
 
-LEDs = 1
+LEDs = 2
 
 Servo = 0
 ServoClosed = 0.35
 ServoOpen = 0.0
+
+pitchServo = 1
+ampAngle = 1.0
+speakerAngle = 0.0
+speakerLimit = 0.01
+ampLimit = 0.99
 
 MaxSpeed = 4.0 # meters per second

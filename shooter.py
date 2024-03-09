@@ -22,7 +22,7 @@ class Shooter:
         self.wasLookingForNote = False
         self.needsreset = False
         self.isLaunching = False
-        self.scoopScale = 0.6
+        self.scoopScale = 0.4
 
     def hasNote(self):
          return (self.noteSensorBottom.get() or self.noteSensorTop.get())

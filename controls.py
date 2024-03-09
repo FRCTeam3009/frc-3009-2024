@@ -38,7 +38,7 @@ class Controls(object):
             return 0.0
    
     def note_pickup(self):
-        value=self.shooterController.getStartButton()
+        value=self.driverController.getRightBumper()
         return value
     
     def reset_gyro(self):

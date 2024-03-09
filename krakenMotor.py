@@ -10,6 +10,8 @@ class krakenMotor:
             self.config.motor_output.inverted = phoenix6.configs.config_groups.InvertedValue.CLOCKWISE_POSITIVE
         else:
             self.config.motor_output.inverted = phoenix6.configs.config_groups.InvertedValue.COUNTER_CLOCKWISE_POSITIVE
+
+        self.config.motor_output.neutral_mode = phoenix6.configs.config_groups.NeutralModeValue.BRAKE
         self.canMotor.configurator.apply(self.config)
 
         '''self.motorEncoder = self.canMotor.getEncoder()
