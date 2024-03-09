@@ -7,22 +7,22 @@ import types
 
 DefaultAutonomousMode = "WCSLeftBlue"
 
-autoMap = {
-    0 : "WCSLeftBlue",
-    1 : "WCSMiddleBlue",
-    2 : "WCSRightBlue",
-    3 : "WCSAmpBlue",
-    4 : "WCSRightRed",
-    5 : "WCSMiddleRed",
-    6 : "WCSLeftRed",
-    7 : "LeftBlue",
-    8 : "MiddleBlue",
-    9 : "RightBlue",
-    10 : "RightRed",
-    11 : "MiddleRed",
-    12 : "LeftRed",
-    13 : "AmpRed",
-}
+autoModes = [
+    "WCSLeftBlue",
+    "WCSMiddleBlue",
+    "WCSRightBlue",
+    "WCSAmpBlue",
+    "WCSRightRed",
+    "WCSMiddleRed",
+    "WCSLeftRed",
+    "LeftBlue",
+    "MiddleBlue",
+    "RightBlue",
+    "RightRed",
+    "MiddleRed",
+    "LeftRed",
+    "AmpRed",
+]
 
 class shootCommand(pathplannerlib.auto.Command):
     def __init__(self, shooter: shooter.Shooter, scale):

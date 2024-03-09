@@ -2,7 +2,6 @@
     tab-name="TeleOperated"
     slot="tab"
     source-provider="NetworkTables"
-    selected=""
 ><frc-boolean-box
         source-provider="NetworkTables"
         style="transform: translate(1039.99px, 473.588px); width: 169.55px; height: 240.812px;"
@@ -36,14 +35,18 @@
     slot="tab"
     tab-name="Autonomous"
     source-provider="NetworkTables"
+    selected=""
+    source-key="/SmartDashboard/autonomousmode"
 ><vaadin-combo-box
         items="[&quot;Item 1&quot;,&quot;Item 2&quot;]"
-        value="Item 1"
+        value="Item 2"
         source-provider="NetworkTables"
         has-label=""
         style="width: 295.2px; height: 275.4px; transform: translate(0px, 0px);"
         has-value=""
         label="Autonomous mode"
+        source-key="/SmartDashboard/autonomousmode"
+        placeholder=""
     ><input
             slot="input"
             value="Item 1"
@@ -58,7 +61,6 @@
             aria-labelledby="label-vaadin-combo-box-1102"
             aria-describedby=""
             tabindex="0"
-            aria-activedescendant="vaadin-combo-box-item-0"
         ><label
             slot="label"
             id="label-vaadin-combo-box-1102"

@@ -63,6 +63,8 @@ class MyRobot(wpilib.TimedRobot):
         self.smartdashboard.putNumber("servo open", constants.ServoOpen)
         self.smartdashboard.putNumber("servo closed", constants.ServoClosed)
 
+        self.autonomousDropdown(self.smartdashboard)
+
         self.NoteCam = self.nt.getTable("limelight-front")
         self.ATagCam = self.nt.getTable("limelight-back")
 
@@ -181,8 +183,6 @@ class MyRobot(wpilib.TimedRobot):
 
         self.lastOdometryPose = self.driveTrain.Update()
         
-        self.smartdashboard.putNumber("autoMode", self.autoToggle.get())
-
         self.smartdashboard.putNumber("odometryX", self.lastOdometryPose.X())
         self.smartdashboard.putNumber("odometryY", self.lastOdometryPose.Y())
         self.smartdashboard.putNumber("odometryR", self.lastOdometryPose.rotation().degrees())
@@ -203,7 +203,6 @@ class MyRobot(wpilib.TimedRobot):
         self.smartdashboard.putNumber("autoMode", 0)
 
         self.driveTrain.publishDashboardStates(self.smartdashboard)
-        self.autonomousDropdown(self.smartdashboard)
 
         constants.ServoOpen = self.smartdashboard.getNumber("servo open", constants.ServoOpen)
         constants.ServoClosed = self.smartdashboard.getNumber("servo closed", constants.ServoClosed)
@@ -249,9 +248,9 @@ class MyRobot(wpilib.TimedRobot):
 
     def selectAuto(self):
         autoMode = self.smartdashboard.getString("autonomousmode/value", pathPlanner.DefaultAutonomousMode)
-        if not autoMode in pathPlanner.autoMap:
-            autoMode = 0
-        return pathPlanner.autoMap[autoMode]
+        if not autoMode in pathPlanner.autoModes:
+            autoMode = pathPlanner.DefaultAutonomousMode
+        return autoMode
 
     def teleopInit(self):
         """This function is run once each time the robot enters teleop mode."""
@@ -411,10 +410,8 @@ class MyRobot(wpilib.TimedRobot):
         return wpimath.geometry.Pose2d()
     
     def autonomousDropdown(self, smartdashboard: ntcore.NetworkTable):
-        autonames = []
-        for id, name in pathPlanner.autoMap.items():
-            autonames.append(name)
-        smartdashboard.putStringArray("autonomousmode/items", autonames)
+        smartdashboard.putString("autonomousmode/value", pathPlanner.DefaultAutonomousMode)
+        smartdashboard.putStringArray("autonomousmode/items", pathPlanner.autoModes)
     
     def _simulationInit(self):
         self.driveTrain.SimInit()

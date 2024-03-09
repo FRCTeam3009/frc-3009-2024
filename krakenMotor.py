@@ -32,11 +32,11 @@ class krakenMotor:
         self.canMotor.configurator.apply(self.config)
 
     def getPosition(self):
-        return float(self.canMotor.get_rotor_position().value) * self.conversion
+        return float(self.canMotor.get_rotor_position().value) * self.conversion * 60
         
     
     def getVelocity(self):
-        return float(self.canMotor.get_rotor_velocity().value) * self.conversion
+        return float(self.canMotor.get_rotor_velocity().value) * self.conversion * 60
     
     def setPosition(self, position):
         self.canMotor.set_position(position)

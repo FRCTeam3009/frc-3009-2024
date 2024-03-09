@@ -109,6 +109,12 @@
             "open": true
           }
         },
+        "autonomousmode": {
+          "open": true,
+          "string[]##v_/SmartDashboard/autonomousmode/items": {
+            "open": true
+          }
+        },
         "double[]##v_/SmartDashboard/measuredStates": {
           "open": true
         },
