@@ -9,12 +9,14 @@ import wpilib
 import wpimath.units
 import chassis
 import neoMotor
+import krakenMotor
 
 class SwerveModule(object):
     def __init__(self, sdp_: sdp, chassis_: chassis.Chassis):
         self._sdp = sdp_
         self._chassis = chassis_
-        self._drive_module = neoMotor.neoMotor(self._sdp._drive_motor.id, False, self._chassis._driveMotorConversionFactor)
+        #self._drive_module = neoMotor.neoMotor(self._sdp._drive_motor.id, False, self._chassis._driveMotorConversionFactor)
+        self._drive_module = krakenMotor.krakenMotor(self._sdp._drive_motor.id, False, self._chassis._driveMotorConversionFactor)
         self._angle_module = neoMotor.neoMotor(self._sdp._angle_motor.id, True, self._chassis._angleMotorConversionFactor)
 
         
@@ -30,8 +32,10 @@ class SwerveModule(object):
         self._angle_module.setupPid(self._sdp._angle_motor.pid_p, self._sdp._angle_motor.pid_i, self._sdp._angle_motor.pid_d,
         0, 0.00000004, True, -1.0, 1.0, -math.pi, math.pi)
 
+        #self._drive_module.setupPid(self._sdp._drive_motor.pid_p, self._sdp._drive_motor.pid_i, self._sdp._drive_motor.pid_d,
+        #0, 0.00000005, False, -1.0, 1.0, False, False)
         self._drive_module.setupPid(self._sdp._drive_motor.pid_p, self._sdp._drive_motor.pid_i, self._sdp._drive_motor.pid_d,
-        0, 0.00000005, False, -1.0, 1.0, False, False)
+        self._chassis._k_s, self._chassis._k_a, self._chassis._k_v)
 
         self.speedRPM = 0.0
         self.driveFF = 0.0
@@ -81,7 +85,8 @@ class SwerveModule(object):
 
         self.speedRPM = swerve_module_state_.speed * 60 / self._chassis._driveMotorConversionFactor
         self.driveFF = 0.0000005
-        self._drive_module.setReference(self.speedRPM, rev.CANSparkMax.ControlType.kVelocity, arbFF = self.driveFF)
+        #self._drive_module.setReference(self.speedRPM, rev.CANSparkMax.ControlType.kVelocity, arbFF = self.driveFF)
+        self._drive_module.setReference(self.speedRPM, self.driveFF)
 
     def stop(self):
         self._drive_module.set(0)

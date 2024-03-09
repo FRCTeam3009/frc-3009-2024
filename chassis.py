@@ -18,9 +18,9 @@ class Chassis(object):
         self._k_pid_max_error = 1
         self._k_volts = 12
         # https://docs.wpilib.org/en/stable/docs/software/advanced-controls/introduction/introduction-to-feedforward.html
-        self._k_s = 0.25 / self._k_volts # voltage to barely move motor
-        self._k_v = 2.59 / self._k_volts # https://www.reca.lc/drive
-        self._k_a = 0.48 / self._k_volts # https://www.reca.lc/drive
+        self._k_s = 0.25 #/ self._k_volts # voltage to barely move motor
+        self._k_v = 2.54 #/ self._k_volts # https://www.reca.lc/drive
+        self._k_a = 0.22 #/ self._k_volts # https://www.reca.lc/drive
 
         self._angle_k_v = 8.22 / self._k_volts
 

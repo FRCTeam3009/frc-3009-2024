@@ -30,19 +30,19 @@ class krakenMotor:
         self.canMotor.configurator.apply(self.config)
 
     def getPosition(self):
-        return self.canMotor.get_position() * self.conversion
+        return float(self.canMotor.get_rotor_position().value) * self.conversion
         
     
     def getVelocity(self):
-        return self.canMotor.get_velocity() * self.conversion
+        return float(self.canMotor.get_rotor_velocity().value) * self.conversion
     
     def setPosition(self, position):
         self.canMotor.set_position(position)
 
-    def setReference(self, value, arbFF = 0):
-        value /= self.conversion
+    def setReference(self, RPM, arbFF = 0):
+        RPS = RPM / 60
         request = phoenix6.controls.VelocityVoltage(0).with_slot(0)
-        self.canMotor.set_control(request.with_velocity(value).with_feed_forward(arbFF))
+        self.canMotor.set_control(request.with_velocity(RPS).with_feed_forward(arbFF))
 
     def stop(self):
         self.setReference(0, 0)

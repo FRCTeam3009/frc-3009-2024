@@ -46,6 +46,8 @@ class DriveTrain():
 
         self.simAngle = 0
 
+        self.simulation = False
+
     def AutoInit(self):
         driveP = self.fl._drive_module.getP()
         driveI = self.fl._drive_module.getI()
