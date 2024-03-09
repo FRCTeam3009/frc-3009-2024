@@ -4,6 +4,7 @@ import wpilib
 import drive_train
 import wpimath.geometry
 import types
+import ntcore
 
 DefaultAutonomousMode = "WCSLeftBlue"
 
@@ -23,6 +24,16 @@ autoModes = [
     "LeftRed",
     "AmpRed",
 ]
+
+def autonomousDropdown(smartdashboard: ntcore.NetworkTable):
+        smartdashboard.putString("autonomousmode/value", DefaultAutonomousMode)
+        smartdashboard.putStringArray("autonomousmode/items", autoModes)
+    
+def selectAuto(smartdashboard):
+        autoMode = smartdashboard.getString("autonomousmode/value", DefaultAutonomousMode)
+        if autoMode not in autoModes:
+            autoMode = DefaultAutonomousMode
+        return autoMode
 
 class shootCommand(pathplannerlib.auto.Command):
     def __init__(self, shooter: shooter.Shooter, scale):

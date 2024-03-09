@@ -63,7 +63,7 @@ class MyRobot(wpilib.TimedRobot):
         self.smartdashboard.putNumber("servo open", constants.ServoOpen)
         self.smartdashboard.putNumber("servo closed", constants.ServoClosed)
 
-        self.autonomousDropdown(self.smartdashboard)
+        pathPlanner.autonomousDropdown(self.smartdashboard)
 
         self.NoteCam = self.nt.getTable("limelight-front")
         self.ATagCam = self.nt.getTable("limelight-back")
@@ -237,7 +237,7 @@ class MyRobot(wpilib.TimedRobot):
 
         self.driveTrain.AutoInit()
 
-        autoname = self.selectAuto()
+        autoname = pathPlanner.selectAuto(self.smartdashboard)
         self.automode = PathPlannerAuto(autoname)
         self.automode.schedule()
 
@@ -245,12 +245,6 @@ class MyRobot(wpilib.TimedRobot):
         """This function is called periodically during autonomous."""
         # This function is fairly empty because we're using the command scheduler to run our autonomous
         self.climber.set(phoenix5.TalonFXControlMode.PercentOutput, 0)
-
-    def selectAuto(self):
-        autoMode = self.smartdashboard.getString("autonomousmode/value", pathPlanner.DefaultAutonomousMode)
-        if not autoMode in pathPlanner.autoModes:
-            autoMode = pathPlanner.DefaultAutonomousMode
-        return autoMode
 
     def teleopInit(self):
         """This function is run once each time the robot enters teleop mode."""
@@ -408,10 +402,6 @@ class MyRobot(wpilib.TimedRobot):
 
             return wpimath.geometry.Pose2d(fwd,0,rot)            
         return wpimath.geometry.Pose2d()
-    
-    def autonomousDropdown(self, smartdashboard: ntcore.NetworkTable):
-        smartdashboard.putString("autonomousmode/value", pathPlanner.DefaultAutonomousMode)
-        smartdashboard.putStringArray("autonomousmode/items", pathPlanner.autoModes)
     
     def _simulationInit(self):
         self.driveTrain.SimInit()

@@ -1,6 +1,6 @@
 import phoenix6
 
-class krakenMotor:
+class krakenMotor():
     def __init__(self, id, isInverted, conversionFactor):
         self.pidController = None
         self.canMotor = phoenix6.hardware.TalonFX(id)
@@ -12,11 +12,18 @@ class krakenMotor:
             self.config.motor_output.inverted = phoenix6.configs.config_groups.InvertedValue.COUNTER_CLOCKWISE_POSITIVE
 
         self.config.motor_output.neutral_mode = phoenix6.configs.config_groups.NeutralModeValue.BRAKE
+        self.config.feedback.sensor_to_mechanism_ratio = self.conversion
         self.canMotor.configurator.apply(self.config)
+
+        self.simulation = False
+        self.simPosition = 0
 
         '''self.motorEncoder = self.canMotor.getEncoder()
         self.motorEncoder.setPositionConversionFactor(conversionFactor)
         self.motorEncoder.setVelocityConversionFactor(self.motorEncoder.getPositionConversionFactor() / 60)'''
+    
+    def simInit(self):
+        self.simulation = True
 
     def getMotor(self):
         return self.canMotor
@@ -32,14 +39,19 @@ class krakenMotor:
         self.canMotor.configurator.apply(self.config)
 
     def getPosition(self):
-        return float(self.canMotor.get_rotor_position().value) * self.conversion * 60
+        if self.simulation:
+            return self.simPosition
         
+        return self.canMotor.get_position().value        
     
     def getVelocity(self):
-        return float(self.canMotor.get_rotor_velocity().value) * self.conversion * 60
+        return self.canMotor.get_velocity().value
     
     def setPosition(self, position):
-        self.canMotor.set_position(position)
+        if self.simulation:
+            self.simPosition = position
+        else:
+            self.canMotor.set_position(position)
 
     def setReference(self, RPM, arbFF = 0):
         RPS = RPM / 60

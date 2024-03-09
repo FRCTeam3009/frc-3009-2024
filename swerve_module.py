@@ -10,6 +10,7 @@ import wpimath.units
 import chassis
 import neoMotor
 import krakenMotor
+import simMotor
 
 class SwerveModule(object):
     def __init__(self, sdp_: sdp, chassis_: chassis.Chassis):
@@ -18,8 +19,6 @@ class SwerveModule(object):
         #self._drive_module = neoMotor.neoMotor(self._sdp._drive_motor.id, False, self._chassis._driveMotorConversionFactor)
         self._drive_module = krakenMotor.krakenMotor(self._sdp._drive_motor.id, False, self._chassis._driveMotorConversionFactor)
         self._angle_module = neoMotor.neoMotor(self._sdp._angle_motor.id, True, self._chassis._angleMotorConversionFactor)
-
-        
 
         self._encoder = phoenix6.hardware.CANcoder(self._sdp._angle_encoder.id)
         encoder_config = phoenix6.configs.CANcoderConfiguration()
@@ -112,6 +111,7 @@ class SwerveModule(object):
     
     def simInit(self):
         self.simulation = True
+        self._drive_module.simInit()
     
     def simUpdate(self, period):
         v = self._drive_module.getVelocity() * period

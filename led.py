@@ -1,6 +1,8 @@
 import wpilib
+import wpilib.simulation
 import constants
-
+import sys
+import hal
 
 #for led in range(self.ledLength):
 #    led_data = self.ledBuff[led]
@@ -33,25 +35,36 @@ kPurple = color(255, 0, 255)
 
 kRainbow = [kRed, kOrange, kYellow, kGreen, kBlue, kPurple]
 
-def setLedColor(led: wpilib.AddressableLED.LEDData, c: color) -> None:
+def setLedColor(led_data: wpilib.AddressableLED.LEDData, c: color) -> None:
     """setRGB actually uses GRB ordering, so this handles the re-ordering for us."""
-    led.setRGB(c.green, c.red, c.blue)
+    led_data.setRGB(c.green, c.red, c.blue)
 
 class LedStrips(object):
 
     def __init__(self) -> None:
         self.leds = wpilib.AddressableLED(constants.LEDs)
+        self.ledSim = wpilib.simulation.AddressableLEDSim(self.leds)
         self.ledLength = 151
         self.leds.setLength(self.ledLength)
-        self.ledBuff = []
-        for led in range(self.ledLength):
-            self.ledBuff.append(self.leds.LEDData())
-            led_data = self.ledBuff[led]
-            setLedColor(led_data, kOff)
-        self.leds.setData(self.ledBuff)
+        
+        self.setup_buffer()
+       
         self.leds.start()
 
         self.chaseOffset = 0
+
+    def setup_buffer(self):
+        self.ledBuff = []
+
+        for led in range(self.ledLength):
+            data = wpilib.AddressableLED.LEDData(0, 0, 0)
+            if "pyfrc.tests" not in sys.modules:
+                data = self.leds.LEDData()
+            
+            self.ledBuff.append(data)
+            led_data = self.ledBuff[led]
+            setLedColor(led_data, kOff)
+        self.leds.setData(self.ledBuff)
 
     def solid(self, red, green, blue):
         c = color(red, green, blue)
