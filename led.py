@@ -1,7 +1,6 @@
 import wpilib
 import wpilib.simulation
 import constants
-import sys
 
 #for led in range(self.ledLength):
 #    led_data = self.ledBuff[led]
@@ -55,13 +54,9 @@ class LedStrips(object):
         self.ledBuff = []
 
         for led in range(self.ledLength):
-            data = wpilib.AddressableLED.LEDData(0, 0, 0)
-            if "pyfrc.tests" not in sys.modules:
-                data = self.leds.LEDData()
-            
+            data = self.leds.LEDData()
+            setLedColor(data, kOff)
             self.ledBuff.append(data)
-            led_data = self.ledBuff[led]
-            setLedColor(led_data, kOff)
         self.leds.setData(self.ledBuff)
 
     def solid(self, red, green, blue):
