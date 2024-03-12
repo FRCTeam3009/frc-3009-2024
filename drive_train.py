@@ -114,6 +114,9 @@ class DriveTrain():
         self.odometry.resetPosition(rotate, self.getSwerveModulePositions(), pose)
 
     def GetRotation(self):
+        if self.simulation:
+            return self.simAngle * -1
+        
         return self.gyro.getAngle(wpilib.ADIS16470_IMU.IMUAxis.kPitch) * -1
     
     def UpdateMaxSpeed(self, speed):
@@ -127,7 +130,6 @@ class DriveTrain():
 
     def SimInit(self):
         self.simulation = True
-        self.simAngle = wpimath.units.radians(0)
         self.gyroSim = wpilib.simulation.ADIS16470_IMUSim(self.gyro)
         self.fl.simInit()
         self.fr.simInit()
@@ -160,8 +162,6 @@ class DriveTrain():
          
         smartdashboard.putNumberArray("swerve/measuredStates", measuredStates)
         rotation = self.GetRotation()
-        if self.simulation:
-            rotation = self.simAngle
         smartdashboard.putNumber("gyro/rotation", rotation)
 
         smartdashboard.putNumberArray("field/robot/pose", [pose.X(), pose.Y(), 0.0])

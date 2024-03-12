@@ -1,14 +1,17 @@
 import rev
 
-
 class neoMotor:
     def __init__(self, id, isInverted, conversionFactor):
+        self.simulation = False
         self.pidController = None
         self.canMotor = rev.CANSparkMax(id, rev.CANSparkLowLevel.MotorType.kBrushless)
         self.canMotor.setInverted(isInverted)
         self.motorEncoder = self.canMotor.getEncoder()
         self.motorEncoder.setPositionConversionFactor(conversionFactor)
         self.motorEncoder.setVelocityConversionFactor(self.motorEncoder.getPositionConversionFactor() / 60)
+
+        self.simRPM = 0.0
+        self.simPosition = 0.0
 
     def getMotor(self):
         return self.canMotor
@@ -28,18 +31,27 @@ class neoMotor:
             self.pidController.setPositionPIDWrappingMaxInput(maxInput)
 
     def getPosition(self):
+        if self.simulation:
+            return self.simPosition
+        
         return self.motorEncoder.getPosition()
     
     def getVelocity(self):
+        if self.simulation:
+            return self.simRPM * self.getPositionConversionFactor()
+        
         return self.motorEncoder.getVelocity()
     
     def setPosition(self, position):
+        self.simPosition = position
         self.motorEncoder.setPosition(position)
 
     def setReference(self, value, controlType, arbFF = 0):
+        self.simRPM = value
         self.pidController.setReference(value, controlType, arbFeedforward=arbFF)
 
     def stop(self):
+        self.simRPM = 0.0
         self.canMotor.set(0)
 
     def getPositionConversionFactor(self):
@@ -59,3 +71,10 @@ class neoMotor:
     
     def set(self, value):
         self.canMotor.set(value)
+
+    def simInit(self):
+        self.simulation = True
+
+    def simUpdate(self, period):
+        distance = self.getVelocity() / 60 * period
+        self.simPosition += distance

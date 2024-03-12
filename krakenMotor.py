@@ -1,4 +1,5 @@
 import phoenix6
+import wpimath.units
 
 class krakenMotor():
     def __init__(self, id, isInverted, conversionFactor):
@@ -16,14 +17,12 @@ class krakenMotor():
         self.canMotor.configurator.apply(self.config)
 
         self.simulation = False
-        self.simPosition = 0
+        self.simPosition = phoenix6.units.rotation(0)
+        self.simRPS = phoenix6.units.rotations_per_second(0)
 
         '''self.motorEncoder = self.canMotor.getEncoder()
         self.motorEncoder.setPositionConversionFactor(conversionFactor)
         self.motorEncoder.setVelocityConversionFactor(self.motorEncoder.getPositionConversionFactor() / 60)'''
-    
-    def simInit(self):
-        self.simulation = True
 
     def getMotor(self):
         return self.canMotor
@@ -45,9 +44,11 @@ class krakenMotor():
         return self.canMotor.get_position().value        
     
     def getVelocity(self):
+        if self.simulation:
+            return self.simRPS
         return self.canMotor.get_velocity().value
     
-    def setPosition(self, position):
+    def setPosition(self, position: phoenix6.units.rotation):
         if self.simulation:
             self.simPosition = position
         else:
@@ -55,6 +56,7 @@ class krakenMotor():
 
     def setReference(self, RPM, arbFF = 0):
         RPS = RPM / 60
+        self.simRPS = phoenix6.units.rotations_per_second(RPS)
         request = phoenix6.controls.VelocityVoltage(0).with_slot(0)
         self.canMotor.set_control(request.with_velocity(RPS).with_feed_forward(arbFF))
 
@@ -75,3 +77,10 @@ class krakenMotor():
     
     def set(self, value):
         self.setReference(value)
+
+    def simInit(self):
+        self.simulation = True
+
+    def simUpdate(self, period):
+        distance = self.simRPS * self.getPositionConversionFactor() * period
+        self.simPosition += distance

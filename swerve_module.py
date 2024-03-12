@@ -46,8 +46,6 @@ class SwerveModule(object):
         self.timer.start()
 
         self.simAngle = 0
-        self.simPosition = 0
-        self.simRPM = 0
 
     def is_drive_inverted(self, params : sdp):
         if self.simulation:
@@ -59,9 +57,6 @@ class SwerveModule(object):
         return False
 
     def get_drive_position(self):
-        if self.simulation:
-            return self.simPosition
-
         return self._drive_module.getPosition()
     
     def get_angle_position(self):
@@ -69,7 +64,6 @@ class SwerveModule(object):
             return wpimath.units.radiansToRotations(self.simAngle)
 
         return self._angle_module.getPosition()
-
     
     def get_drive_velocity(self):
         return self._drive_module.getVelocity()
@@ -99,7 +93,6 @@ class SwerveModule(object):
             return
 
         swerve_module_state_ = SwerveModuleState.optimize(swerve_module_state_, self.get_swerve_state().angle)
-        self.simAngle = swerve_module_state_.angle.radians()        
         self._angle_module.setReference(swerve_module_state_.angle.radians(), rev.CANSparkMax.ControlType.kPosition)
 
         self.speedRPM = swerve_module_state_.speed * 60 / self._chassis._driveMotorConversionFactor
@@ -108,12 +101,10 @@ class SwerveModule(object):
         self._drive_module.setReference(self.speedRPM, self.driveFF)
 
         self.simAngle = swerve_module_state_.angle.radians()
-        self.simRPM = self.speedRPM
 
     def stop(self):
         self._drive_module.set(0)
         self._angle_module.set(0)
-        self.simRPM = 0
 
     def getSwerveModulePosition(self):
         distance = self.get_drive_position()
@@ -125,10 +116,5 @@ class SwerveModule(object):
         self._drive_module.simInit()
     
     def simUpdate(self, period):
-        v = self._drive_module.getVelocity() * period
-        p = self._drive_module.getPosition()
-        update = v + p
-        update *= self._drive_module.getPositionConversionFactor()
-        self._drive_module.setPosition(update)
-
-        self._angle_module.setPosition(self.simAngle)
+        self._drive_module.simUpdate(period)
+        self._angle_module.simUpdate(period)
