@@ -2,7 +2,6 @@ import wpilib
 import wpilib.simulation
 import constants
 import sys
-import hal
 
 #for led in range(self.ledLength):
 #    led_data = self.ledBuff[led]
@@ -43,7 +42,6 @@ class LedStrips(object):
 
     def __init__(self) -> None:
         self.leds = wpilib.AddressableLED(constants.LEDs)
-        self.ledSim = wpilib.simulation.AddressableLEDSim(self.leds)
         self.ledLength = 151
         self.leds.setLength(self.ledLength)
         

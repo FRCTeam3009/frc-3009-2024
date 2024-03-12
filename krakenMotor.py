@@ -64,13 +64,6 @@ class krakenMotor():
     def getPositionConversionFactor(self):
         return self.conversion
 
-    def setInverted(self, isInverted):
-        if isInverted:
-            self.config.motor_output.inverted = phoenix6.configs.config_groups.InvertedValue.CLOCKWISE_POSITIVE
-        else:
-            self.config.motor_output.inverted = phoenix6.configs.config_groups.InvertedValue.COUNTER_CLOCKWISE_POSITIVE
-        self.canMotor.configurator.apply(self.config)
-
     def getP(self):
         return self.config.slot0.k_p
     

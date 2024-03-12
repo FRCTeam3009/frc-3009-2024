@@ -31,9 +31,6 @@ class DriveTrain():
         self.rl.reset_encoders()
         self.rr.reset_encoders()
 
-        self.fl._drive_module.setInverted(True)
-        self.rl._drive_module.setInverted(True)
-
         self._drive_kinematics = SwerveDrive4Kinematics(
             Translation2d( self._chassis._wheel_base_width / 2.0, self._chassis._wheel_base_length / 2.0),
             Translation2d( self._chassis._wheel_base_width / 2.0, -self._chassis._wheel_base_length / 2.0),
@@ -132,8 +129,6 @@ class DriveTrain():
         self.simulation = True
         self.simAngle = wpimath.units.radians(0)
         self.gyroSim = wpilib.simulation.ADIS16470_IMUSim(self.gyro)
-        self.fl._drive_module.setInverted(False)
-        self.rl._drive_module.setInverted(False)
         self.fl.simInit()
         self.fr.simInit()
         self.rl.simInit()

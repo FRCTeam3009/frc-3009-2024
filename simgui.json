@@ -110,7 +110,6 @@
           }
         },
         "autonomousmode": {
-          "open": true,
           "string[]##v_/SmartDashboard/autonomousmode/items": {
             "open": true
           }

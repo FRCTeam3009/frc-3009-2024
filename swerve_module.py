@@ -10,14 +10,17 @@ import wpimath.units
 import chassis
 import neoMotor
 import krakenMotor
-import simMotor
+import constants
 
 class SwerveModule(object):
     def __init__(self, sdp_: sdp, chassis_: chassis.Chassis):
+        self.simulation = False
+
         self._sdp = sdp_
         self._chassis = chassis_
+        driveInverted = self.is_drive_inverted(self._sdp)
         #self._drive_module = neoMotor.neoMotor(self._sdp._drive_motor.id, False, self._chassis._driveMotorConversionFactor)
-        self._drive_module = krakenMotor.krakenMotor(self._sdp._drive_motor.id, False, self._chassis._driveMotorConversionFactor)
+        self._drive_module = krakenMotor.krakenMotor(self._sdp._drive_motor.id, driveInverted, self._chassis._driveMotorConversionFactor)
         self._angle_module = neoMotor.neoMotor(self._sdp._angle_motor.id, True, self._chassis._angleMotorConversionFactor)
 
         self._encoder = phoenix6.hardware.CANcoder(self._sdp._angle_encoder.id)
@@ -42,10 +45,18 @@ class SwerveModule(object):
         self.timer = wpilib.Timer()
         self.timer.start()
 
-        self.simulation = False
         self.simAngle = 0
         self.simPosition = 0
         self.simRPM = 0
+
+    def is_drive_inverted(self, params : sdp):
+        if self.simulation:
+            return False
+        
+        i = params._drive_motor.id
+        if i == constants.FLDrive or i == constants.RLDrive:
+            return True
+        return False
 
     def get_drive_position(self):
         if self.simulation:
