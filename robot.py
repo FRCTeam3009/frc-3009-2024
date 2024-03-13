@@ -74,6 +74,10 @@ class MyRobot(wpilib.TimedRobot):
         self.pitchServo = wpilib.Servo(constants.pitchServo)
         self.pitchServo.set(constants.speakerAngle)
 
+        self.potInput = wpilib.AnalogInput(0)
+        #self.potInput.setAverageBits(2)
+        self.shooterPot = wpilib.AnalogPotentiometer(self.potInput, 180, -30) # device, servo range, pot at 0v location
+
         p_value = 6e-5
         i_value = 1e-6
         d_value = 0
@@ -182,7 +186,8 @@ class MyRobot(wpilib.TimedRobot):
         self.automode = None
 
         self.lastOdometryPose = self.driveTrain.Update()
-        
+
+        self.smartdashboard.putNumber("pot", self.shooterPot.get())   
         self.smartdashboard.putNumber("odometryX", self.lastOdometryPose.X())
         self.smartdashboard.putNumber("odometryY", self.lastOdometryPose.Y())
         self.smartdashboard.putNumber("odometryR", self.lastOdometryPose.rotation().degrees())
@@ -262,15 +267,15 @@ class MyRobot(wpilib.TimedRobot):
 
         if self.controls.shootspeaker():
             self.pitchServo.set(constants.speakerAngle)
-            if self.pitchServo.getPosition() < constants.speakerLimit:
+            if self.shooterPot.get() < constants.speakerLimit:
                 self.shooter.fire(shooter.Shooter.speakerscale, self.controls.override(), self.controls.reverseOverride()) 
         elif self.controls.shootamp():
             self.pitchServo.set(constants.ampAngle)
-            if self.pitchServo.get() > constants.ampLimit:
+            if self.shooterPot.get() > constants.ampLimit: # TODO do override stuff to these checks
                 self.shooter.fire(shooter.Shooter.ampscale, self.controls.override(), self.controls.reverseOverride())
         elif self.controls.shootTrap():
             self.pitchServo.set(constants.ampAngle)
-            if self.pitchServo.get() > constants.ampLimit:
+            if self.shooterPot.get() > constants.ampLimit:
                 self.shooter.fire(shooter.Shooter.trapscale, self.controls.override(), self.controls.reverseOverride())
         else: 
             self.shooter.stop()
