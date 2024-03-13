@@ -45,8 +45,6 @@ class SwerveModule(object):
         self.timer = wpilib.Timer()
         self.timer.start()
 
-        self.simAngle = 0
-
     def is_drive_inverted(self, params : sdp):
         if self.simulation:
             return False
@@ -60,9 +58,6 @@ class SwerveModule(object):
         return self._drive_module.getPosition()
     
     def get_angle_position(self):
-        if self.simulation:
-            return wpimath.units.radiansToRotations(self.simAngle)
-
         return self._angle_module.getPosition()
     
     def get_drive_velocity(self):
@@ -99,8 +94,6 @@ class SwerveModule(object):
         self.driveFF = 0.0000005
         #self._drive_module.setReference(self.speedRPM, rev.CANSparkMax.ControlType.kVelocity, arbFF = self.driveFF)
         self._drive_module.setReference(self.speedRPM, self.driveFF)
-
-        self.simAngle = swerve_module_state_.angle.radians()
 
     def stop(self):
         self._drive_module.set(0)

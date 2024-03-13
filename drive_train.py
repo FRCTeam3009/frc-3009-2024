@@ -23,7 +23,7 @@ class DriveTrain():
         self.rr = swerve_module.SwerveModule(rr, self._chassis)
         self.period = period 
         self.maxSpeed = 4.0 # meters per second, overridden with UpdateMaxSpeed()
-        self.maxRotate = self.maxSpeed / self._chassis._turn_meters_per_radian # radians per second4
+        self.maxRotate = self.maxSpeed / self._chassis._turn_meters_per_radian # radians per second
         self.gyro = wpilib.ADIS16470_IMU()
 
         self.fl.reset_encoders()
@@ -40,6 +40,7 @@ class DriveTrain():
 
         zeroRotate = wpimath.geometry.Rotation2d()
         self.odometry = SwerveDrive4Odometry(self._drive_kinematics, zeroRotate, self.getSwerveModulePositions())
+        self.chassisSpeeds = wpimath.kinematics.ChassisSpeeds()
 
         self.simAngle = wpimath.units.radians(0)
 

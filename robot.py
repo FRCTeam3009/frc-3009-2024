@@ -17,7 +17,6 @@ import sys
 import motorParams
 import encoderParams
 import robotpy_apriltag
-from photonlibpy import photonCamera
 import ntcore
 import phoenix5
 import math
@@ -83,7 +82,6 @@ class MyRobot(wpilib.TimedRobot):
         d_value = 0
 
         angle_p_value = 0.5
-        self.chassisSpeeds = wpimath.kinematics.ChassisSpeeds.fromRobotRelativeSpeeds(0, 0, 0, wpimath.geometry.Rotation2d())
         
         # Front Left
         fldriveMotorParams = motorParams.Motorparams(GetCanId(constants.FLDrive), p_value, i_value, d_value)
@@ -197,9 +195,9 @@ class MyRobot(wpilib.TimedRobot):
         self.smartdashboard.putNumber("RL_Velocity", self.driveTrain.rl.get_drive_velocity())
         self.smartdashboard.putNumber("RR_Velocity", self.driveTrain.rr.get_drive_velocity())
 
-        self.smartdashboard.putNumber("chassis_speeds_vx", self.chassisSpeeds.vx)
-        self.smartdashboard.putNumber("chassis_speeds_vy", self.chassisSpeeds.vy)
-        self.smartdashboard.putNumber("chassis_speeds_omega", self.chassisSpeeds.omega)
+        self.smartdashboard.putNumber("chassis_speeds_vx", self.driveTrain.chassisSpeeds.vx)
+        self.smartdashboard.putNumber("chassis_speeds_vy", self.driveTrain.chassisSpeeds.vy)
+        self.smartdashboard.putNumber("chassis_speeds_omega", self.driveTrain.chassisSpeeds.omega)
         self.smartdashboard.putNumber("note sensor top", self.noteSensorTop.get())
         self.smartdashboard.putNumber("note sensor bottom", self.noteSensorBottom.get())
         self.smartdashboard.putNumber("note sensor front", self.noteSensorFront.get())

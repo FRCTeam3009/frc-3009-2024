@@ -4,13 +4,13 @@ class neoMotor:
     def __init__(self, id, isInverted, conversionFactor):
         self.simulation = False
         self.pidController = None
+        self.conversionFactor = conversionFactor
         self.canMotor = rev.CANSparkMax(id, rev.CANSparkLowLevel.MotorType.kBrushless)
         self.canMotor.setInverted(isInverted)
         self.motorEncoder = self.canMotor.getEncoder()
-        self.motorEncoder.setPositionConversionFactor(conversionFactor)
-        self.motorEncoder.setVelocityConversionFactor(self.motorEncoder.getPositionConversionFactor() / 60)
+        self.motorEncoder.setPositionConversionFactor(self.conversionFactor)
+        self.motorEncoder.setVelocityConversionFactor(self.conversionFactor / 60)
 
-        self.simRPM = 0.0
         self.simPosition = 0.0
 
     def getMotor(self):
@@ -32,13 +32,13 @@ class neoMotor:
 
     def getPosition(self):
         if self.simulation:
-            return self.simPosition
+            return self.simPosition * self.conversionFactor
         
         return self.motorEncoder.getPosition()
     
     def getVelocity(self):
         if self.simulation:
-            return self.simRPM * self.getPositionConversionFactor()
+            return 0
         
         return self.motorEncoder.getVelocity()
     
@@ -46,16 +46,15 @@ class neoMotor:
         self.simPosition = position
         self.motorEncoder.setPosition(position)
 
-    def setReference(self, value, controlType, arbFF = 0):
-        self.simRPM = value
-        self.pidController.setReference(value, controlType, arbFeedforward=arbFF)
+    def setReference(self, rads, controlType, arbFF = 0):
+        self.simPosition = rads / self.conversionFactor
+        self.pidController.setReference(rads, controlType, arbFeedforward=arbFF)
 
     def stop(self):
-        self.simRPM = 0.0
         self.canMotor.set(0)
 
     def getPositionConversionFactor(self):
-        return self.motorEncoder.getPositionConversionFactor()
+        return self.conversionFactor
 
     def setInverted(self, value):
         self.canMotor.setInverted(value)
@@ -76,5 +75,5 @@ class neoMotor:
         self.simulation = True
 
     def simUpdate(self, period):
-        distance = self.getVelocity() / 60 * period
-        self.simPosition += distance
+        # this is a position PID controller, so it just goes to the position, no updates.
+        return
