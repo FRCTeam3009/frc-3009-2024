@@ -44,9 +44,11 @@ ServoClosed = 0.35
 ServoOpen = 0.0
 
 pitchServo = 1
+# servo angles
 ampAngle = 0.01
 speakerAngle = 0.99
+# servo pot limits
 speakerLimit = 10.0
-ampLimit = 50.0
+ampLimit = 45.0
 
 MaxSpeed = 4.0 # meters per second

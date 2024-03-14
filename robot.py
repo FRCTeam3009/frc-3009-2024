@@ -75,7 +75,7 @@ class MyRobot(wpilib.TimedRobot):
 
         self.potInput = wpilib.AnalogInput(0)
         #self.potInput.setAverageBits(2)
-        self.shooterPot = wpilib.AnalogPotentiometer(self.potInput, 180, -30) # device, servo range, pot at 0v location
+        self.shooterPot = wpilib.AnalogPotentiometer(self.potInput, 180, -25) # device, servo range, pot at 0v location
 
         p_value = 6e-5
         i_value = 1e-6
@@ -202,6 +202,10 @@ class MyRobot(wpilib.TimedRobot):
         self.smartdashboard.putNumber("note sensor bottom", self.noteSensorBottom.get())
         self.smartdashboard.putNumber("note sensor front", self.noteSensorFront.get())
         
+        self.smartdashboard.putNumber("speakerspeed",shooter.Shooter.speakerscale)
+        self.smartdashboard.putNumber("ampspeed",shooter.Shooter.ampscale)
+        self.smartdashboard.putNumber("trapspeed",shooter.Shooter.trapscale)
+
         self.smartdashboard.putBoolean("hasNote", self.shooter.hasNote())
         self.smartdashboard.putNumber("autoMode", 0)
 
@@ -263,18 +267,16 @@ class MyRobot(wpilib.TimedRobot):
         if self.controls.reset_gyro():
             self.driveTrain.gyro.reset()
 
+        speakerspeed = self.smartdashboard.getNumber("speakerspeed",shooter.Shooter.speakerscale)
+        ampspeed = self.smartdashboard.getNumber("ampspeed",shooter.Shooter.ampscale)
+        trapspeed = self.smartdashboard.getNumber("trapspeed",shooter.Shooter.trapscale)
+        self.pitchServo.set(self.controls.shooterangle())
         if self.controls.shootspeaker():
-            self.pitchServo.set(constants.speakerAngle)
-            if self.shooterPot.get() < constants.speakerLimit:
-                self.shooter.fire(shooter.Shooter.speakerscale, self.controls.override(), self.controls.reverseOverride()) 
+            self.shooter.fire(speakerspeed, self.controls.override(), self.controls.reverseOverride()) 
         elif self.controls.shootamp():
-            self.pitchServo.set(constants.ampAngle)
-            if self.shooterPot.get() > constants.ampLimit: # TODO do override stuff to these checks
-                self.shooter.fire(shooter.Shooter.ampscale, self.controls.override(), self.controls.reverseOverride())
+            self.shooter.fire(ampspeed, self.controls.override(), self.controls.reverseOverride())
         elif self.controls.shootTrap():
-            self.pitchServo.set(constants.ampAngle)
-            if self.shooterPot.get() > constants.ampLimit:
-                self.shooter.fire(shooter.Shooter.trapscale, self.controls.override(), self.controls.reverseOverride())
+            self.shooter.fire(trapspeed, self.controls.override(), self.controls.reverseOverride())
         else: 
             self.shooter.stop()
         

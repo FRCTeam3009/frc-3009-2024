@@ -91,3 +91,8 @@ class Controls(object):
         if self.driverController.getLeftBumperPressed():
             self.isRobotRelative = not self.isRobotRelative
         return self.isRobotRelative
+    
+    def shooterangle(self):
+        value = self.shooterController.getRightY()
+        return (value + 1)/2
+        

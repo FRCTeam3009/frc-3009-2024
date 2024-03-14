@@ -2,6 +2,7 @@
     tab-name="TeleOperated"
     slot="tab"
     source-provider="NetworkTables"
+    selected=""
 ><frc-boolean-box
         source-provider="NetworkTables"
         style="transform: translate(1039.99px, 473.588px); width: 169.55px; height: 240.812px;"
@@ -31,11 +32,13 @@
         wait-image="./no-camera-stream.jpg"
         crosshair-color="white"
         source-key="/CameraPublisher/limelight-back"
-    ></frc-camera-wrapper></dashboard-tab><dashboard-tab
+    ></frc-camera-wrapper><frc-gauge
+        source-provider="NetworkTables"
+        style="transform: translate(838.4px, 480px);"
+    ></frc-gauge></dashboard-tab><dashboard-tab
     slot="tab"
     tab-name="Autonomous"
     source-provider="NetworkTables"
-    selected=""
     source-key="/SmartDashboard/autonomousmode"
 ><vaadin-combo-box
         items="[&quot;Item 1&quot;,&quot;Item 2&quot;]"
@@ -46,6 +49,7 @@
         has-value=""
         label="Autonomous mode"
         source-key="/SmartDashboard/autonomousmode"
+        placeholder=""
     ><input
             slot="input"
             value="Item 2"
