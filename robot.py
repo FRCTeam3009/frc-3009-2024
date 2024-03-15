@@ -296,6 +296,7 @@ class MyRobot(wpilib.TimedRobot):
         # Overwrite movement from camera if we say so
         if self.controls.note_pickup():
             pose = self.noteLineup()
+            self.shooter.fire(0, False, False)
             fieldRelative = False
         elif self.controls.target_amp():
             pose = self.line_up_to_target(self.kAmptags)
