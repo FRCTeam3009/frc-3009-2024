@@ -78,11 +78,10 @@ class DriveTrain():
         horizontal = capValue(pose.Y(), self.maxSpeed)
         rotate = capValue(pose.rotation().radians(), self.maxRotate)
 
-        gyroYaw = self.GetRotation()
-        relativeRotation = wpimath.geometry.Rotation2d.fromDegrees(gyroYaw)
-
-        chassisSpeeds = wpimath.kinematics.ChassisSpeeds.fromRobotRelativeSpeeds(forward, horizontal, rotate, relativeRotation)
+        chassisSpeeds = wpimath.kinematics.ChassisSpeeds(forward, horizontal, rotate)
         if fieldRelative:
+            gyroYaw = self.GetRotation()
+            relativeRotation = wpimath.geometry.Rotation2d.fromDegrees(gyroYaw)
             chassisSpeeds = wpimath.kinematics.ChassisSpeeds.fromFieldRelativeSpeeds(forward, horizontal, rotate, relativeRotation)
 
         self.chassisSpeeds = wpimath.kinematics.ChassisSpeeds.discretize(chassisSpeeds, self.period)
