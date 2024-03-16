@@ -95,4 +95,7 @@ class Controls(object):
     def shooterangle(self):
         value = self.shooterController.getRightY()
         return (value + 1)/2
+    
+    def target_lock(self):
+        return self.driverController.getAButton()
         
