@@ -1,13 +1,10 @@
 import rev
-from wpimath.controller import SimpleMotorFeedforwardMeters
 import SparkMotor
+import shooter_angle
+import wpilib
 
 class Shooter:
-    speakerscale = 0.78#0.8#0.62
-    ampscale = 0.30
-    trapscale = 0.45
-
-    def __init__(self, topId, bottomId, middleId, noteSensorBottom, noteSensorTop, intakeScoop):
+    def __init__(self, topId, bottomId, middleId, noteSensorBottom, noteSensorTop, intakeScoop, servoID, servoPotID):
         self.kMaxRpm = 5600.0
 
         self.topMotor = rev.CANSparkMax(topId, rev._rev.CANSparkLowLevel.MotorType.kBrushless)
@@ -19,6 +16,11 @@ class Shooter:
         self.noteSensorBottom = noteSensorBottom
         self.noteSensorTop = noteSensorTop
         self.intakeScoopSpark = SparkMotor.SparkMotor(intakeScoop)
+
+        self.potInput = wpilib.AnalogInput(servoPotID)
+        self.shooterPot = wpilib.AnalogPotentiometer(self.potInput, 180, -25) # device, servo range, pot at 0v location
+        self.pitchServo = wpilib.Servo(servoID)
+
         self.wasLookingForNote = False
         self.needsreset = False
         self.isLaunching = False
@@ -27,7 +29,9 @@ class Shooter:
     def hasNote(self):
          return (self.noteSensorBottom.get() or self.noteSensorTop.get())
     
-    def fire(self, value, override, reverseOverride):
+    def fire(self, shoot_angle: shooter_angle.ShooterAngle, override: bool, reverseOverride: bool):
+        self.pitchServo.set(shoot_angle.angle)
+
         seen = self.hasNote()
         if reverseOverride:
             self.intakeScoopSpark._Motor_Pid_.setReference(-self.kMaxRpm, rev.CANSparkMax.ControlType.kVelocity)
@@ -60,13 +64,18 @@ class Shooter:
             return
         
         self.isLaunching = True
-        rpm = value * self.kMaxRpm
+        rpm = shoot_angle.speed * self.kMaxRpm
         self.topspark._Motor_Pid_.setReference(rpm * -1, rev.CANSparkMax.ControlType.kVelocity, arbFeedforward=0)
         self.bottomMotorspark._Motor_Pid_.setReference(rpm, rev.CANSparkMax.ControlType.kVelocity, arbFeedforward=0)
 
         toprpm = self.topspark.encoder.getVelocity()
         bottomrpm = self.bottomMotorspark.encoder.getVelocity()
-        if bottomrpm >= rpm and toprpm <= -1 * rpm:
+
+        bottom_at_speed = bottomrpm >= rpm
+        top_at_speed = toprpm <= -1 * rpm
+        servo_at_angle = shoot_angle.is_shooter_at_angle(self.shooterPot.get()) or override
+
+        if bottom_at_speed and top_at_speed and servo_at_angle:
             self.middleRampSpark._Motor_Pid_.setReference(self.kMaxRpm, rev.CANSparkMax.ControlType.kVelocity)
         else: 
             self.middleRampSpark._Motor_Pid_.setReference(0, rev.CANSparkMax.ControlType.kVelocity)

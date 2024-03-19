@@ -52,3 +52,5 @@ speakerLimit = 10.0
 ampLimit = 45.0
 
 MaxSpeed = 4.0 # meters per second
+
+is_simulation = False

@@ -14,8 +14,6 @@ import constants
 
 class SwerveModule(object):
     def __init__(self, sdp_: sdp, chassis_: chassis.Chassis):
-        self.simulation = False
-
         self._sdp = sdp_
         self._chassis = chassis_
         driveInverted = self.is_drive_inverted(self._sdp)
@@ -46,7 +44,7 @@ class SwerveModule(object):
         self.timer.start()
 
     def is_drive_inverted(self, params : sdp):
-        if self.simulation:
+        if constants.is_simulation:
             return False
         
         i = params._drive_motor.id
@@ -69,8 +67,6 @@ class SwerveModule(object):
     def get_angle_absolute(self):
         posStatus = self._encoder.get_absolute_position()
         rotations = posStatus.value_as_double
-        if self.simulation:
-            rotations = self.get_angle_position()
         rads = wpimath.units.rotationsToRadians(rotations)
         return rads
     
@@ -103,11 +99,3 @@ class SwerveModule(object):
         distance = self.get_drive_position()
         rotation = Rotation2d(self.get_angle_absolute())
         return SwerveModulePosition(distance, rotation)
-    
-    def simInit(self):
-        self.simulation = True
-        self._drive_module.simInit()
-    
-    def simUpdate(self, period):
-        self._drive_module.simUpdate(period)
-        self._angle_module.simUpdate(period)

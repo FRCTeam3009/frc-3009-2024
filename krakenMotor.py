@@ -1,5 +1,4 @@
 import phoenix6
-import wpimath.units
 import constants
 
 class krakenMotor():
@@ -16,10 +15,6 @@ class krakenMotor():
         self.config.motor_output.neutral_mode = phoenix6.configs.config_groups.NeutralModeValue.BRAKE
         self.config.feedback.sensor_to_mechanism_ratio = self.conversion
         self.canMotor.configurator.apply(self.config)
-
-        self.simulation = False
-        self.simPosition = phoenix6.units.rotation(0)
-        self.simRPS = phoenix6.units.rotations_per_second(0)
 
     def getMotor(self):
         return self.canMotor
@@ -39,21 +34,13 @@ class krakenMotor():
         self.canMotor.configurator.apply(self.config)
 
     def getPosition(self):
-        if self.simulation:
-            return self.simPosition
-        
         return self.canMotor.get_position().value        
     
     def getVelocity(self):
-        if self.simulation:
-            return self.simRPS
         return self.canMotor.get_velocity().value
     
     def setPosition(self, position: phoenix6.units.rotation):
-        if self.simulation:
-            self.simPosition = position
-        else:
-            self.canMotor.set_position(position)
+        self.canMotor.set_position(position)
 
     def setReference(self, RPM, arbFF = 0):
         RPS = RPM / 60
@@ -80,10 +67,3 @@ class krakenMotor():
     
     def set(self, value):
         self.setReference(value)
-
-    def simInit(self):
-        self.simulation = True
-
-    def simUpdate(self, period):
-        distance = self.simRPS * self.getPositionConversionFactor() * period
-        self.simPosition += distance

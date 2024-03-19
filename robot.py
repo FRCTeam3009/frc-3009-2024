@@ -7,13 +7,11 @@ import wpimath.kinematics
 import wpimath.geometry
 import wpimath.units
 import wpimath.filter
-import wpilib.simulation
 import controls
 import swerve_drive_params
 import drive_train
 import chassis
 import rev
-import sys
 import motorParams
 import encoderParams
 import robotpy_apriltag
@@ -26,6 +24,8 @@ import pathplannerlib.auto
 import led
 import constants
 import pathPlanner
+import sys
+import shooter_angle
 
 TestCanId = 0
 
@@ -36,9 +36,12 @@ class MyRobot(wpilib.TimedRobot):
         This function is called upon program startup and
         should be used for any initialization code.
         """
+        constants.is_simulation = "pyfrc.tests" in sys.modules
+
         self.chassis = chassis.Chassis()
 
         self.ledStrips = led.LedStrips()
+
 
         self.kSubwoofertags = [3, 4, 7, 8]
         self.kAmptags = [5, 6] 
@@ -70,41 +73,45 @@ class MyRobot(wpilib.TimedRobot):
         self.trapServo = wpilib.Servo(constants.Servo)
         self.trapServo.set(constants.ServoClosed)
 
-        self.pitchServo = wpilib.Servo(constants.pitchServo)
-        self.pitchServo.set(constants.speakerAngle)
-
-        self.potInput = wpilib.AnalogInput(0)
-        #self.potInput.setAverageBits(2)
-        self.shooterPot = wpilib.AnalogPotentiometer(self.potInput, 180, -25) # device, servo range, pot at 0v location
-
         p_value = 6e-5
         i_value = 1e-6
         d_value = 0
 
         angle_p_value = 0.5
+
+        flOffset = constants.FLEncoderOffset
+        frOffset = constants.FREncoderOffset
+        rlOffset = constants.RLEncoderOffset
+        rrOffset = constants.RREncoderOffset
+
+        if constants.is_simulation:
+            flOffset = 0
+            frOffset = 0
+            rlOffset = 0
+            rrOffset = 0
         
         # Front Left
         fldriveMotorParams = motorParams.Motorparams(GetCanId(constants.FLDrive), p_value, i_value, d_value)
         flangleMotorParams = motorParams.Motorparams(GetCanId(constants.FLAngle), angle_p_value)
-        flEncoderParams = encoderParams.EncoderParams(GetCanId(constants.FLEncoder), constants.FLEncoderOffset)
+        flEncoderParams = encoderParams.EncoderParams(GetCanId(constants.FLEncoder), flOffset)
         flParams = swerve_drive_params.SwerveDriveParams(fldriveMotorParams, flangleMotorParams, flEncoderParams)
 
         # Rear Left
         rldriveMotorParams = motorParams.Motorparams(GetCanId(constants.RLDrive), p_value, i_value, d_value)
         rlangleMotorParams = motorParams.Motorparams(GetCanId(constants.RLAngle), angle_p_value)
-        rlEncoderParams = encoderParams.EncoderParams(GetCanId(constants.RLEncoder), constants.RLEncoderOffset)
+        rlEncoderParams = encoderParams.EncoderParams(GetCanId(constants.RLEncoder), rlOffset)
         rlParams = swerve_drive_params.SwerveDriveParams(rldriveMotorParams, rlangleMotorParams, rlEncoderParams)
 
         # Front Right
         frdriveMotorParams = motorParams.Motorparams(GetCanId(constants.FRDrive), p_value, i_value, d_value)
         frangleMotorParams = motorParams.Motorparams(GetCanId(constants.FRAngle), angle_p_value)
-        frEncoderParams = encoderParams.EncoderParams(GetCanId(constants.FREncoder), constants.FREncoderOffset)
+        frEncoderParams = encoderParams.EncoderParams(GetCanId(constants.FREncoder), frOffset)
         frParams = swerve_drive_params.SwerveDriveParams(frdriveMotorParams, frangleMotorParams, frEncoderParams)
         
         # Rear Right
         rrdriveMotorParams = motorParams.Motorparams(GetCanId(constants.RRDrive), p_value, i_value, d_value)
         rrangleMotorParams = motorParams.Motorparams(GetCanId(constants.RRAngle), angle_p_value)
-        rrEncoderParams = encoderParams.EncoderParams(GetCanId(constants.RREncoder), constants.RREncoderOffset)
+        rrEncoderParams = encoderParams.EncoderParams(GetCanId(constants.RREncoder), rrOffset)
         rrParams = swerve_drive_params.SwerveDriveParams(rrdriveMotorParams, rrangleMotorParams, rrEncoderParams)
             
         self.driveTrain = drive_train.DriveTrain(self.chassis, flParams, frParams, rlParams, rrParams, self.getPeriod())
@@ -195,9 +202,6 @@ class MyRobot(wpilib.TimedRobot):
         self.smartdashboard.putNumber("RL_Velocity", self.driveTrain.rl.get_drive_velocity())
         self.smartdashboard.putNumber("RR_Velocity", self.driveTrain.rr.get_drive_velocity())
 
-        self.smartdashboard.putNumber("chassis_speeds_vx", self.driveTrain.chassisSpeeds.vx)
-        self.smartdashboard.putNumber("chassis_speeds_vy", self.driveTrain.chassisSpeeds.vy)
-        self.smartdashboard.putNumber("chassis_speeds_omega", self.driveTrain.chassisSpeeds.omega)
         self.smartdashboard.putNumber("note sensor top", self.noteSensorTop.get())
         self.smartdashboard.putNumber("note sensor bottom", self.noteSensorBottom.get())
         self.smartdashboard.putNumber("note sensor front", self.noteSensorFront.get())
@@ -207,7 +211,6 @@ class MyRobot(wpilib.TimedRobot):
         self.smartdashboard.putNumber("trapspeed",shooter.Shooter.trapscale)
 
         self.smartdashboard.putBoolean("hasNote", self.shooter.hasNote())
-        self.smartdashboard.putNumber("autoMode", 0)
 
         self.driveTrain.publishDashboardStates(self.smartdashboard)
 
@@ -267,16 +270,22 @@ class MyRobot(wpilib.TimedRobot):
         if self.controls.reset_gyro():
             self.driveTrain.gyro.reset()
 
-        speakerspeed = self.smartdashboard.getNumber("speakerspeed",shooter.Shooter.speakerscale)
-        ampspeed = self.smartdashboard.getNumber("ampspeed",shooter.Shooter.ampscale)
-        trapspeed = self.smartdashboard.getNumber("trapspeed",shooter.Shooter.trapscale)
-        self.pitchServo.set(self.controls.shooterangle())
+        speakerspeed = self.smartdashboard.getNumber("speakerspeed",shooter_angle.speaker_speed)
+        ampspeed = self.smartdashboard.getNumber("ampspeed",shooter_angle.amp_speed)
+        trapspeed = self.smartdashboard.getNumber("trapspeed",shooter_angle.trap_speed)
+
+        manual_pitch = self.controls.shooterangle()
+        angle = shooter_angle.ShooterAngle(ampspeed, manual_pitch)
+
         if self.controls.shootspeaker():
-            self.shooter.fire(speakerspeed, self.controls.override(), self.controls.reverseOverride()) 
+            angle.speed = speakerspeed
+            self.shooter.fire(angle, self.controls.override(), self.controls.reverseOverride()) 
         elif self.controls.shootamp():
-            self.shooter.fire(ampspeed, self.controls.override(), self.controls.reverseOverride())
+            angle.speed = ampspeed
+            self.shooter.fire(angle, self.controls.override(), self.controls.reverseOverride())
         elif self.controls.shootTrap():
-            self.shooter.fire(trapspeed, self.controls.override(), self.controls.reverseOverride())
+            angle.speed = trapspeed
+            self.shooter.fire(angle, self.controls.override(), self.controls.reverseOverride())
         else: 
             self.shooter.stop()
         
@@ -354,17 +363,10 @@ class MyRobot(wpilib.TimedRobot):
         tid = self.ATagCam.getEntry("tid").getDoubleArray(None)
         tagFound = tid is not None and len(tid) > 0
         if tagFound and tid[0] in tag_list:
-            '''
-            r = -self.txATag
-            verticalAngle = self.tyATag - self.robotToAprilCamera.rotation().y_degrees
-            x = -math.tan(verticalAngle) * self.robotToAprilCamera.Z()
-            # if we're targeting the speaker adjust for the base
-            if tid[0] in self.kSubwoofertags:
-                x = x - 1.2
-            return wpimath.geometry.Pose2d(x,0,r)
-            '''
             pid = 0.1
-            fwd = self.tyATag * pid
+            verticalAngle = self.tyATag - self.robotToAprilCamera.rotation().y_degrees
+            fwd = -math.tan(verticalAngle) * self.robotToAprilCamera.Z()
+            fwd *= pid
 
             rotpid = 0.02
             rot = self.txATag * rotpid
@@ -372,7 +374,7 @@ class MyRobot(wpilib.TimedRobot):
 
             if tid[0] in self.kSubwoofertags:
                 fwd = fwd - 1.2
-            return wpimath.geometry.Pose2d(fwd,0,rot)            
+            return wpimath.geometry.Pose2d(fwd,0,rot)
         return wpimath.geometry.Pose2d()
     
 
@@ -407,19 +409,13 @@ class MyRobot(wpilib.TimedRobot):
 
             return wpimath.geometry.Pose2d(fwd,0,rot)            
         return wpimath.geometry.Pose2d()
-    
-    def _simulationInit(self):
-        self.driveTrain.SimInit()
-    
-    def _simulationPeriodic(self):
-        self.driveTrain.SimUpdate(self.controls.rotate())
 
 if __name__ == "__main__":
     wpilib.run(MyRobot)
     
 def GetCanId(id):
     global TestCanId
-    if "pyfrc.tests" in sys.modules:
+    if constants.is_simulation:
         TestCanId += 1
         return TestCanId
     else:

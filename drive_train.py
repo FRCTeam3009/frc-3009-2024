@@ -9,7 +9,6 @@ from pathplannerlib.config import HolonomicPathFollowerConfig, ReplanningConfig,
 from swerve_drive_params import SwerveDriveParams
 import chassis
 import wpilib
-import wpilib.simulation
 import ntcore
 import wpimath.units
 
@@ -41,10 +40,6 @@ class DriveTrain():
         zeroRotate = wpimath.geometry.Rotation2d()
         self.odometry = SwerveDrive4Odometry(self._drive_kinematics, zeroRotate, self.getSwerveModulePositions())
         self.chassisSpeeds = wpimath.kinematics.ChassisSpeeds()
-
-        self.simAngle = wpimath.units.radians(0)
-
-        self.simulation = False
 
     def AutoInit(self):
         driveP = self.fl._drive_module.getP()
@@ -114,10 +109,7 @@ class DriveTrain():
         rotate = wpimath.geometry.Rotation2d.fromDegrees(angle)
         self.odometry.resetPosition(rotate, self.getSwerveModulePositions(), pose)
 
-    def GetRotation(self):
-        if self.simulation:
-            return self.simAngle * -1
-        
+    def GetRotation(self):        
         return self.gyro.getAngle(wpilib.ADIS16470_IMU.IMUAxis.kPitch) * -1
     
     def UpdateMaxSpeed(self, speed):
@@ -128,24 +120,6 @@ class DriveTrain():
         swerveModulePositions = self.getSwerveModulePositions()
         rotation = wpimath.geometry.Rotation2d.fromDegrees(self.GetRotation())
         return self.odometry.update(rotation, swerveModulePositions)
-
-    def SimInit(self):
-        self.simulation = True
-        self.gyroSim = wpilib.simulation.ADIS16470_IMUSim(self.gyro)
-        self.fl.simInit()
-        self.fr.simInit()
-        self.rl.simInit()
-        self.rr.simInit()
-    
-    def SimUpdate(self, rotate):
-        self.simAngle += wpimath.units.radians(rotate * self.maxRotate * 0.5)
-        degrees = wpimath.units.radiansToDegrees(self.simAngle)
-        self.gyroSim.setGyroAngleY(degrees)
-        self.gyro.setGyroAngleY(degrees)
-        self.fl.simUpdate(self.period)
-        self.fr.simUpdate(self.period)
-        self.rl.simUpdate(self.period)
-        self.rr.simUpdate(self.period)
 
     def publishDashboardStates(self, smartdashboard: ntcore.NetworkTable):
         pose = self.odometry.getPose()
