@@ -422,8 +422,10 @@ class MyRobot(wpilib.TimedRobot):
 
     def get_target_list(self):
         # TODO parse json to find multiple IDs in sight
-        jsonBlob = self.ATagCam.getString("json")
+        jsonBlob = self.ATagCam.getString("json", "{}")
         structuredBlob = json.loads(jsonBlob)
+        if "Results" not in structuredBlob.keys():
+            return []
         idList = structuredBlob["Results"]["Fiducial"]
         return idList
     
@@ -435,7 +437,9 @@ class MyRobot(wpilib.TimedRobot):
 
 
     def get_target_pose(self):
-        targetpose = self.ATagCam.getString("json")
+        targetpose = self.ATagCam.getString("json", "{}")
+        if len(targetpose) < 2:
+            return []
         return targetpose
 
     def getInputSpeed(self, speed):
