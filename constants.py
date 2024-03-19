@@ -52,3 +52,7 @@ speakerLimit = 10.0
 ampLimit = 45.0
 
 MaxSpeed = 4.0 # meters per second
+
+speakerHeight = 82.9 # in inches
+
+servoConversion = 1

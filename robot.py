@@ -26,6 +26,7 @@ import pathplannerlib.auto
 import led
 import constants
 import pathPlanner
+import json
 
 TestCanId = 0
 
@@ -268,10 +269,11 @@ class MyRobot(wpilib.TimedRobot):
         if self.controls.reset_gyro():
             self.driveTrain.gyro.reset()
 
+        self.aTagPitch()
+        
         speakerspeed = self.smartdashboard.getNumber("speakerspeed",shooter.Shooter.speakerscale)
         ampspeed = self.smartdashboard.getNumber("ampspeed",shooter.Shooter.ampscale)
         trapspeed = self.smartdashboard.getNumber("trapspeed",shooter.Shooter.trapscale)
-        self.pitchServo.set(self.controls.shooterangle())
         if self.controls.shootspeaker():
             self.shooter.fire(speakerspeed, self.controls.override(), self.controls.reverseOverride()) 
         elif self.controls.shootamp():
@@ -280,7 +282,7 @@ class MyRobot(wpilib.TimedRobot):
             self.shooter.fire(trapspeed, self.controls.override(), self.controls.reverseOverride())
         else: 
             self.shooter.stop()
-        
+
         if self.controls.push_trap():
             if self.trapServo.get() < 0.15:
                 self.trapServo.set(constants.ServoClosed)
@@ -332,6 +334,19 @@ class MyRobot(wpilib.TimedRobot):
         if self.timer.hasElapsed(0.5):
             self.timer.reset()
 
+    def aTagPitch(self):
+        tags = self.get_target_list()
+        tag = None
+        if len(tags) == 0:
+            return
+        elif len(tags) == 1:
+            tag = tags[0]
+            
+        distance = tag["t6t_rs"][2]
+
+        height = wpimath.units.inchesToMeters(constants.speakerHeight)
+        angle = math.atan2(height, distance)
+        self.pitchServo.setAngle(angle * constants.servoConversion)
 
     def MoveToPose2d(self, pose: wpimath.geometry.Pose2d):
         trajectory = pose.relativeTo(self.lastOdometryPose)
@@ -356,15 +371,16 @@ class MyRobot(wpilib.TimedRobot):
         return output
     
     def line_up_to_target(self, tag_list):
-        tid = self.get_target_id()
+        tList = self.get_target_list()
 
         # Exit early if we didn't find a tag or the tag is not one we were looking for.
-        if tid not in tag_list:
+        tid = self.filter_target_list(tList, tag_list)
+        if not tid:
             return wpimath.geometry.Pose2d()
         
         # Target in robotspace Z value is the distance away, X is left/right, Y is up/down
         # 6 array of doubles: [x, y, z, rx, ry, rz]
-        targetpose = self.get_target_pose()
+        targetpose = tid["t6t_rs"]
 
         # Exit early if we didn't get a pose.
         if targetpose is None or len(targetpose) != 6:
@@ -373,13 +389,13 @@ class MyRobot(wpilib.TimedRobot):
         distance = targetpose[2]
 
         rotpid = 0.15
-        rot = self.txATag * rotpid * -1
+        rot = tid["tx"] * rotpid * -1
 
         rotation = wpimath.geometry.Rotation2d.fromDegrees(rot)
 
         # Leave some offset away from the speaker tags.
         #TODO also special case the pids for the speaker
-        if tid in self.kSpeakerTags:
+        if tid["fID"] in self.kSpeakerTags:
             distance -= 2.1
 
         pid = 0.05
@@ -390,26 +406,36 @@ class MyRobot(wpilib.TimedRobot):
         '''target_lock will make us rotate to face the speaker tags so that we can continue moving while shooting.'''
         output = pose
 
-        tid = self.get_target_id()
+        tList = self.get_target_list()
 
-        if tid not in self.kSpeakerCenterTags:
+        tid = self.filter_target_list(tList, self.kSpeakerCenterTags)
+        if not tid:
             return output
         
-        rotpid = 0.15
-        rot = self.txATag * rotpid * -1
+        rotpid = 0.19
+        rot = tid["tx"] * rotpid * -1
 
         rotation = wpimath.geometry.Rotation2d.fromDegrees(rot)
 
         return wpimath.geometry.Pose2d(pose.X(), pose.Y(), rotation)
 
 
-    def get_target_id(self):
+    def get_target_list(self):
         # TODO parse json to find multiple IDs in sight
-        tid = self.ATagCam.getNumber("tid", -1)
-        return int(tid)
+        jsonBlob = self.ATagCam.getString("json")
+        structuredBlob = json.loads(jsonBlob)
+        idList = structuredBlob["Results"]["Fiducial"]
+        return idList
+    
+    def filter_target_list(self, foundList, searchList):
+        for id in foundList:
+            if id["fID"] in searchList:
+                return id
+        return None
+
 
     def get_target_pose(self):
-        targetpose = self.ATagCam.getEntry("targetpose_robotspace").getDoubleArray(None)
+        targetpose = self.ATagCam.getString("json")
         return targetpose
 
     def getInputSpeed(self, speed):
@@ -437,7 +463,7 @@ class MyRobot(wpilib.TimedRobot):
             pid = 0.05
             fwd = pid
 
-            rotpid = 0.15
+            rotpid = 0.12
             rot = self.txNote * rotpid
             rot *= -1
 
