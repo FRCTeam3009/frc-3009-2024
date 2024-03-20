@@ -6,6 +6,7 @@ class Controls(object):
         self.driverController = wpilib.XboxController(port0)
         self.shooterController = wpilib.XboxController(port1)
         self.isRobotRelative = False
+        self.AprilMode = True
 
     def forward(self):
         y = self.driverController.getLeftY()
@@ -93,9 +94,14 @@ class Controls(object):
         return self.isRobotRelative
     
     def shooterangle(self):
-        value = self.shooterController.getRightY()
+        value = self.shooterController.getRightY() * -1
         return (value + 1)/2
     
     def target_lock(self):
         return self.driverController.getAButton()
+    
+    def targetSwitch(self):
+        if self.shooterController.getAButtonPressed():
+            self.AprilMode = not self.AprilMode
+        return self.AprilMode
         

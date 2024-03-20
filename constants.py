@@ -45,8 +45,8 @@ ServoOpen = 0.0
 
 pitchServo = 1
 # servo angles
-ampAngle = 0.01
-speakerAngle = 0.99
+ampServoSetting = 0.01
+speakerServoSetting = 0.99
 # servo pot limits
 speakerLimit = 10.0
 ampLimit = 45.0
@@ -56,3 +56,16 @@ MaxSpeed = 4.0 # meters per second
 speakerHeight = 82.9 # in inches
 
 servoConversion = 1
+shooterAngleMax = 44 # Upward
+shooterAngleMin = 22 # Forward
+servoPotMax = 85 # Upward
+servoPotMin = 0 # Forward
+servoFullRange = 270
+
+#-.83, 0.6 -> 0.83, -0.6 ->  1.8/2 = 0.9  0.4/2 = 0.2
+servoMaxValue = 0.9 # Forward
+servoMinValue = 0.2 # Upward
+
+ampAngle = 44
+trapAngle = 44
+speakerAngle = 22

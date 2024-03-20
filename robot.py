@@ -73,11 +73,11 @@ class MyRobot(wpilib.TimedRobot):
         self.trapServo.set(constants.ServoClosed)
 
         self.pitchServo = wpilib.Servo(constants.pitchServo)
-        self.pitchServo.set(constants.speakerAngle)
+        self.pitchServo.set(constants.speakerServoSetting)
 
         self.potInput = wpilib.AnalogInput(0)
         #self.potInput.setAverageBits(2)
-        self.shooterPot = wpilib.AnalogPotentiometer(self.potInput, 180, -25) # device, servo range, pot at 0v location
+        self.shooterPot = wpilib.AnalogPotentiometer(self.potInput, constants.servoFullRange, -40) # device, servo range, pot at 0v location
 
         p_value = 6e-5
         i_value = 1e-6
@@ -269,7 +269,16 @@ class MyRobot(wpilib.TimedRobot):
         if self.controls.reset_gyro():
             self.driveTrain.gyro.reset()
 
-        self.aTagPitch()
+        if self.controls.targetSwitch():
+            #self.aTagPitch()
+            self.pitchServo.set(self.controls.shooterangle())
+        else:
+            if self.controls.shootspeaker():
+                self.pitchServo.setAngle(constants.speakerAngle)
+            elif self.controls.shootamp():
+                self.pitchServo.setAngle(constants.ampAngle)
+            elif self.controls.shootTrap():
+                self.pitchServo.setAngle(constants.trapAngle)
         
         speakerspeed = self.smartdashboard.getNumber("speakerspeed",shooter.Shooter.speakerscale)
         ampspeed = self.smartdashboard.getNumber("ampspeed",shooter.Shooter.ampscale)
@@ -519,3 +528,20 @@ def pose2dFromNTPose(ntPose) -> wpimath.geometry.Pose2d:
     rotate = wpimath.geometry.Rotation3d(ntPose[3], ntPose[4], ntPose[5])
 
     return wpimath.geometry.Pose2d(x, y, rotate.toRotation2d())
+
+def convert_servo_angle_to_value(angle):
+    servo_angle_range = constants.servoPotMax-constants.servoPotMin
+    normalized_angle = angle/servo_angle_range * -1
+    normalized_angle += 1
+
+    servo_value_range = constants.servoMaxValue-constants.servoMinValue
+    return (normalized_angle*servo_value_range) + constants.servoMinValue
+
+
+def convert_shooter_angle_to_servo_value(angle):
+    shooter_angle_range = constants.shooterAngleMax-constants.shooterAngleMin
+    normalized_angle = angle/shooter_angle_range * -1
+    normalized_angle += 1
+
+    servo_value_range = constants.servoMaxValue-constants.servoMinValue
+    return (normalized_angle*servo_value_range) + constants.servoMinValue
