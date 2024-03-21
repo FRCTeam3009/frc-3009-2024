@@ -73,7 +73,7 @@ class MyRobot(wpilib.TimedRobot):
         self.trapServo.set(constants.ServoClosed)
 
         self.pitchServo = wpilib.Servo(constants.pitchServo)
-        self.pitchServo.set(constants.speakerServoSetting)
+        self.set_shooter_angle(constants.speakerAngle)
 
         self.potInput = wpilib.AnalogInput(0)
         #self.potInput.setAverageBits(2)
@@ -269,16 +269,12 @@ class MyRobot(wpilib.TimedRobot):
         if self.controls.reset_gyro():
             self.driveTrain.gyro.reset()
 
-        if self.controls.targetSwitch():
-            #self.aTagPitch()
-            self.pitchServo.set(self.controls.shooterangle())
+        if self.controls.ampPitch():
+            self.set_shooter_angle(constants.ampAngle) # Assuming trap and amp are same angle
+        elif self.controls.speakerPitch():
+            self.set_shooter_angle(constants.speakerAngle)
         else:
-            if self.controls.shootspeaker():
-                self.pitchServo.setAngle(constants.speakerAngle)
-            elif self.controls.shootamp():
-                self.pitchServo.setAngle(constants.ampAngle)
-            elif self.controls.shootTrap():
-                self.pitchServo.setAngle(constants.trapAngle)
+            self.aTagPitch()
         
         speakerspeed = self.smartdashboard.getNumber("speakerspeed",shooter.Shooter.speakerscale)
         ampspeed = self.smartdashboard.getNumber("ampspeed",shooter.Shooter.ampscale)
@@ -345,17 +341,21 @@ class MyRobot(wpilib.TimedRobot):
 
     def aTagPitch(self):
         tags = self.get_target_list()
+        tags = self.filter_target_list(tags, self.kSpeakerCenterTags)
         tag = None
         if len(tags) == 0:
             return
         elif len(tags) == 1:
             tag = tags[0]
-            
+        else:
+            # we have problems, how did we see multiple center speakers?
+            return
+        
         distance = tag["t6t_rs"][2]
 
         height = wpimath.units.inchesToMeters(constants.speakerHeight)
         angle = math.atan2(height, distance)
-        self.pitchServo.setAngle(angle * constants.servoConversion)
+        self.set_shooter_angle(angle)
 
     def MoveToPose2d(self, pose: wpimath.geometry.Pose2d):
         trajectory = pose.relativeTo(self.lastOdometryPose)
@@ -430,7 +430,6 @@ class MyRobot(wpilib.TimedRobot):
 
 
     def get_target_list(self):
-        # TODO parse json to find multiple IDs in sight
         jsonBlob = self.ATagCam.getString("json", "{}")
         structuredBlob = json.loads(jsonBlob)
         if "Results" not in structuredBlob.keys():
@@ -442,7 +441,7 @@ class MyRobot(wpilib.TimedRobot):
         for id in foundList:
             if id["fID"] in searchList:
                 return id
-        return None
+        return []
 
 
     def get_target_pose(self):
@@ -464,13 +463,6 @@ class MyRobot(wpilib.TimedRobot):
         commands2.CommandScheduler.getInstance().cancelAll()
 
     def noteLineup(self):
-        '''goalX = math.tan(self.tyNote + self.robotToNoteCamera.rotation().y_degrees)*self.robotToNoteCamera.Z()
-        goalX = 0.0 # TODO testing rotations only so we don't kill anyone.
-        goalY = 0.0
-        goalRotation = -self.txNote * 0.01 # TODO this is really slow to debug tracking notes. 0.1 worked ok.
-        rotation = wpimath.geometry.Rotation2d.fromDegrees(goalRotation)
-        goal = wpimath.geometry.Pose2d(goalX, goalY, rotation)
-        return goal'''
 
         if abs(self.tyNote) > 0.001:
             pid = 0.05
@@ -483,6 +475,15 @@ class MyRobot(wpilib.TimedRobot):
             rotation = wpimath.geometry.Rotation2d.fromDegrees(rot)
             return wpimath.geometry.Pose2d(fwd,0,rotation)            
         return wpimath.geometry.Pose2d()
+    
+    def set_shooter_angle(self, angle):
+        if angle > constants.shooterAngleMax:
+            angle = constants.shooterAngleMax
+        if angle < constants.shooterAngleMin:
+            angle = constants.shooterAngleMin
+
+        a = convert_shooter_angle_to_servo_value(angle)
+        self.pitchServo.set(a)
     
     def _simulationInit(self):
         self.driveTrain.SimInit()

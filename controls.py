@@ -100,8 +100,9 @@ class Controls(object):
     def target_lock(self):
         return self.driverController.getAButton()
     
-    def targetSwitch(self):
-        if self.shooterController.getAButtonPressed():
-            self.AprilMode = not self.AprilMode
-        return self.AprilMode
+    def ampPitch(self):
+        return self.shooterController.getAButton()
+    
+    def speakerPitch(self):
+        return self.shooterController.getBButton()
         
