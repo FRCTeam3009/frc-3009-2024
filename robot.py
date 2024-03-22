@@ -28,6 +28,10 @@ import constants
 import pathPlanner
 import json
 
+# TODO LEDs need to light up different colors in different states
+# TODO Run servo for buddy bar
+# TODO Auto modes now that we have note pickup and targeting.
+
 TestCanId = 0
 
 class MyRobot(wpilib.TimedRobot):
@@ -40,6 +44,8 @@ class MyRobot(wpilib.TimedRobot):
         self.chassis = chassis.Chassis()
 
         self.ledStrips = led.LedStrips()
+        self.ledStrips.solid(led.kHighScalersYellow)
+        self.startBlue = True
 
         self.kSpeakerTags = [3, 4, 7, 8]
         self.kSpeakerCenterTags = [4, 7]
@@ -71,6 +77,8 @@ class MyRobot(wpilib.TimedRobot):
 
         self.trapServo = wpilib.Servo(constants.Servo)
         self.trapServo.set(constants.ServoClosed)
+        self.buddyServo = wpilib.Servo(constants.buddyServo)
+        self.buddyServo.set(constants.buddyServoClosed)
 
         self.pitchServo = wpilib.Servo(constants.pitchServo)
         self.set_shooter_angle(constants.speakerAngle)
@@ -162,6 +170,7 @@ class MyRobot(wpilib.TimedRobot):
         self.startPoseTimer.start()
         self.cameraTimer = wpilib.Timer()
         self.cameraTimer.start()
+        self.autoStateTimer = wpilib.Timer()
 
         pathplannerlib.auto.NamedCommands.registerCommand("shootSpeaker", pathPlanner.shootCommand(self.shooter, shooter.Shooter.speakerscale))
         pathplannerlib.auto.NamedCommands.registerCommand("shootAmp", pathPlanner.shootCommand(self.shooter, shooter.Shooter.ampscale))
@@ -178,6 +187,11 @@ class MyRobot(wpilib.TimedRobot):
         self.startPose = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         self.startPoselist = []
         self.startPoseCalibrating = True
+
+        self.hadNote = False
+        self.wasStopped = False
+
+        self.autoFail = None
 
     def robotPeriodic(self):
 
@@ -237,16 +251,26 @@ class MyRobot(wpilib.TimedRobot):
                     self.driveTrain.resetPosition(startPose2d)
                     self.smartdashboard.putNumberArray("startpose", self.startPose)
 
+    def disabledInit(self):
+        self.ledStrips.solid(led.kHighScalersYellow)
+
     def autonomousInit(self):
         """This function is run once each time the robot enters autonomous mode."""
         self.timer.reset()
         self.timer.start()
 
+        self.autoStateTimer.reset()
+        self.autoStateTimer.start()
+
+        self.set_led_side()
+
         self.trapServo.set(constants.ServoClosed)
+        self.buddyServo.set(constants.buddyServoClosed)
 
         self.driveTrain.AutoInit()
 
         autoname = pathPlanner.selectAuto(self.smartdashboard)
+        self.startBlue = autoIsBlue(autoname)
         self.automode = PathPlannerAuto(autoname)
         self.automode.schedule()
 
@@ -255,14 +279,36 @@ class MyRobot(wpilib.TimedRobot):
         # This function is fairly empty because we're using the command scheduler to run our autonomous
         self.climber.set(phoenix5.TalonFXControlMode.PercentOutput, 0)
 
+        zeroSpeed = speedIsZero(self.driveTrain.chassisSpeeds)
+        if self.hadNote != self.shooter.hasNote():
+            self.autoStateTimer.reset()
+            self.hadNote = self.shooter.hasNote()
+        if zeroSpeed != self.wasStopped:
+            self.autoStateTimer.reset()
+            self.wasStopped = zeroSpeed
+        if self.autoStateTimer.hasElapsed(10):
+            commands2.CommandScheduler.getInstance().cancelAll()
+            if self.autoFail is None:
+                self.autoFail = self.driveTrain.odometry.getPose()
+            currentPose = self.driveTrain.odometry.getPose()
+            speed = 1
+            if abs(self.autoFail.X() - currentPose.X()) >= constants.autoDefaultDistance:
+                speed = 0
+            csp = wpimath.kinematics.ChassisSpeeds(speed, 0, 0)
+            self.driveTrain.DriveRobotRelative(csp)
+            # TODO make better system
+
     def teleopInit(self):
         """This function is run once each time the robot enters teleop mode."""
         self.driveTrain.UpdateMaxSpeed(constants.MaxSpeed)
         self.trapServo.set(constants.ServoClosed)
+        self.buddyServo.set(constants.buddyServoClosed)
 
         commands2.CommandScheduler.getInstance().cancelAll()
         self.timer.reset()
         self.timer.start()
+
+        self.set_led_side()
 
     def teleopPeriodic(self):
         """This function is called periodically during operator control."""
@@ -293,6 +339,13 @@ class MyRobot(wpilib.TimedRobot):
                 self.trapServo.set(constants.ServoClosed)
             else:
                 self.trapServo.set(constants.ServoOpen)
+        
+        if self.controls.buddyBar():
+            average = (constants.buddyServoClosed + constants.buddyServoOpen) / 2
+            if self.buddyServo.get() < average:
+                self.buddyServo.set(constants.buddyServoOpen)
+            else:
+                self.buddyServo.set(constants.buddyServoClosed)
 
         
         forward = self.controls.forward() * self.getInputSpeed(1)
@@ -338,6 +391,8 @@ class MyRobot(wpilib.TimedRobot):
 
         if self.timer.hasElapsed(0.5):
             self.timer.reset()
+        
+        
 
     def aTagPitch(self):
         tags = self.get_target_list()
@@ -484,6 +539,12 @@ class MyRobot(wpilib.TimedRobot):
 
         a = convert_shooter_angle_to_servo_value(angle)
         self.pitchServo.set(a)
+
+    def set_led_side(self):
+        if self.startBlue:
+            self.ledStrips.solid(led.kBumperBlue)
+        else:
+            self.ledStrips.solid(led.kBumperRed)
     
     def _simulationInit(self):
         self.driveTrain.SimInit()
@@ -546,3 +607,9 @@ def convert_shooter_angle_to_servo_value(angle):
 
     servo_value_range = constants.servoMaxValue-constants.servoMinValue
     return (normalized_angle*servo_value_range) + constants.servoMinValue
+
+def speedIsZero(chassisSpeed: wpimath.kinematics.ChassisSpeeds):
+    return chassisSpeed.vx == 0 and chassisSpeed.vy == 0 and chassisSpeed.omega == 0
+
+def autoIsBlue(automode: str):
+    return "blue" in automode.lower()

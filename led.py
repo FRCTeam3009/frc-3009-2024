@@ -21,15 +21,16 @@ kOff = color(0, 0, 0)
 kWhite = color(255, 255, 255)
 kBumperBlue = color(72, 12, 201)
 kBumperRed = color(244, 24, 28)
-kHighScalersYellow = color(247, 202, 4)
-kNoteOrange = color(252, 71, 0)
+kHighScalersYellow = color(250, 200, 1)
+kNoteOrange = color(253, 69, 0)
 
 kRed = color(255, 0, 0)
 kOrange = color(255, 127, 0)
 kYellow = color(255, 255, 0)
 kGreen = color(0, 255, 0)
 kBlue = color(0, 0, 255)
-kPurple = color(255, 0, 255)
+kPink = color(255, 0, 255)
+kPurple = color(102, 0, 102)
 
 kRainbow = [kRed, kOrange, kYellow, kGreen, kBlue, kPurple]
 
@@ -59,11 +60,14 @@ class LedStrips(object):
             self.ledBuff.append(data)
         self.leds.setData(self.ledBuff)
 
-    def solid(self, red, green, blue):
-        c = color(red, green, blue)
+    def solid(self, color):
         for led in self.ledBuff:
-            setLedColor(led, c)
+            setLedColor(led, color)
         self.leds.setData(self.ledBuff)
+
+    def solidRGB(self, red, green, blue):
+        c = color(red, green, blue)
+        self.solid(c)
 
     def gbRotate(self):
         i = 0

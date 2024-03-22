@@ -43,6 +43,10 @@ Servo = 0
 ServoClosed = 0.35
 ServoOpen = 0.0
 
+buddyServo = 3
+buddyServoClosed = 0
+buddyServoOpen = 1
+
 pitchServo = 1
 # servo angles
 ampServoSetting = 0.01
@@ -69,3 +73,5 @@ servoMinValue = 0.2 # Upward
 ampAngle = 44
 trapAngle = 44
 speakerAngle = 22
+
+autoDefaultDistance = 2.4 # meters

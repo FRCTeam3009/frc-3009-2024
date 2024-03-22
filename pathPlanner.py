@@ -23,6 +23,7 @@ autoModes = [
     "MiddleRed",
     "LeftRed",
     "AmpRed",
+    "2NoteAuto"
 ]
 
 def autonomousDropdown(smartdashboard: ntcore.NetworkTable):
@@ -41,32 +42,20 @@ class shootCommand(pathplannerlib.auto.Command):
         self.scale = scale
         self.timer = wpilib.Timer()
         self.sensorCount = 0
+
     def execute(self):
         self.shooter.fire(self.scale, False, False)
 
     def end(self, interrupted):
-        #self.shooter.stop()
-        pass
+        self.timer.stop()
+        self.timer.reset()
+        self.shooter.stop()
+
     def isFinished(self):
-        self.timer.start()
-        if self.timer.hasElapsed(5.0):
-            self.timer.stop()
-            self.timer.reset()
-            self.shooter.stop()
-            #self.shooter.fire(self.scale, False, False)
+        if not self.shooter.hasNote():
+            self.timer.start()
+        if self.timer.hasElapsed(0.5):
             return True
-        elif self.shooter.hasNote() is False:
-            self.sensorCount += 1
-            if self.timer.hasElapsed(1.0):
-                self.shooter.stop()
-                self.shooter.fire(self.scale, False, False)
-        if self.sensorCount > 10:
-            if self.timer.hasElapsed(4.0):
-                self.timer.stop()
-                self.timer.reset()
-                self.shooter.stop()
-                self.shooter.fire(self.scale, False, False)
-                return True
         return False
     
 class lineAprilCommand(pathplannerlib.auto.Command):
@@ -75,12 +64,15 @@ class lineAprilCommand(pathplannerlib.auto.Command):
         self.lineUpToTarget = lineUpToTarget
         self.tags = tags
         self.isDone = False
+
     def execute(self):
         self.pose = self.lineUpToTarget(self.tags)
         self.driveTrain.Drive(self.pose, False)
+
     def end(self, interrupted):
-        #pose = wpimath.geometry.Pose2d(0, 0, 0)
-        return
+        pose = wpimath.geometry.Pose2d(0, 0, 0)
+        self.driveTrain.Drive(pose, False)
+
     def isFinished(self):
         if abs(self.pose.x()) < 0.1:
             return True
@@ -91,16 +83,19 @@ class lineNoteCommand(pathplannerlib.auto.Command):
         self.lineUpToTarget = lineUpToTarget
         self.isDone = False
         self.shooter = shooter
+
     def execute(self):
         self.pose = self.lineUpToTarget()
         self.driveTrain.Drive(self.pose, False)
         self.shooter.fire(0, False, False)
+
     def end(self, interrupted):
         pose = wpimath.geometry.Pose2d(0, 0, 0)
         self.shooter.stop()
         self.driveTrain.Drive(pose, False)
+
     def isFinished(self):
-        if self.shooter.hasNote(False):
+        if self.shooter.hasNote():
             return True
         else:
             return False

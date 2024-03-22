@@ -86,7 +86,7 @@ class Controls(object):
         return self.shooterController.getXButton()
 
     def shootTrap(self):
-        return self.shooterController.getBButton()
+        return self.shooterController.getLeftBumper()
     
     def robotView(self):
         if self.driverController.getLeftBumperPressed():
@@ -105,4 +105,7 @@ class Controls(object):
     
     def speakerPitch(self):
         return self.shooterController.getBButton()
+    
+    def buddyBar(self):
+        return self.driverController.getXButtonPressed()
         
