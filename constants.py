@@ -2,25 +2,25 @@
 FLDrive = 43
 FLAngle = 20
 FLEncoder = 32
-FLEncoderOffset = 0.204346
+FLEncoderOffset = 0.185791
 
 # Rear Left Swerve
 RLDrive = 40
 RLAngle = 12
 RLEncoder = 33
-RLEncoderOffset = 0.392822
+RLEncoderOffset = 0.390869
 
 # Front Right Swerve
 FRDrive = 42
 FRAngle = 17
 FREncoder = 31
-FREncoderOffset = -0.135498
+FREncoderOffset = -0.143066
 
 # Rear Right Swerve
 RRDrive = 41
 RRAngle = 15
 RREncoder = 30
-RREncoderOffset = -0.006104
+RREncoderOffset = -0.031250
 
 # Light sensors to detect notes
 NoteSensorBottom = 0
@@ -44,8 +44,8 @@ ServoClosed = 0.35
 ServoOpen = 0.0
 
 buddyServo = 3
-buddyServoClosed = 0
-buddyServoOpen = 1
+buddyServoClosed = 1.0
+buddyServoOpen = 0.5
 
 pitchServo = 1
 # servo angles

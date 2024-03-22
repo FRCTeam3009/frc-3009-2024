@@ -316,9 +316,13 @@ class MyRobot(wpilib.TimedRobot):
             self.driveTrain.gyro.reset()
 
         if self.controls.ampPitch():
-            self.set_shooter_angle(constants.ampAngle) # Assuming trap and amp are same angle
+            self.pitchServo.set(constants.ampServoSetting)
+            # TODO the angle is borked
+            #self.set_shooter_angle(constants.ampAngle) # Assuming trap and amp are same angle
         elif self.controls.speakerPitch():
-            self.set_shooter_angle(constants.speakerAngle)
+            self.pitchServo.set(constants.speakerServoSetting)
+            # TODO the angle is borked
+            #self.set_shooter_angle(constants.speakerAngle)
         else:
             self.aTagPitch()
         
@@ -342,7 +346,7 @@ class MyRobot(wpilib.TimedRobot):
         
         if self.controls.buddyBar():
             average = (constants.buddyServoClosed + constants.buddyServoOpen) / 2
-            if self.buddyServo.get() < average:
+            if self.buddyServo.get() > average:
                 self.buddyServo.set(constants.buddyServoOpen)
             else:
                 self.buddyServo.set(constants.buddyServoClosed)
@@ -593,8 +597,7 @@ def pose2dFromNTPose(ntPose) -> wpimath.geometry.Pose2d:
 
 def convert_servo_angle_to_value(angle):
     servo_angle_range = constants.servoPotMax-constants.servoPotMin
-    normalized_angle = angle/servo_angle_range * -1
-    normalized_angle += 1
+    normalized_angle = 1.0 - angle/servo_angle_range
 
     servo_value_range = constants.servoMaxValue-constants.servoMinValue
     return (normalized_angle*servo_value_range) + constants.servoMinValue
@@ -602,8 +605,7 @@ def convert_servo_angle_to_value(angle):
 
 def convert_shooter_angle_to_servo_value(angle):
     shooter_angle_range = constants.shooterAngleMax-constants.shooterAngleMin
-    normalized_angle = angle/shooter_angle_range * -1
-    normalized_angle += 1
+    normalized_angle = 1.0 - angle/shooter_angle_range
 
     servo_value_range = constants.servoMaxValue-constants.servoMinValue
     return (normalized_angle*servo_value_range) + constants.servoMinValue
