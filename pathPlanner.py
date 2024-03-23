@@ -64,6 +64,7 @@ class lineAprilCommand(pathplannerlib.auto.Command):
         self.lineUpToTarget = lineUpToTarget
         self.tags = tags
         self.isDone = False
+        self.pose = wpimath.geometry.Pose2d(0, 0, 0)
 
     def execute(self):
         self.pose = self.lineUpToTarget(self.tags)
@@ -74,7 +75,7 @@ class lineAprilCommand(pathplannerlib.auto.Command):
         self.driveTrain.Drive(pose, False)
 
     def isFinished(self):
-        if abs(self.pose.x()) < 0.1:
+        if abs(self.pose.x) < 0.1:
             return True
     
 class lineNoteCommand(pathplannerlib.auto.Command):

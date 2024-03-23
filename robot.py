@@ -28,10 +28,6 @@ import constants
 import pathPlanner
 import json
 
-# TODO LEDs need to light up different colors in different states
-# TODO Run servo for buddy bar
-# TODO Auto modes now that we have note pickup and targeting.
-
 TestCanId = 0
 
 class MyRobot(wpilib.TimedRobot):
@@ -316,13 +312,9 @@ class MyRobot(wpilib.TimedRobot):
             self.driveTrain.gyro.reset()
 
         if self.controls.ampPitch():
-            self.pitchServo.set(constants.ampServoSetting)
-            # TODO the angle is borked
-            #self.set_shooter_angle(constants.ampAngle) # Assuming trap and amp are same angle
+            self.set_shooter_angle(constants.ampAngle) # Assuming trap and amp are same angle
         elif self.controls.speakerPitch():
-            self.pitchServo.set(constants.speakerServoSetting)
-            # TODO the angle is borked
-            #self.set_shooter_angle(constants.speakerAngle)
+            self.set_shooter_angle(constants.speakerAngle)
         else:
             self.aTagPitch()
         
@@ -400,14 +392,8 @@ class MyRobot(wpilib.TimedRobot):
 
     def aTagPitch(self):
         tags = self.get_target_list()
-        tags = self.filter_target_list(tags, self.kSpeakerCenterTags)
-        tag = None
-        if len(tags) == 0:
-            return
-        elif len(tags) == 1:
-            tag = tags[0]
-        else:
-            # we have problems, how did we see multiple center speakers?
+        tag = self.filter_target_list(tags, self.kSpeakerTags)
+        if tag is None:
             return
         
         distance = tag["t6t_rs"][2]
@@ -500,7 +486,7 @@ class MyRobot(wpilib.TimedRobot):
         for id in foundList:
             if id["fID"] in searchList:
                 return id
-        return []
+        return None
 
 
     def get_target_pose(self):
@@ -597,7 +583,8 @@ def pose2dFromNTPose(ntPose) -> wpimath.geometry.Pose2d:
 
 def convert_servo_angle_to_value(angle):
     servo_angle_range = constants.servoPotMax-constants.servoPotMin
-    normalized_angle = 1.0 - angle/servo_angle_range
+    normalized_angle = (angle - constants.servoPotMin)/servo_angle_range
+    normalized_angle = 1.0 - normalized_angle
 
     servo_value_range = constants.servoMaxValue-constants.servoMinValue
     return (normalized_angle*servo_value_range) + constants.servoMinValue
@@ -605,7 +592,8 @@ def convert_servo_angle_to_value(angle):
 
 def convert_shooter_angle_to_servo_value(angle):
     shooter_angle_range = constants.shooterAngleMax-constants.shooterAngleMin
-    normalized_angle = 1.0 - angle/shooter_angle_range
+    normalized_angle = (angle - constants.shooterAngleMin)/shooter_angle_range
+    normalized_angle = 1.0 - normalized_angle
 
     servo_value_range = constants.servoMaxValue-constants.servoMinValue
     return (normalized_angle*servo_value_range) + constants.servoMinValue

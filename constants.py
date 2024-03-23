@@ -44,7 +44,7 @@ ServoClosed = 0.35
 ServoOpen = 0.0
 
 buddyServo = 3
-buddyServoClosed = 1.0
+buddyServoClosed = 0.9
 buddyServoOpen = 0.5
 
 pitchServo = 1
