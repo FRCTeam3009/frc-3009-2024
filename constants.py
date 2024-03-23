@@ -44,8 +44,8 @@ ServoClosed = 0.35
 ServoOpen = 0.0
 
 buddyServo = 3
-buddyServoClosed = 0.9
-buddyServoOpen = 0.5
+buddyServoClosed = 0.5
+buddyServoOpen = 0.9
 
 pitchServo = 1
 # servo angles
@@ -60,8 +60,8 @@ MaxSpeed = 4.0 # meters per second
 speakerHeight = 82.9 # in inches
 
 servoConversion = 1
-shooterAngleMax = 44 # Upward
-shooterAngleMin = 22 # Forward
+shooterAngleMin = 46 # Forward, 90 - 44
+shooterAngleMax = 68 # Upward, 90 - 22
 servoPotMax = 85 # Upward
 servoPotMin = 0 # Forward
 servoFullRange = 270
@@ -70,8 +70,11 @@ servoFullRange = 270
 servoMaxValue = 0.9 # Forward
 servoMinValue = 0.2 # Upward
 
-ampAngle = 44
-trapAngle = 44
-speakerAngle = 22
+ampAngle = shooterAngleMax
+trapAngle = shooterAngleMax
+speakerAngle = shooterAngleMin
 
 autoDefaultDistance = 2.4 # meters
+
+maxDistanceSpeakerShot = 5.2 # meters
+minDistanceSpeakerShot = 2.18 # meters

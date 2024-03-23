@@ -53,16 +53,16 @@ class Controls(object):
         return self.shooterController.getLeftY() * -1
     
     def target_amp(self):
-        return self.driverController.getPOV() == 90
+        return self.driverController.getPOV() == 90 # RIGHT
     
-    def target_subwoofer(self):
-        return self.driverController.getPOV() == 270
+    def target_speaker(self):
+        return self.driverController.getPOV() == 0 # UP
     
     def target_stage(self):
-        return self.driverController.getPOV() == 0
+        return self.driverController.getPOV() == 270 # LEFT
     
     def target_closest(self):
-        return self.driverController.getPOV() == 180
+        return self.driverController.getPOV() == 180 # DOWN
 
     def turbo(self):
         if self.driverController.getRightTriggerAxis() > 0.5:

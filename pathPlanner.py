@@ -75,7 +75,7 @@ class lineAprilCommand(pathplannerlib.auto.Command):
         self.driveTrain.Drive(pose, False)
 
     def isFinished(self):
-        if abs(self.pose.x) < 0.1:
+        if self.pose.X() != 0 and abs(self.pose.X()) < 0.1:
             return True
     
 class lineNoteCommand(pathplannerlib.auto.Command):

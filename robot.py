@@ -48,7 +48,8 @@ class MyRobot(wpilib.TimedRobot):
         self.kAmptags = [5, 6] 
         self.kStagetags = [11, 12, 13, 14, 15, 16]
         self.kSourcetags = [1, 2, 9, 10]
-        self.kAlltags=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+        self.kAlltags = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+        self.kAmpAndStage = self.kAmptags + self.kStagetags
         self.kDefaultScoopScale = 0.5
         self.kDefaultMiddleRampScale = 1.0
         self.kSubwooferDistance = wpimath.units.inchesToMeters(36.17)
@@ -168,11 +169,11 @@ class MyRobot(wpilib.TimedRobot):
         self.cameraTimer.start()
         self.autoStateTimer = wpilib.Timer()
 
-        pathplannerlib.auto.NamedCommands.registerCommand("shootSpeaker", pathPlanner.shootCommand(self.shooter, shooter.Shooter.speakerscale))
-        pathplannerlib.auto.NamedCommands.registerCommand("shootAmp", pathPlanner.shootCommand(self.shooter, shooter.Shooter.ampscale))
+        pathplannerlib.auto.NamedCommands.registerCommand("shootSpeaker", pathPlanner.shootCommand(self.shooter, shooter.Shooter.speakerspeed_close))
+        pathplannerlib.auto.NamedCommands.registerCommand("shootAmp", pathPlanner.shootCommand(self.shooter, shooter.Shooter.ampspeed))
         pathplannerlib.auto.NamedCommands.registerCommand("targetSpeaker", pathPlanner.lineAprilCommand(self.driveTrain, self.line_up_to_target, self.kSpeakerTags))
-        pathplannerlib.auto.NamedCommands.registerCommand("targetAmp", pathPlanner.lineAprilCommand(self.driveTrain, self.line_up_to_target, self.kAmptags))
-        pathplannerlib.auto.NamedCommands.registerCommand("targetClosest", pathPlanner.lineAprilCommand(self.driveTrain, self.line_up_to_target, self.kAlltags))
+        pathplannerlib.auto.NamedCommands.registerCommand("targetAmp", pathPlanner.lineAprilCommand(self.driveTrain, self.line_up_to_target_exact, self.kAmptags))
+        pathplannerlib.auto.NamedCommands.registerCommand("targetClosest", pathPlanner.lineAprilCommand(self.driveTrain, self.line_up_to_target_exact, self.kAlltags))
         pathplannerlib.auto.NamedCommands.registerCommand("targetNote", pathPlanner.lineNoteCommand(self.driveTrain, self.noteLineup, self.shooter))
 
         self.txATag=0
@@ -214,9 +215,9 @@ class MyRobot(wpilib.TimedRobot):
         self.smartdashboard.putNumber("note sensor bottom", self.noteSensorBottom.get())
         self.smartdashboard.putNumber("note sensor front", self.noteSensorFront.get())
         
-        self.smartdashboard.putNumber("speakerspeed",shooter.Shooter.speakerscale)
-        self.smartdashboard.putNumber("ampspeed",shooter.Shooter.ampscale)
-        self.smartdashboard.putNumber("trapspeed",shooter.Shooter.trapscale)
+        self.smartdashboard.putNumber("speakerspeed",shooter.Shooter.speakerspeed_close)
+        self.smartdashboard.putNumber("ampspeed",shooter.Shooter.ampspeed)
+        self.smartdashboard.putNumber("trapspeed",shooter.Shooter.trapspeed)
 
         self.smartdashboard.putBoolean("hasNote", self.shooter.hasNote())
         self.smartdashboard.putNumber("autoMode", 0)
@@ -311,16 +312,21 @@ class MyRobot(wpilib.TimedRobot):
         if self.controls.reset_gyro():
             self.driveTrain.gyro.reset()
 
+        speakerspeed = self.smartdashboard.getNumber("speakerspeed",shooter.Shooter.speakerspeed_close)
+        ampspeed = self.smartdashboard.getNumber("ampspeed",shooter.Shooter.ampspeed)
+        trapspeed = self.smartdashboard.getNumber("trapspeed",shooter.Shooter.trapspeed)
+
         if self.controls.ampPitch():
             self.set_shooter_angle(constants.ampAngle) # Assuming trap and amp are same angle
         elif self.controls.speakerPitch():
             self.set_shooter_angle(constants.speakerAngle)
+            speakerspeed = shooter.Shooter.speakerspeed_far
+            # TODO determine if we need to change speed for shallow angle
         else:
             self.aTagPitch()
+            # TODO auto adjust speakerspeed based on distance away from april tag
         
-        speakerspeed = self.smartdashboard.getNumber("speakerspeed",shooter.Shooter.speakerscale)
-        ampspeed = self.smartdashboard.getNumber("ampspeed",shooter.Shooter.ampscale)
-        trapspeed = self.smartdashboard.getNumber("trapspeed",shooter.Shooter.trapscale)
+        
         if self.controls.shootspeaker():
             self.shooter.fire(speakerspeed, self.controls.override(), self.controls.reverseOverride()) 
         elif self.controls.shootamp():
@@ -338,7 +344,7 @@ class MyRobot(wpilib.TimedRobot):
         
         if self.controls.buddyBar():
             average = (constants.buddyServoClosed + constants.buddyServoOpen) / 2
-            if self.buddyServo.get() > average:
+            if self.buddyServo.get() < average:
                 self.buddyServo.set(constants.buddyServoOpen)
             else:
                 self.buddyServo.set(constants.buddyServoClosed)
@@ -355,20 +361,14 @@ class MyRobot(wpilib.TimedRobot):
             pose = self.noteLineup()
             self.shooter.fire(0, False, False)
             fieldRelative = False
-        elif self.controls.target_amp():
-            pose = self.line_up_to_target(self.kAmptags)
-            fieldRelative = False
-        elif self.controls.target_subwoofer():
+        elif self.controls.target_speaker():
             pose = self.line_up_to_target(self.kSpeakerTags)
             magnitude = math.sqrt(pose.X()**2 + pose.Y()**2)
             if magnitude < self.kSubwooferStopDistance:
                 pose = wpimath.geometry.Pose2d()
             fieldRelative = False
-        elif self.controls.target_stage():
-            pose = self.line_up_to_target(self.kStagetags)
-            fieldRelative = False
         elif self.controls.target_closest():
-            pose = self.line_up_to_target(self.kAlltags)
+            pose = self.line_up_to_target_exact(self.kAmpAndStage)
             fieldRelative = False
         
         if self.controls.robotView():
@@ -399,7 +399,8 @@ class MyRobot(wpilib.TimedRobot):
         distance = tag["t6t_rs"][2]
 
         height = wpimath.units.inchesToMeters(constants.speakerHeight)
-        angle = math.atan2(height, distance)
+        radians = math.atan2(height, distance)
+        angle = wpimath.units.radiansToDegrees(radians)
         self.set_shooter_angle(angle)
 
     def MoveToPose2d(self, pose: wpimath.geometry.Pose2d):
@@ -448,7 +449,6 @@ class MyRobot(wpilib.TimedRobot):
         rotation = wpimath.geometry.Rotation2d.fromDegrees(rot)
 
         # Leave some offset away from the speaker tags.
-        #TODO also special case the pids for the speaker
         if tid["fID"] in self.kSpeakerTags:
             distance -= 2.1
 
@@ -456,13 +456,48 @@ class MyRobot(wpilib.TimedRobot):
         fwd = distance * pid * -1
         return wpimath.geometry.Pose2d(fwd,0,rotation)
     
+    def line_up_to_target_exact(self, tag_list):
+        '''This will do both forward and horizontal adjustments as well as rotation'''
+        tList = self.get_target_list()
+
+        # Exit early if we didn't find a tag or the tag is not one we were looking for.
+        tid = self.filter_target_list(tList, tag_list)
+        if not tid:
+            return wpimath.geometry.Pose2d()
+        
+        # Target in robotspace Z value is the distance away, X is left/right, Y is up/down
+        # 6 array of doubles: [x, y, z, rx, ry, rz]
+        targetpose = tid["t6t_rs"]
+
+        # Exit early if we didn't get a pose.
+        if targetpose is None or len(targetpose) != 6:
+            return wpimath.geometry.Pose2d()
+
+        distForward = targetpose[2] # The Target's Z axis is outward from the camera.
+        distHorz = targetpose[0] # The Target's X axis is left/right.
+
+        rotpid = 0.15
+        rot = tid["tx"] * rotpid * -1
+
+        rotation = wpimath.geometry.Rotation2d.fromDegrees(rot)
+
+        # Leave some offset away from the speaker tags.
+        if tid["fID"] in self.kSpeakerTags:
+            distForward -= 2.1
+
+        pid = 0.05
+        forward = distForward * pid * -1 # The camera's are facing backwards, so negative
+        horizontal = distHorz * pid
+
+        return wpimath.geometry.Pose2d(forward, horizontal, rotation)
+    
     def target_lock(self, pose: wpimath.geometry.Pose2d):
         '''target_lock will make us rotate to face the speaker tags so that we can continue moving while shooting.'''
         output = pose
 
         tList = self.get_target_list()
 
-        tid = self.filter_target_list(tList, self.kSpeakerCenterTags)
+        tid = self.filter_target_list(tList, self.kSpeakerTags)
         if not tid:
             return output
         
@@ -522,10 +557,10 @@ class MyRobot(wpilib.TimedRobot):
         return wpimath.geometry.Pose2d()
     
     def set_shooter_angle(self, angle):
-        if angle > constants.shooterAngleMax:
-            angle = constants.shooterAngleMax
         if angle < constants.shooterAngleMin:
             angle = constants.shooterAngleMin
+        if angle > constants.shooterAngleMax:
+            angle = constants.shooterAngleMax
 
         a = convert_shooter_angle_to_servo_value(angle)
         self.pitchServo.set(a)

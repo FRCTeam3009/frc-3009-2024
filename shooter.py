@@ -3,9 +3,10 @@ from wpimath.controller import SimpleMotorFeedforwardMeters
 import SparkMotor
 
 class Shooter:
-    speakerscale = 0.78#0.8#0.62
-    ampscale = 0.30
-    trapscale = 0.45
+    speakerspeed_close = 0.65 #0.8 #0.62
+    speakerspeed_far = 0.8
+    ampspeed = 0.30
+    trapspeed = 0.45
 
     def __init__(self, topId, bottomId, middleId, noteSensorBottom, noteSensorTop, intakeScoop):
         self.kMaxRpm = 5600.0
