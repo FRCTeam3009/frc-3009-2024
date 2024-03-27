@@ -72,7 +72,7 @@ servoFullRange = 270
 servoMaxValue = 0.9 # Forward
 servoMinValue = 0.2 # Upward
 
-ampAngle = shooterAngleMax
+ampAngle = 64
 trapAngle = shooterAngleMax
 speakerAngle = shooterAngleMin
 

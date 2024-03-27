@@ -328,7 +328,7 @@ class MyRobot(wpilib.TimedRobot):
         if self.controls.reset_gyro():
             self.driveTrain.gyro.reset()
 
-        speakerspeed = self.smartdashboard.getNumber("speakerspeed",shooter.Shooter.speakerspeed_close)
+        speakerspeed = 0
         ampspeed = self.smartdashboard.getNumber("ampspeed",shooter.Shooter.ampspeed)
         trapspeed = self.smartdashboard.getNumber("trapspeed",shooter.Shooter.trapspeed)
 
@@ -339,7 +339,8 @@ class MyRobot(wpilib.TimedRobot):
             speakerspeed = shooter.Shooter.speakerspeed_far
             # TODO set this to the correct pitch which is the first in the dictionary
         else:
-            speakerspeed = self.getShooterSpeedSetAngles()      
+            speakerspeed = self.getShooterSpeedSetAngles()
+
         if self.controls.shootspeaker():
             self.shooter.fire(speakerspeed, self.controls.override(), self.controls.reverseOverride()) 
         elif self.controls.shootamp():
@@ -478,11 +479,16 @@ class MyRobot(wpilib.TimedRobot):
         rotpid = 0.15
         rot = tid["tx"] * rotpid * -1
 
+        if abs(rot) < 1:
+            rot = 0
+
         rotation = wpimath.geometry.Rotation2d.fromDegrees(rot)
 
         # Leave some offset away from the speaker tags.
         if tid["fID"] in self.kSpeakerTags:
             distForward -= 2.1
+        else:
+            distForward -= 1.1
 
         pid = 0.05
         forward = distForward * pid * -1 # The camera's are facing backwards, so negative

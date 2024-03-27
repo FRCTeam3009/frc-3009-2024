@@ -105,20 +105,21 @@ class Shooter:
         self.topspark._Motor_Pid_.setReference(0, rev.CANSparkMax.ControlType.kVelocity)
 
 class speedAngle:
-    def __init__(self, speed, angle):
+    def __init__(self, angle, speed):
         self.speed = speed
         self.angle = angle
 
 angleSpeed = {
-    constants.subwooferDistanceOffset: speedAngle(0.65, 64), # Shortest distance
+    constants.subwooferDistanceOffset: speedAngle(64, 0.65), # Shortest distance
     2.15: speedAngle(61, .78),
     2.41: speedAngle(57, 0.78),
     2.60: speedAngle(55, 0.78),
     2.92: speedAngle(52, 0.78),
     3.25: speedAngle(48.5, 0.78),
+    3.28: speedAngle(48, 0.77),
     3.58: speedAngle(46, 0.768),
     #3.92: speedAngle(46, 0.72),
-    wpimath.units.inchesToMeters(180): speedAngle(0.8, 46),
+    wpimath.units.inchesToMeters(180): speedAngle(46, 0.8),
 }
 
 def lookUpAngleSpeed(distance):
