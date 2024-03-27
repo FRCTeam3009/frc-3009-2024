@@ -37,14 +37,15 @@ def selectAuto(smartdashboard):
         return autoMode
 
 class shootCommand(pathplannerlib.auto.Command):
-    def __init__(self, shooter: shooter.Shooter, scale):
+    def __init__(self, shooter: shooter.Shooter, function: types.FunctionType):
         self.shooter = shooter
-        self.scale = scale
+        self.function = function
         self.timer = wpilib.Timer()
         self.sensorCount = 0
 
     def execute(self):
-        self.shooter.fire(self.scale, False, False)
+        speed = self.function()
+        self.shooter.fire(speed, False, False)
 
     def end(self, interrupted):
         self.timer.stop()

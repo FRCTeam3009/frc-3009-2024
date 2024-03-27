@@ -173,8 +173,8 @@ class MyRobot(wpilib.TimedRobot):
         self.cameraTimer.start()
         self.autoStateTimer = wpilib.Timer()
 
-        pathplannerlib.auto.NamedCommands.registerCommand("shootSpeaker", pathPlanner.shootCommand(self.shooter, shooter.Shooter.speakerspeed_close))
-        pathplannerlib.auto.NamedCommands.registerCommand("shootAmp", pathPlanner.shootCommand(self.shooter, shooter.Shooter.ampspeed))
+        pathplannerlib.auto.NamedCommands.registerCommand("shootSpeaker", pathPlanner.shootCommand(self.shooter, self.getShooterSpeedSetAngles))
+        pathplannerlib.auto.NamedCommands.registerCommand("shootAmp", pathPlanner.shootCommand(self.shooter, self.getAmpShooterSpeedAngles))
         pathplannerlib.auto.NamedCommands.registerCommand("targetSpeaker", pathPlanner.lineAprilCommand(self.driveTrain, self.line_up_to_target, self.kSpeakerTags))
         pathplannerlib.auto.NamedCommands.registerCommand("targetAmp", pathPlanner.lineAprilCommand(self.driveTrain, self.line_up_to_target_exact, self.kAmptags))
         pathplannerlib.auto.NamedCommands.registerCommand("targetClosest", pathPlanner.lineAprilCommand(self.driveTrain, self.line_up_to_target_exact, self.kAlltags))
@@ -193,6 +193,8 @@ class MyRobot(wpilib.TimedRobot):
         self.wasStopped = False
 
         self.autoFail = None
+
+        self.distance = 0
 
     def robotPeriodic(self):
 
@@ -255,6 +257,12 @@ class MyRobot(wpilib.TimedRobot):
                     startPose2d = pose2dFromNTPose(self.startPose)
                     self.driveTrain.resetPosition(startPose2d)
                     self.smartdashboard.putNumberArray("startpose", self.startPose)
+    
+        tags = self.get_target_list()
+        tag = self.filter_target_list(tags, self.kSpeakerTags)
+        if tag is not None:
+            self.distance = tag["t6t_rs"][2]  
+        self.smartdashboard.putNumber("distance", self.distance)  
 
     def disabledInit(self):
         self.ledStrips.solid(led.kHighScalersYellow)
@@ -331,26 +339,7 @@ class MyRobot(wpilib.TimedRobot):
             speakerspeed = shooter.Shooter.speakerspeed_far
             # TODO set this to the correct pitch which is the first in the dictionary
         else:
-            tags = self.get_target_list()
-            tag = self.filter_target_list(tags, self.kSpeakerTags)
-            distance = 0
-            if tag is not None:
-                distance = tag["t6t_rs"][2]
-
-            self.smartdashboard.putNumber("distance", distance)
-
-            # TODO
-            angle = constants.shooterPitch
-            self.set_shooter_angle(angle)
-
-            # TODO
-            speakerspeed = constants.shooterSpeed
-            sa = shooter.lookUpAngleSpeed(distance)
-            sa.speed
-            sa.angle
-            # TODO auto adjust speakerspeed based on distance away from april tag
-        
-        
+            speakerspeed = self.getShooterSpeedSetAngles()      
         if self.controls.shootspeaker():
             self.shooter.fire(speakerspeed, self.controls.override(), self.controls.reverseOverride()) 
         elif self.controls.shootamp():
@@ -460,7 +449,7 @@ class MyRobot(wpilib.TimedRobot):
 
         # Leave some offset away from the speaker tags.
         if tid["fID"] in self.kSpeakerTags:
-            distance -= 2.1
+            distance -= 2.5
 
         pid = 0.05
         fwd = distance * pid * -1
@@ -586,6 +575,15 @@ class MyRobot(wpilib.TimedRobot):
     
     def _simulationPeriodic(self):
         self.driveTrain.SimUpdate(self.controls.rotate())
+    
+    def getShooterSpeedSetAngles(self):
+        sa = shooter.lookUpAngleSpeed(self.distance)
+        self.set_shooter_angle(sa.angle)
+        return sa.speed
+    
+    def getAmpShooterSpeedAngles(self):
+        self.set_shooter_angle(constants.ampAngle)
+        return shooter.Shooter.ampspeed
 
 if __name__ == "__main__":
     wpilib.run(MyRobot)
