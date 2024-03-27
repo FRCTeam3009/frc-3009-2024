@@ -1,3 +1,5 @@
+import wpimath.units
+
 # Front Left Swerve
 FLDrive = 43
 FLAngle = 20
@@ -40,12 +42,12 @@ Climber = 35
 LEDs = 2
 
 Servo = 0
-ServoClosed = 0.35
+ServoClosed = 0.23
 ServoOpen = 0.0
 
 buddyServo = 3
-buddyServoClosed = 0.5
-buddyServoOpen = 0.9
+buddyServoClosed = 1.0
+buddyServoOpen = 0.0
 
 pitchServo = 1
 # servo angles
@@ -78,3 +80,9 @@ autoDefaultDistance = 2.4 # meters
 
 maxDistanceSpeakerShot = 5.2 # meters
 minDistanceSpeakerShot = 2.18 # meters
+
+shooterPitch = 68
+shooterSpeed = 0.65
+
+subwooferDistance = wpimath.units.inchesToMeters(34.17) # Literal distance the subwoofer sticks out
+subwooferDistanceOffset = wpimath.units.inchesToMeters(34.17 + 11.0) # Closest we can actually reach

@@ -52,8 +52,8 @@ class MyRobot(wpilib.TimedRobot):
         self.kAmpAndStage = self.kAmptags + self.kStagetags
         self.kDefaultScoopScale = 0.5
         self.kDefaultMiddleRampScale = 1.0
-        self.kSubwooferDistance = wpimath.units.inchesToMeters(36.17)
-        self.kSubwooferStopDistance = wpimath.units.inchesToMeters(self.kSubwooferDistance + 11.0)
+        self.kSubwooferDistance = constants.subwooferDistance
+        self.kSubwooferStopDistance = constants.subwooferDistanceOffset
 
         self.lastOdometryPose = wpimath.geometry.Pose2d()
 
@@ -66,6 +66,10 @@ class MyRobot(wpilib.TimedRobot):
 
         self.smartdashboard.putNumber("servo open", constants.ServoOpen)
         self.smartdashboard.putNumber("servo closed", constants.ServoClosed)
+
+        self.smartdashboard.putNumber("pitchShooter", constants.shooterPitch)
+        self.smartdashboard.putNumber("speedShooter", constants.shooterSpeed)
+        self.smartdashboard.putNumber("distance", 10000)
 
         pathPlanner.autonomousDropdown(self.smartdashboard)
 
@@ -222,10 +226,14 @@ class MyRobot(wpilib.TimedRobot):
         self.smartdashboard.putBoolean("hasNote", self.shooter.hasNote())
         self.smartdashboard.putNumber("autoMode", 0)
 
+
         self.driveTrain.publishDashboardStates(self.smartdashboard)
 
         constants.ServoOpen = self.smartdashboard.getNumber("servo open", constants.ServoOpen)
         constants.ServoClosed = self.smartdashboard.getNumber("servo closed", constants.ServoClosed)
+
+        constants.shooterPitch = self.smartdashboard.getNumber("pitchShooter", constants.shooterPitch)
+        constants.shooterSpeed = self.smartdashboard.getNumber("speedShooter", constants.shooterSpeed)
 
         self.smartdashboard.putNumberArray("startpose", self.startPose)
 
@@ -321,9 +329,25 @@ class MyRobot(wpilib.TimedRobot):
         elif self.controls.speakerPitch():
             self.set_shooter_angle(constants.speakerAngle)
             speakerspeed = shooter.Shooter.speakerspeed_far
-            # TODO determine if we need to change speed for shallow angle
+            # TODO set this to the correct pitch which is the first in the dictionary
         else:
-            self.aTagPitch()
+            tags = self.get_target_list()
+            tag = self.filter_target_list(tags, self.kSpeakerTags)
+            distance = 0
+            if tag is not None:
+                distance = tag["t6t_rs"][2]
+
+            self.smartdashboard.putNumber("distance", distance)
+
+            # TODO
+            angle = constants.shooterPitch
+            self.set_shooter_angle(angle)
+
+            # TODO
+            speakerspeed = constants.shooterSpeed
+            sa = shooter.lookUpAngleSpeed(distance)
+            sa.speed
+            sa.angle
             # TODO auto adjust speakerspeed based on distance away from april tag
         
         
@@ -344,7 +368,7 @@ class MyRobot(wpilib.TimedRobot):
         
         if self.controls.buddyBar():
             average = (constants.buddyServoClosed + constants.buddyServoOpen) / 2
-            if self.buddyServo.get() < average:
+            if self.buddyServo.get() > average:
                 self.buddyServo.set(constants.buddyServoOpen)
             else:
                 self.buddyServo.set(constants.buddyServoClosed)
@@ -387,21 +411,7 @@ class MyRobot(wpilib.TimedRobot):
 
         if self.timer.hasElapsed(0.5):
             self.timer.reset()
-        
-        
 
-    def aTagPitch(self):
-        tags = self.get_target_list()
-        tag = self.filter_target_list(tags, self.kSpeakerTags)
-        if tag is None:
-            return
-        
-        distance = tag["t6t_rs"][2]
-
-        height = wpimath.units.inchesToMeters(constants.speakerHeight)
-        radians = math.atan2(height, distance)
-        angle = wpimath.units.radiansToDegrees(radians)
-        self.set_shooter_angle(angle)
 
     def MoveToPose2d(self, pose: wpimath.geometry.Pose2d):
         trajectory = pose.relativeTo(self.lastOdometryPose)
