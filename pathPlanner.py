@@ -6,7 +6,7 @@ import wpimath.geometry
 import types
 import ntcore
 
-DefaultAutonomousMode = "WCSLeftBlue"
+DefaultAutonomousMode = "2NoteAuto"
 
 autoModes = [
     "WCSLeftBlue",

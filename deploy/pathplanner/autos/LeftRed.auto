@@ -2,43 +2,19 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 15.167939265978388,
-      "y": 7.237296985292972
+      "x": 15.33189097761933,
+      "y": 6.827417706190619
     },
-    "rotation": -90.0
+    "rotation": 145.51604638454484
   },
   "command": {
     "type": "sequential",
     "data": {
       "commands": [
         {
-          "type": "path",
-          "data": {
-            "pathName": "2"
-          }
-        },
-        {
           "type": "named",
           "data": {
-            "name": "shootAmp"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "3"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "targetNote"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "4"
+            "name": "targetSpeaker"
           }
         },
         {
@@ -50,7 +26,43 @@
         {
           "type": "path",
           "data": {
-            "pathName": "5"
+            "pathName": "20"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "targetNote"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "21"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "targetSpeaker"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "shootSpeaker"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "22"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "targetNote"
           }
         }
       ]

@@ -65,13 +65,13 @@ class Controls(object):
         return self.driverController.getPOV() == 180 # DOWN
 
     def turbo(self):
-        if self.driverController.getRightTriggerAxis() > 0.5:
+        if self.driverController.getLeftTriggerAxis() > 0.5:
             return 1.0
         else:
             return 0.0
     
     def slow(self):
-        if self.driverController.getLeftTriggerAxis() > 0.5:
+        if self.driverController.getLeftBumper():
             return 1.0
         else:
             return 0.0
@@ -89,7 +89,7 @@ class Controls(object):
         return self.shooterController.getLeftBumper()
     
     def robotView(self):
-        if self.driverController.getLeftBumperPressed():
+        if self.driverController.getAButtonPressed():
             self.isRobotRelative = not self.isRobotRelative
         return self.isRobotRelative
     
@@ -98,7 +98,10 @@ class Controls(object):
         return (value + 1)/2
     
     def target_lock(self):
-        return self.driverController.getAButton()
+        if self.driverController.getRightTriggerAxis() > 0.5:
+            return True
+        else:
+            return False
     
     def ampPitch(self):
         return self.shooterController.getAButton()

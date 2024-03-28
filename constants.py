@@ -73,7 +73,7 @@ servoMaxValue = 0.9 # Forward
 servoMinValue = 0.2 # Upward
 
 ampAngle = 64
-trapAngle = shooterAngleMax
+trapAngle = 64
 speakerAngle = shooterAngleMin
 
 autoDefaultDistance = 2.4 # meters

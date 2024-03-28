@@ -175,7 +175,7 @@ class MyRobot(wpilib.TimedRobot):
 
         pathplannerlib.auto.NamedCommands.registerCommand("shootSpeaker", pathPlanner.shootCommand(self.shooter, self.getShooterSpeedSetAngles))
         pathplannerlib.auto.NamedCommands.registerCommand("shootAmp", pathPlanner.shootCommand(self.shooter, self.getAmpShooterSpeedAngles))
-        pathplannerlib.auto.NamedCommands.registerCommand("targetSpeaker", pathPlanner.lineAprilCommand(self.driveTrain, self.line_up_to_target, self.kSpeakerTags))
+        pathplannerlib.auto.NamedCommands.registerCommand("targetSpeaker", pathPlanner.lineAprilCommand(self.driveTrain, self.line_up_to_target, self.kSpeakerCenterTags))
         pathplannerlib.auto.NamedCommands.registerCommand("targetAmp", pathPlanner.lineAprilCommand(self.driveTrain, self.line_up_to_target_exact, self.kAmptags))
         pathplannerlib.auto.NamedCommands.registerCommand("targetClosest", pathPlanner.lineAprilCommand(self.driveTrain, self.line_up_to_target_exact, self.kAlltags))
         pathplannerlib.auto.NamedCommands.registerCommand("targetNote", pathPlanner.lineNoteCommand(self.driveTrain, self.noteLineup, self.shooter))
@@ -259,7 +259,7 @@ class MyRobot(wpilib.TimedRobot):
                     self.smartdashboard.putNumberArray("startpose", self.startPose)
     
         tags = self.get_target_list()
-        tag = self.filter_target_list(tags, self.kSpeakerTags)
+        tag = self.filter_target_list(tags, self.kSpeakerCenterTags)
         if tag is not None:
             self.distance = tag["t6t_rs"][2]  
         self.smartdashboard.putNumber("distance", self.distance)  
@@ -300,15 +300,17 @@ class MyRobot(wpilib.TimedRobot):
             self.autoStateTimer.reset()
             self.wasStopped = zeroSpeed
         if self.autoStateTimer.hasElapsed(10):
-            commands2.CommandScheduler.getInstance().cancelAll()
-            if self.autoFail is None:
-                self.autoFail = self.driveTrain.odometry.getPose()
-            currentPose = self.driveTrain.odometry.getPose()
-            speed = 1
-            if abs(self.autoFail.X() - currentPose.X()) >= constants.autoDefaultDistance:
-                speed = 0
-            csp = wpimath.kinematics.ChassisSpeeds(speed, 0, 0)
-            self.driveTrain.DriveRobotRelative(csp)
+            pass
+            # commands2.CommandScheduler.getInstance().cancelAll()
+            # if self.autoFail is None:
+            #     self.autoFail = self.driveTrain.odometry.getPose()
+            # currentPose = self.driveTrain.odometry.getPose()
+            # default drive backwards
+            # speed = 1
+            # if abs(self.autoFail.X() - currentPose.X()) >= constants.autoDefaultDistance:
+            #     speed = 0
+            # csp = wpimath.kinematics.ChassisSpeeds(speed, 0, 0)
+            # self.driveTrain.DriveRobotRelative(csp)
             # TODO make better system
 
     def teleopInit(self):
@@ -376,7 +378,7 @@ class MyRobot(wpilib.TimedRobot):
             self.shooter.fire(0, False, False)
             fieldRelative = False
         elif self.controls.target_speaker():
-            pose = self.line_up_to_target(self.kSpeakerTags)
+            pose = self.line_up_to_target(self.kSpeakerCenterTags)
             magnitude = math.sqrt(pose.X()**2 + pose.Y()**2)
             if magnitude < self.kSubwooferStopDistance:
                 pose = wpimath.geometry.Pose2d()
@@ -449,8 +451,8 @@ class MyRobot(wpilib.TimedRobot):
         rotation = wpimath.geometry.Rotation2d.fromDegrees(rot)
 
         # Leave some offset away from the speaker tags.
-        if tid["fID"] in self.kSpeakerTags:
-            distance -= 2.5
+        if tid["fID"] in self.kSpeakerCenterTags:
+            distance -= 2.92
 
         pid = 0.05
         fwd = distance * pid * -1
@@ -485,7 +487,7 @@ class MyRobot(wpilib.TimedRobot):
         rotation = wpimath.geometry.Rotation2d.fromDegrees(rot)
 
         # Leave some offset away from the speaker tags.
-        if tid["fID"] in self.kSpeakerTags:
+        if tid["fID"] in self.kSpeakerCenterTags:
             distForward -= 2.1
         else:
             distForward -= 1.1
@@ -502,7 +504,7 @@ class MyRobot(wpilib.TimedRobot):
 
         tList = self.get_target_list()
 
-        tid = self.filter_target_list(tList, self.kSpeakerTags)
+        tid = self.filter_target_list(tList, self.kSpeakerCenterTags)
         if not tid:
             return output
         

@@ -2,15 +2,21 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 15.858878622179498,
-      "y": 4.321298685393376
+      "x": 15.367023487256676,
+      "y": 4.11050362756931
     },
-    "rotation": -119.05460409907714
+    "rotation": -142.94347181059052
   },
   "command": {
     "type": "sequential",
     "data": {
       "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "targetSpeaker"
+          }
+        },
         {
           "type": "named",
           "data": {
@@ -38,6 +44,12 @@
         {
           "type": "named",
           "data": {
+            "name": "targetSpeaker"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
             "name": "shootSpeaker"
           }
         },
@@ -45,6 +57,12 @@
           "type": "path",
           "data": {
             "pathName": "11"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "targetNote"
           }
         }
       ]
