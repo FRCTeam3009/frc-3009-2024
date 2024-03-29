@@ -14,7 +14,19 @@
         {
           "type": "named",
           "data": {
+            "name": "targetSpeaker"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
             "name": "shootSpeaker"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 10.0
           }
         },
         {

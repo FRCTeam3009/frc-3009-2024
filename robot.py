@@ -41,7 +41,7 @@ class MyRobot(wpilib.TimedRobot):
 
         self.ledStrips = led.LedStrips()
         self.ledStrips.solid(led.kHighScalersYellow)
-        self.alliance = wpilib.DriverStation.getAlliance()
+        self.alliance = wpilib.DriverStation.getAlliance() # This is too soon for FMS
 
         self.kSpeakerTags = [3, 4, 7, 8]
         self.kSpeakerCenterTags = [4, 7]
@@ -178,7 +178,8 @@ class MyRobot(wpilib.TimedRobot):
         pathplannerlib.auto.NamedCommands.registerCommand("targetSpeaker", pathPlanner.lineAprilCommand(self.driveTrain, self.line_up_to_target, self.kSpeakerCenterTags, self.aprilDistance, 2.92))
         pathplannerlib.auto.NamedCommands.registerCommand("targetAmp", pathPlanner.lineAprilCommand(self.driveTrain, self.line_up_to_target_exact, self.kAmptags, self.aprilDistance, 1.1))
         pathplannerlib.auto.NamedCommands.registerCommand("targetClosest", pathPlanner.lineAprilCommand(self.driveTrain, self.line_up_to_target_exact, self.kAlltags, self.aprilDistance, 1.1))
-        pathplannerlib.auto.NamedCommands.registerCommand("targetNote", pathPlanner.lineNoteCommand(self.driveTrain, self.noteLineup, self.shooter))
+        pathplannerlib.auto.NamedCommands.registerCommand("targetNote", pathPlanner.lineNoteCommand(self.driveTrain, self.noteLineup, self.shooter, self.noteFound))
+        pathplannerlib.auto.NamedCommands.registerCommand("driveAway", pathPlanner.driveAwayCommand(self.driveTrain))
 
         self.txATag=0
         self.tyATag=0
@@ -195,8 +196,10 @@ class MyRobot(wpilib.TimedRobot):
         self.autoFail = None
 
         self.distance = 0
+        self.NoteCamTargetSeen = 0
 
     def robotPeriodic(self):
+        self.alliance = wpilib.DriverStation.getAlliance()
 
         commands2.CommandScheduler.getInstance().run()
 
@@ -240,7 +243,7 @@ class MyRobot(wpilib.TimedRobot):
         self.smartdashboard.putNumberArray("startpose", self.startPose)
 
         ATagCamTargetSeen = self.ATagCam.getNumber("tv",0)
-        NoteCamTargetSeen = self.NoteCam.getNumber("tv",0)
+        self.NoteCamTargetSeen = self.NoteCam.getNumber("tv",0)
         self.txNote=self.NoteCam.getNumber("tx",0)
         self.tyNote=self.NoteCam.getNumber("ty",0)
 
@@ -451,7 +454,7 @@ class MyRobot(wpilib.TimedRobot):
 
         # Leave some offset away from the speaker tags.
         if tid["fID"] in self.kSpeakerCenterTags:
-            distance -= 2.92
+            distance -= 2.1
 
         pid = 0.05
         fwd = distance * pid * -1
@@ -538,11 +541,11 @@ class MyRobot(wpilib.TimedRobot):
 
     def getInputSpeed(self, speed):
         if self.controls.turbo():
-            return speed
+            return 0.75 * speed
         elif self.controls.slow():
             return 0.25 * speed
         else:
-            return 0.75 * speed
+            return 0.50 * speed
         
 
     def testInit(self) -> None:
@@ -551,7 +554,7 @@ class MyRobot(wpilib.TimedRobot):
     def noteLineup(self):
 
         if abs(self.tyNote) > 0.001:
-            pid = 0.1
+            pid = 0.075
             fwd = pid
 
             rotpid = 0.12
@@ -561,6 +564,9 @@ class MyRobot(wpilib.TimedRobot):
             rotation = wpimath.geometry.Rotation2d.fromDegrees(rot)
             return wpimath.geometry.Pose2d(fwd,0,rotation)            
         return wpimath.geometry.Pose2d()
+    
+    def noteFound(self):
+        return self.NoteCamTargetSeen == 1
     
     def set_shooter_angle(self, angle):
         if angle < constants.shooterAngleMin:

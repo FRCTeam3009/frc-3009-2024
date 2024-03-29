@@ -1,12 +1,6 @@
 {
   "version": 1.0,
-  "startingPose": {
-    "position": {
-      "x": 1.3959954881393342,
-      "y": 5.550936522700434
-    },
-    "rotation": 0
-  },
+  "startingPose": null,
   "command": {
     "type": "sequential",
     "data": {
@@ -26,13 +20,13 @@
         {
           "type": "wait",
           "data": {
-            "waitTime": 10.0
+            "waitTime": 3.0
           }
         },
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "speaker start"
+            "name": "driveAway"
           }
         }
       ]

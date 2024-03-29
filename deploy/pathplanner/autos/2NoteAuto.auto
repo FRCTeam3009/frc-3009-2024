@@ -40,6 +40,24 @@
           "data": {
             "name": "targetNote"
           }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "targetSpeaker"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "shootSpeaker"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "targetNote"
+          }
         }
       ]
     }
