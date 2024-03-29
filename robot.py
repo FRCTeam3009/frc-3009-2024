@@ -41,7 +41,7 @@ class MyRobot(wpilib.TimedRobot):
 
         self.ledStrips = led.LedStrips()
         self.ledStrips.solid(led.kHighScalersYellow)
-        self.startBlue = True
+        self.alliance = wpilib.DriverStation.getAlliance()
 
         self.kSpeakerTags = [3, 4, 7, 8]
         self.kSpeakerCenterTags = [4, 7]
@@ -96,13 +96,13 @@ class MyRobot(wpilib.TimedRobot):
         
         # Front Left
         fldriveMotorParams = motorParams.Motorparams(GetCanId(constants.FLDrive), p_value, i_value, d_value)
-        flangleMotorParams = motorParams.Motorparams(GetCanId(constants.FLAngle), angle_p_value)
+        flangleMotorParams = motorParams.Motorparams(GetCanId(constants.FLAngle), angle_p_value, i_value)
         flEncoderParams = encoderParams.EncoderParams(GetCanId(constants.FLEncoder), constants.FLEncoderOffset)
         flParams = swerve_drive_params.SwerveDriveParams(fldriveMotorParams, flangleMotorParams, flEncoderParams)
 
         # Rear Left
         rldriveMotorParams = motorParams.Motorparams(GetCanId(constants.RLDrive), p_value, i_value, d_value)
-        rlangleMotorParams = motorParams.Motorparams(GetCanId(constants.RLAngle), angle_p_value)
+        rlangleMotorParams = motorParams.Motorparams(GetCanId(constants.RLAngle), angle_p_value, i_value)
         rlEncoderParams = encoderParams.EncoderParams(GetCanId(constants.RLEncoder), constants.RLEncoderOffset)
         rlParams = swerve_drive_params.SwerveDriveParams(rldriveMotorParams, rlangleMotorParams, rlEncoderParams)
 
@@ -175,9 +175,9 @@ class MyRobot(wpilib.TimedRobot):
 
         pathplannerlib.auto.NamedCommands.registerCommand("shootSpeaker", pathPlanner.shootCommand(self.shooter, self.getShooterSpeedSetAngles))
         pathplannerlib.auto.NamedCommands.registerCommand("shootAmp", pathPlanner.shootCommand(self.shooter, self.getAmpShooterSpeedAngles))
-        pathplannerlib.auto.NamedCommands.registerCommand("targetSpeaker", pathPlanner.lineAprilCommand(self.driveTrain, self.line_up_to_target, self.kSpeakerCenterTags))
-        pathplannerlib.auto.NamedCommands.registerCommand("targetAmp", pathPlanner.lineAprilCommand(self.driveTrain, self.line_up_to_target_exact, self.kAmptags))
-        pathplannerlib.auto.NamedCommands.registerCommand("targetClosest", pathPlanner.lineAprilCommand(self.driveTrain, self.line_up_to_target_exact, self.kAlltags))
+        pathplannerlib.auto.NamedCommands.registerCommand("targetSpeaker", pathPlanner.lineAprilCommand(self.driveTrain, self.line_up_to_target, self.kSpeakerCenterTags, self.aprilDistance, 2.92))
+        pathplannerlib.auto.NamedCommands.registerCommand("targetAmp", pathPlanner.lineAprilCommand(self.driveTrain, self.line_up_to_target_exact, self.kAmptags, self.aprilDistance, 1.1))
+        pathplannerlib.auto.NamedCommands.registerCommand("targetClosest", pathPlanner.lineAprilCommand(self.driveTrain, self.line_up_to_target_exact, self.kAlltags, self.aprilDistance, 1.1))
         pathplannerlib.auto.NamedCommands.registerCommand("targetNote", pathPlanner.lineNoteCommand(self.driveTrain, self.noteLineup, self.shooter))
 
         self.txATag=0
@@ -283,7 +283,6 @@ class MyRobot(wpilib.TimedRobot):
         self.driveTrain.AutoInit()
 
         autoname = pathPlanner.selectAuto(self.smartdashboard)
-        self.startBlue = autoIsBlue(autoname)
         self.automode = PathPlannerAuto(autoname)
         self.automode.schedule()
 
@@ -552,7 +551,7 @@ class MyRobot(wpilib.TimedRobot):
     def noteLineup(self):
 
         if abs(self.tyNote) > 0.001:
-            pid = 0.05
+            pid = 0.1
             fwd = pid
 
             rotpid = 0.12
@@ -573,7 +572,9 @@ class MyRobot(wpilib.TimedRobot):
         self.pitchServo.set(a)
 
     def set_led_side(self):
-        if self.startBlue:
+        if self.alliance is None:
+            self.ledStrips.solid(led.kGreen)
+        elif self.alliance.kBlue:
             self.ledStrips.solid(led.kBumperBlue)
         else:
             self.ledStrips.solid(led.kBumperRed)
@@ -592,6 +593,25 @@ class MyRobot(wpilib.TimedRobot):
     def getAmpShooterSpeedAngles(self):
         self.set_shooter_angle(constants.ampAngle)
         return shooter.Shooter.ampspeed
+    
+    def aprilDistance(self):
+        tList = self.get_target_list()
+
+        # Exit early if we didn't find a tag or the tag is not one we were looking for.
+        tid = self.filter_target_list(tList, self.kSpeakerCenterTags)
+        if not tid:
+            return -1
+        
+        # Target in robotspace Z value is the distance away, X is left/right, Y is up/down
+        # 6 array of doubles: [x, y, z, rx, ry, rz]
+        targetpose = tid["t6t_rs"]
+
+        # Exit early if we didn't get a pose.
+        if targetpose is None or len(targetpose) != 6:
+            return -1
+
+        return targetpose[2]
+
 
 if __name__ == "__main__":
     wpilib.run(MyRobot)

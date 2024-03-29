@@ -32,9 +32,9 @@ class krakenMotor():
         self.config.slot0.k_a = a
         self.config.slot0.k_v = v
 
-        motion_magic_configs = self.config.motion_magic
-        motion_magic_configs.motion_magic_acceleration = (constants.MaxSpeed / self.conversion) * 10 # order of magnitude above vel
-        motion_magic_configs.motion_magic_jerk = motion_magic_configs.motion_magic_acceleration * 10 # order of magnitude above acc
+        # motion_magic_configs = self.config.motion_magic
+        # motion_magic_configs.motion_magic_acceleration = (constants.MaxSpeed / self.conversion) * 2 # order of magnitude above vel
+        # motion_magic_configs.motion_magic_jerk = motion_magic_configs.motion_magic_acceleration * 5 # order of magnitude above acc
 
         self.canMotor.configurator.apply(self.config)
 
@@ -58,10 +58,10 @@ class krakenMotor():
     def setReference(self, RPM, arbFF = 0):
         RPS = RPM / 60
         self.simRPS = phoenix6.units.rotations_per_second(RPS)
-        #request = phoenix6.controls.VelocityVoltage(0).with_slot(0)
-        #self.canMotor.set_control(request.with_velocity(RPS).with_feed_forward(arbFF))
-        request = phoenix6.controls.MotionMagicVelocityVoltage(0)
-        self.canMotor.set_control(request.with_velocity(RPS))
+        request = phoenix6.controls.VelocityVoltage(0).with_slot(0)
+        self.canMotor.set_control(request.with_velocity(RPS).with_feed_forward(arbFF))
+        #request = phoenix6.controls.MotionMagicVelocityVoltage(0)
+        #self.canMotor.set_control(request.with_velocity(RPS))
 
     def stop(self):
         self.setReference(0, 0)

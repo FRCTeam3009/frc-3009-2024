@@ -1,6 +1,5 @@
 from motorParams import Motorparams
 from encoderParams import EncoderParams
-import math
 
 class SwerveDriveParams(object):
     def __init__(self, driveMotorParams: Motorparams, angleMotorParams: Motorparams, encoderParams: EncoderParams):

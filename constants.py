@@ -4,25 +4,25 @@ import wpimath.units
 FLDrive = 43
 FLAngle = 20
 FLEncoder = 32
-FLEncoderOffset = 0.185791
+FLEncoderOffset = 0.182129
 
 # Rear Left Swerve
 RLDrive = 40
 RLAngle = 12
 RLEncoder = 33
-RLEncoderOffset = 0.390869
+RLEncoderOffset = 0.387207
 
 # Front Right Swerve
 FRDrive = 42
 FRAngle = 17
 FREncoder = 31
-FREncoderOffset = -0.143066
+FREncoderOffset = -0.126953
 
 # Rear Right Swerve
 RRDrive = 41
 RRAngle = 15
 RREncoder = 30
-RREncoderOffset = -0.031250
+RREncoderOffset = -0.017090
 
 # Light sensors to detect notes
 NoteSensorBottom = 0

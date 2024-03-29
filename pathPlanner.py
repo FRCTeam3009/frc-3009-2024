@@ -26,6 +26,8 @@ autoModes = [
     "2NoteAuto"
 ]
 
+autorotate = 1.5
+
 def autonomousDropdown(smartdashboard: ntcore.NetworkTable):
         smartdashboard.putString("autonomousmode/value", DefaultAutonomousMode)
         smartdashboard.putStringArray("autonomousmode/items", autoModes)
@@ -60,15 +62,21 @@ class shootCommand(pathplannerlib.auto.Command):
         return False
     
 class lineAprilCommand(pathplannerlib.auto.Command):
-    def __init__(self, driveTrain: drive_train.DriveTrain, lineUpToTarget: types.FunctionType, tags):
+    def __init__(self, driveTrain: drive_train.DriveTrain, lineUpToTarget: types.FunctionType, tags, aprilDistance : types.FunctionType, stopDistance):
         self.driveTrain = driveTrain
         self.lineUpToTarget = lineUpToTarget
         self.tags = tags
         self.isDone = False
         self.pose = wpimath.geometry.Pose2d(0, 0, 0)
+        self.aprilDistance = aprilDistance
+        self.stopDistance = stopDistance
 
     def execute(self):
-        self.pose = self.lineUpToTarget(self.tags)
+        self.pose: wpimath.geometry.Pose2d = self.lineUpToTarget(self.tags)
+        if self.aprilDistance() == -1:
+            # No april tag seen, rotate to find one.
+            rot = wpimath.geometry.Rotation2d.fromDegrees(autorotate)
+            self.pose = wpimath.geometry.Pose2d(0, 0, rot)
         self.driveTrain.Drive(self.pose, False)
 
     def end(self, interrupted):
@@ -76,8 +84,10 @@ class lineAprilCommand(pathplannerlib.auto.Command):
         self.driveTrain.Drive(pose, False)
 
     def isFinished(self):
-        if self.pose.X() != 0 and abs(self.pose.X()) < 0.1:
+        d = self.aprilDistance()
+        if d > 0 and d < self.stopDistance:
             return True
+        return False
     
 class lineNoteCommand(pathplannerlib.auto.Command):
     def __init__(self, driveTrain: drive_train.DriveTrain, lineUpToTarget: types.FunctionType, shooter: shooter.Shooter):
@@ -87,8 +97,14 @@ class lineNoteCommand(pathplannerlib.auto.Command):
         self.shooter = shooter
 
     def execute(self):
-        self.pose = self.lineUpToTarget()
-        self.driveTrain.Drive(self.pose, False)
+        pose : wpimath.geometry.Pose2d = self.lineUpToTarget()
+
+        # If we didn't see a note, rotate to find one.
+        if pose.X() == 0 and pose.rotation().degrees() == 0:
+            rot = wpimath.geometry.Rotation2d.fromDegrees(autorotate)
+            pose = wpimath.geometry.Pose2d(0, 0, rot)
+
+        self.driveTrain.Drive(pose, False)
         self.shooter.fire(0, False, False)
 
     def end(self, interrupted):
