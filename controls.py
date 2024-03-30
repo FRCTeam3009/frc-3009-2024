@@ -111,4 +111,7 @@ class Controls(object):
     
     def buddyBar(self):
         return self.driverController.getXButtonPressed()
+    
+    def trapPitch(self):
+        return self.shooterController.getRightBumper()
         

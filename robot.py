@@ -342,6 +342,8 @@ class MyRobot(wpilib.TimedRobot):
             self.set_shooter_angle(constants.speakerAngle)
             speakerspeed = shooter.Shooter.speakerspeed_far
             # TODO set this to the correct pitch which is the first in the dictionary
+        elif self.controls.trapPitch:
+            self.set_shooter_angle(constants.trapAngle)
         else:
             speakerspeed = self.getShooterSpeedSetAngles()
 

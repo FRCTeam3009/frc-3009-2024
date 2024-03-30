@@ -7,7 +7,7 @@ import wpilib
 class Shooter:
     speakerspeed_close = 0.65 #0.8 #0.62
     speakerspeed_far = 0.8
-    ampspeed = 0.30
+    ampspeed = 0.25
     trapspeed = 0.45
 
     def __init__(self, topId, bottomId, middleId, noteSensorBottom, noteSensorTop, intakeScoop):
