@@ -285,7 +285,8 @@ class MyRobot(wpilib.TimedRobot):
 
         self.driveTrain.AutoInit()
 
-        autoname = pathPlanner.selectAuto(self.smartdashboard)
+        #autoname = pathPlanner.selectAuto(self.smartdashboard)
+        autoname = "stayAuto"
         self.automode = PathPlannerAuto(autoname)
         self.automode.schedule()
 
@@ -544,10 +545,13 @@ class MyRobot(wpilib.TimedRobot):
     def getInputSpeed(self, speed):
         if self.controls.turbo():
             return 0.75 * speed
+            #return 0.10 * speed
         elif self.controls.slow():
             return 0.25 * speed
+            #return 0.10 * speed
         else:
             return 0.50 * speed
+            #return 0.10 * speed
         
 
     def testInit(self) -> None:

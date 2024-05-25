@@ -13,7 +13,8 @@ class krakenMotor():
         else:
             self.config.motor_output.inverted = phoenix6.configs.config_groups.InvertedValue.COUNTER_CLOCKWISE_POSITIVE
 
-        self.config.motor_output.neutral_mode = phoenix6.configs.config_groups.NeutralModeValue.BRAKE
+        #set to coast mode not sure if this is correct
+        self.config.motor_output.neutral_mode = phoenix6.configs.config_groups.NeutralModeValue.COAST
         self.config.feedback.sensor_to_mechanism_ratio = self.conversion
         self.canMotor.configurator.apply(self.config)
 

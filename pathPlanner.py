@@ -6,7 +6,7 @@ import wpimath.geometry
 import types
 import ntcore
 
-DefaultAutonomousMode = "2NoteAuto"
+DefaultAutonomousMode = "stayAuto"
 
 autoModes = [
     "WCSLeftBlue",
@@ -24,7 +24,7 @@ autoModes = [
     "LeftRed",
     "AmpRed",
     "2NoteAuto",
-    "AppeaseTheOverconfidentTeams",
+    "stayAuto",
 ]
 
 autorotate = 3.0
